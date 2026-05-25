@@ -18,6 +18,7 @@ export default function App() {
       </nav>
 
       {/* Hero Section */}
+<<<<<<< HEAD
       <section
         id="home"
         className="bg-gradient-to-r from-sky-700 to-cyan-500 text-white py-24 px-6 text-center"
@@ -41,18 +42,68 @@ export default function App() {
           <button className="bg-white text-sky-700 px-8 py-3 rounded-xl font-semibold hover:bg-yellow-300">
             Enroll Now
           </button>
+=======
+      <section id="home" style={{
+        padding:'80px 20px',
+        textAlign:'center',
+        background:'#0ea5e9',
+        color:'white'
+      }}>
+
+        <h1 style={{fontSize:'48px'}}>
+          Professional Program in Data Science, AI & GenAI
+        </h1>
+
+        <p style={{fontSize:'20px', marginTop:'20px'}}>
+          In Collaboration with IIT Roorkee
+        </p>
+
+        <div style={{marginTop:'30px'}}>
+
+          <a
+            href="https://razorpay.me/@synaptecheducation"
+            target="_blank"
+            style={{
+              background:'white',
+              color:'#0284c7',
+              padding:'15px 25px',
+              marginRight:'20px',
+              borderRadius:'10px',
+              textDecoration:'none',
+              fontWeight:'bold'
+            }}
+          >
+            Enroll Now
+          </a>
+>>>>>>> 3ceb407b8d909ad9883b46b18bb7485f70a0dff2
 
           <a
             href="https://wa.me/919217766084"
             target="_blank"
+<<<<<<< HEAD
             className="bg-green-500 px-8 py-3 rounded-xl font-semibold hover:bg-green-600"
           >
             WhatsApp
           </a>
+=======
+            style={{
+              background:'#22c55e',
+              color:'white',
+              padding:'15px 25px',
+              borderRadius:'10px',
+              textDecoration:'none',
+              fontWeight:'bold'
+            }}
+          >
+            WhatsApp
+          </a>
+
+>>>>>>> 3ceb407b8d909ad9883b46b18bb7485f70a0dff2
         </div>
       </section>
 
       {/* About */}
+<<<<<<< HEAD
       <section
         id="about"
         className="py-20 px-8 max-w-6xl mx-auto"
@@ -178,4 +229,153 @@ export default function App() {
 
     </div>
   );
+=======
+      <section id="about" style={{padding:'60px 20px'}}>
+
+        <h2 style={{
+          textAlign:'center',
+          color:'#0284c7',
+          fontSize:'40px'
+        }}>
+          About Synaptech Education
+        </h2>
+
+        <p style={{
+          maxWidth:'900px',
+          margin:'30px auto',
+          fontSize:'18px',
+          lineHeight:'1.8'
+        }}>
+          Synaptech Education is an emerging technical institution focused on
+          Data Science, Machine Learning, Artificial Intelligence and
+          Generative AI with industry-oriented training, projects,
+          internships and placement support.
+        </p>
+
+      </section>
+
+      {/* Courses */}
+      <section id="courses" style={{
+        padding:'60px 20px',
+        background:'white'
+      }}>
+
+        <h2 style={{
+          textAlign:'center',
+          color:'#0284c7',
+          fontSize:'40px'
+        }}>
+          Courses Offered
+        </h2>
+
+        <div style={{
+          display:'grid',
+          gridTemplateColumns:'repeat(auto-fit,minmax(250px,1fr))',
+          gap:'20px',
+          marginTop:'40px'
+        }}>
+
+          {[
+            "Python & Data Analytics",
+            "Machine Learning",
+            "Deep Learning",
+            "Generative AI",
+            "Agentic AI",
+            "MLOps"
+          ].map((course,index)=>(
+            <div key={index} style={{
+              background:'#e0f2fe',
+              padding:'30px',
+              borderRadius:'15px'
+            }}>
+              <h3>{course}</h3>
+
+              <p>
+                Practical industry-oriented learning with projects and mentorship.
+              </p>
+            </div>
+          ))}
+
+        </div>
+
+      </section>
+
+      {/* Placement */}
+      <section style={{
+        padding:'60px 20px',
+        background:'#bae6fd'
+      }}>
+
+        <h2 style={{
+          textAlign:'center',
+          color:'#0284c7',
+          fontSize:'40px'
+        }}>
+          Placement Assistance
+        </h2>
+
+        <div style={{
+          display:'grid',
+          gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',
+          gap:'20px',
+          marginTop:'40px'
+        }}>
+
+          {[
+            "Resume Building",
+            "Mock Interviews",
+            "Internship Support",
+            "Career Guidance"
+          ].map((item,index)=>(
+            <div key={index} style={{
+              background:'white',
+              padding:'30px',
+              borderRadius:'15px'
+            }}>
+              <h3>{item}</h3>
+            </div>
+          ))}
+
+        </div>
+
+      </section>
+
+      {/* Contact */}
+      <section id="contact" style={{
+        padding:'60px 20px',
+        background:'#0369a1',
+        color:'white',
+        textAlign:'center'
+      }}>
+
+        <h2 style={{fontSize:'40px'}}>Contact Us</h2>
+
+        <p style={{marginTop:'20px'}}>
+          📞 9217766084
+        </p>
+
+        <p>
+          📧 synaptecheducation@gmail.com
+        </p>
+
+        <p>
+          📍 Plot No 15, Bollco Co Working Space,
+          Vaishali Sector 5, Ghaziabad 201010
+        </p>
+
+      </section>
+
+      {/* Footer */}
+      <footer style={{
+        background:'#082f49',
+        color:'white',
+        textAlign:'center',
+        padding:'20px'
+      }}>
+        © 2026 Synaptech Education
+      </footer>
+
+    </div>
+  )
+>>>>>>> 3ceb407b8d909ad9883b46b18bb7485f70a0dff2
 }
