@@ -59,9 +59,14 @@ export default function App() {
         </p>
 
         <div className="flex justify-center gap-6 mt-10">
-          <button className="bg-white text-sky-700 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-200 transition">
+          <a
+  href="https://docs.google.com/forms/d/e/1FAIpQLSeIGfJLFhZQ7G-SpUF2WUk_yyycZ19dA2B0d4tFscN1fquvRQ/viewform?usp=publish-editor"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="bg-white text-sky-700 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-yellow-300 inline-block"
+>
   Enroll Now
-</button>
+</a>
 
           <a
   href="https://wa.me/919217766084"
