@@ -1,4 +1,4 @@
-
+import { FaWhatsapp } from "react-icons/fa";
 import iitLogo from "./assets/IIT_Roorkee.png";
 import synaptechLogo from "./assets/Synaptech_Education_Logo.png";
 import certificate1 from "./assets/Sample_Certificate.png";
@@ -8,7 +8,7 @@ export default function App() {
     <div className="font-sans bg-sky-50 min-h-screen">
 
       {/* Navbar */}
-      <nav className="bg-sky-700 text-white px-8 py-4 flex justify-between items-center shadow-lg">
+      <nav className="bg-slate-100 px-10 py-5 flex justify-between items-center shadow-md">
 
   {/* Left Side */}
   <div className="flex items-center gap-4">
@@ -16,69 +16,86 @@ export default function App() {
     <img
       src={synaptechLogo}
       alt="Synaptech Logo"
-      className="h-20 w-auto bg-white p-2 rounded-xl"
+      className="h-32 w-auto"
     />
 
     <div>
-      <h1 className="text-2xl font-bold">
+      <h1 className="text-6xl font-extrabold text-blue-900 tracking-tight">
         Synaptech Education
       </h1>
 
-      <p className="text-sm text-yellow-200">
+      <p className="text-blue-700 font-semibold mt-4">
         In Collaboration with IIT Roorkee
       </p>
     </div>
 
   </div>
+<div className="flex items-center gap-4">
 
+  <img
+  src={iitLogo}
+  alt="IIT Roorkee"
+  className="h-28 w-auto"
+/>
+
+  <div>
+    <h2 className="text-3xl font-bold text-blue-900">
+      IIT Roorkee
+    </h2>
+  </div>
+
+</div>
   {/* Menu */}
   <div className="space-x-6 hidden md:flex">
-    <a href="#home" className="hover:text-yellow-300">Home</a>
+    <a href="#home" className="text-blue-900 hover:text-sky-600 font-semibold text-xl">Home</a>
     <a href="#courses" className="hover:text-yellow-300">Courses</a>
     <a href="#placement" className="hover:text-yellow-300">Placement</a>
     <a href="#contact" className="hover:text-yellow-300">Contact</a>
-  </div>
+  
 
-  {/* IIT Logo */}
-  <img
-    src={iitLogo}
-    alt="IIT Roorkee"
-    className="h-20 w-auto bg-white p-2 rounded-xl"
-  />
+</div>
 
 </nav>
 
-      {/* Hero Section */}
-      <section
-        id="home"
-        className="bg-sky-500 text-white text-center py-24 px-6"
-      >
-        <h2 className="text-5xl font-bold mb-6">
-          Advanced Certification Programme in Data Science, GenAI & Agentic AI
-        </h2>
-
-        <p className="text-xl mb-8">
-          In Collaboration with IIT Roorkee
-        </p>
-
-        <div className="flex justify-center gap-6 mt-10">
-          <a
-  href="https://docs.google.com/forms/d/e/1FAIpQLSeIGfJLFhZQ7G-SpUF2WUk_yyycZ19dA2B0d4tFscN1fquvRQ/viewform?usp=publish-editor"
-  className="bg-white text-sky-700 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-yellow-300 inline-block"
+ {/* Hero Section */}
+<section
+  id="home"
+  className="bg-gradient-to-r from-blue-500 to-sky-400 text-white text-center py-24 px-6"
 >
-  Enroll Now
-</a>
 
-          <a
-  href="https://wa.me/919217766084"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl text-lg font-semibold transition"
->
-  WhatsApp Us
-</a>
-        </div>
-      </section>
+  <h2 className="text-7xl font-extrabold mb-8 leading-tight">
+    Advanced Certification Programme in Data Science,
+    <br />
+    GenAI & Agentic AI
+  </h2>
+
+  <p className="text-3xl mb-10 font-medium">
+    In Collaboration with IIT Roorkee
+  </p>
+
+  <div className="flex justify-center gap-6 mt-10">
+
+    <a
+      href="https://docs.google.com/forms/d/e/1FAIpQLSeIGfJLFhZQ7G-SpUF2WUk_yyycZ19dA2B0d4tFscN1fquvRQ/viewform?usp=sharing"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="bg-white text-blue-800 px-10 py-5 rounded-2xl text-2xl font-bold shadow-xl hover:scale-105 transition"
+    >
+      Enroll Now
+    </a>
+
+    <a
+      href="https://wa.me/919217766084"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="bg-green-500 hover:bg-green-600 text-white px-10 py-5 rounded-2xl text-2xl font-bold shadow-xl hover:scale-105 transition"
+    >
+      WhatsApp Us
+    </a>
+
+  </div>
+
+</section>
 
       {/* About */}
       <section
@@ -318,7 +335,7 @@ export default function App() {
   rel="noopener noreferrer"
   className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl text-2xl z-50"
 >
-  💬
+  <FaWhatsapp />
 </a>
     </div>
   )
