@@ -1,5 +1,8 @@
+
 import iitLogo from "./assets/IIT_Roorkee.png";
 import synaptechLogo from "./assets/Synaptech_Education_Logo.png";
+import certificate1 from "./assets/Smple_Certificate.png";
+import certificate2 from "./assets/Internship_Certificate.png";
 export default function App() {
   return (
     <div className="font-sans bg-sky-50 min-h-screen">
@@ -145,6 +148,31 @@ export default function App() {
   </div>
 
 </section>
+{/* Certificates Section */}
+
+<section className="py-20 px-8 bg-gray-100">
+
+  <h2 className="text-5xl font-bold text-center mb-14 text-sky-800">
+    Certification
+  </h2>
+
+  <div className="grid md:grid-cols-2 gap-10">
+
+    <img
+      src={certificate1}
+      alt="Certificate"
+      className="rounded-2xl shadow-2xl"
+    />
+
+    <img
+      src={certificate2}
+      alt="Certificate"
+      className="rounded-2xl shadow-2xl"
+    />
+
+  </div>
+
+</section>
 
       {/* Placement Section */}
 
@@ -169,6 +197,49 @@ export default function App() {
     <div className="bg-white text-sky-800 p-8 rounded-2xl shadow-xl">
       <h3 className="text-5xl font-bold mb-4">Placement</h3>
       <p className="text-xl">Internship & Career Support</p>
+    </div>
+
+  </div>
+
+</section>
+{/* Testimonials */}
+
+<section className="py-20 px-8 bg-white">
+
+  <h2 className="text-5xl font-bold text-center mb-14 text-sky-800">
+    Student Testimonials
+  </h2>
+
+  <div className="grid md:grid-cols-3 gap-8">
+
+    <div className="bg-sky-100 p-8 rounded-2xl shadow-xl">
+      <p className="text-gray-700 italic">
+        "Excellent training and industry-oriented projects."
+      </p>
+
+      <h3 className="mt-6 font-bold text-sky-800">
+        Student
+      </h3>
+    </div>
+
+    <div className="bg-sky-100 p-8 rounded-2xl shadow-xl">
+      <p className="text-gray-700 italic">
+        "Great support for placements and internships."
+      </p>
+
+      <h3 className="mt-6 font-bold text-sky-800">
+        Student
+      </h3>
+    </div>
+
+    <div className="bg-sky-100 p-8 rounded-2xl shadow-xl">
+      <p className="text-gray-700 italic">
+        "Very practical learning approach."
+      </p>
+
+      <h3 className="mt-6 font-bold text-sky-800">
+        Student
+      </h3>
     </div>
 
   </div>
