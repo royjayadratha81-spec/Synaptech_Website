@@ -51,21 +51,26 @@ export default function App() {
         className="bg-sky-500 text-white text-center py-24 px-6"
       >
         <h2 className="text-5xl font-bold mb-6">
-          Professional Program in Data Science, AI & GenAI
+          Advanced Certification Programme in Data Science, GenAI & Agentic AI
         </h2>
 
         <p className="text-xl mb-8">
           In Collaboration with IIT Roorkee
         </p>
 
-        <div className="space-x-4">
-          <button className="bg-white text-sky-700 px-6 py-3 rounded-xl font-semibold hover:bg-yellow-300 transition">
-            Enroll Now
-          </button>
+        <div className="flex justify-center gap-6 mt-10">
+          <button className="bg-white text-sky-700 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-gray-200 transition">
+  Enroll Now
+</button>
 
-          <button className="bg-green-500 px-6 py-3 rounded-xl font-semibold hover:bg-green-600 transition">
-            WhatsApp
-          </button>
+          <a
+  href="https://wa.me/919217766084"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl text-lg font-semibold transition"
+>
+  WhatsApp Us
+</a>
         </div>
       </section>
 
