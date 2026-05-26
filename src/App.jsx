@@ -336,9 +336,15 @@ export default function App() {
       </p>
 
       <p>
-        <span className="font-bold text-sky-800">Email:</span>
-        {" "}synaptecheducation@gmail.com
-      </p>
+  <span className="font-bold text-sky-800">Email:</span>{" "}
+
+  <a
+    href="mailto:admission@synaptecheducation.in"
+    className="text-blue-700 hover:underline"
+  >
+    admission@synaptecheducation.in
+  </a>
+</p>
 
       <p>
   <span className="font-bold text-sky-800">Address:</span>
