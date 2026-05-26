@@ -218,8 +218,12 @@ export default function App() {
       </p>
 
       <h3 className="mt-6 font-bold text-sky-800">
-        Student
-      </h3>
+  Mayank Yadav
+</h3>
+
+<p className="text-gray-600">
+  Data Scientist
+</p>
     </div>
 
     <div className="bg-sky-100 p-8 rounded-2xl shadow-xl">
@@ -228,8 +232,12 @@ export default function App() {
       </p>
 
       <h3 className="mt-6 font-bold text-sky-800">
-        Student
-      </h3>
+  Arpita Shome
+</h3>
+
+<p className="text-gray-600">
+  Data Analyst
+</p>
     </div>
 
     <div className="bg-sky-100 p-8 rounded-2xl shadow-xl">
@@ -238,8 +246,13 @@ export default function App() {
       </p>
 
       <h3 className="mt-6 font-bold text-sky-800">
-        Student
-      </h3>
+  Rupam Kohli
+</h3>
+
+<p className="text-gray-600">
+  AIML Engineer
+</p>
+
     </div>
 
   </div>
