@@ -208,9 +208,18 @@ export default function App() {
       </p>
 
       <p>
-        <span className="font-bold text-sky-800">Location:</span>
-        {" "}Delhi NCR
-      </p>
+  <span className="font-bold text-sky-800">Address:</span>
+  {" "}Plot No. 15, Bollco Co-working Space, Vaishali Sector 5, Ghaziabad, 201010
+</p>
+
+<a
+  href="https://maps.google.com/?q=Plot+No+15+Bollco+Co-working+Space+Vaishali+Sector+5+Ghaziabad+201010"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="inline-block mt-4 bg-sky-700 hover:bg-sky-800 text-white px-6 py-3 rounded-xl font-semibold transition"
+>
+  View on Google Maps
+</a>
 
     </div>
 
