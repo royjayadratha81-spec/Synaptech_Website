@@ -1,3 +1,5 @@
+import placementsImg from "./assets/placements.png";
+import aiHero from "./assets/ai-hero.png";
 import { FaWhatsapp } from "react-icons/fa";
 import iitLogo from "./assets/IIT_Roorkee.png";
 import synaptechLogo from "./assets/Synaptech_Education_Logo.png";
@@ -35,7 +37,7 @@ export default function App() {
   <img
   src={iitLogo}
   alt="IIT Roorkee"
-  className="h-28 w-auto"
+  className="h-40 md:h-48 w-auto object-contain"
 />
 
   <div>
@@ -60,39 +62,57 @@ export default function App() {
  {/* Hero Section */}
 <section
   id="home"
-  className="bg-gradient-to-r from-blue-500 to-sky-400 text-white text-center py-24 px-6"
+    className="relative text-white py-28 px-10 overflow-hidden"
+  style={{
+    backgroundImage: `linear-gradient(
+      rgba(37,99,235,0.75),
+      rgba(14,165,233,0.75)
+    ), url(${aiHero})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  }}
 >
 
-  <h2 className="text-7xl font-extrabold mb-8 leading-tight">
-    Advanced Certification Programme in Data Science,
-    <br />
-    GenAI & Agentic AI
-  </h2>
+<div className="max-w-7xl mx-auto text-center">
+    {/* Left Content */}
+    <div>
 
-  <p className="text-3xl mb-10 font-medium">
-    In Collaboration with IIT Roorkee
-  </p>
+      <h2 className="text-6xl md:text-7xl font-extrabold leading-tight mb-8">
+        Advanced Certification Programme in Data Science,
+        <br />
+        GenAI & Agentic AI
+      </h2>
 
-  <div className="flex justify-center gap-6 mt-10">
+      <p className="text-3xl font-medium mb-10">
+        In Collaboration with IIT Roorkee
+      </p>
 
-    <a
-      href="https://docs.google.com/forms/d/e/1FAIpQLSeIGfJLFhZQ7G-SpUF2WUk_yyycZ19dA2B0d4tFscN1fquvRQ/viewform?usp=sharing"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="bg-white text-blue-800 px-10 py-5 rounded-2xl text-2xl font-bold shadow-xl hover:scale-105 transition"
-    >
-      Enroll Now
-    </a>
+      <div className="flex flex-col sm:flex-row gap-6 justify-center">
 
-    <a
-      href="https://wa.me/919217766084"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="bg-green-500 hover:bg-green-600 text-white px-10 py-5 rounded-2xl text-2xl font-bold shadow-xl hover:scale-105 transition"
-    >
-      WhatsApp Us
-    </a>
+        <a
+          href="https://docs.google.com/forms/d/e/1FAIpQLSeIGfJLFhZQ7G-SpUF2WUk_yyycZ19dA2B0d4tFscN1fquvRQ/viewform?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-white text-blue-800 px-10 py-5 rounded-2xl text-2xl font-bold shadow-xl hover:scale-105 transition"
+        >
+          Enroll Now
+        </a>
 
+        <a
+          href="https://wa.me/919217766084"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-green-500 hover:bg-green-600 text-white px-10 py-5 rounded-2xl text-2xl font-bold shadow-xl hover:scale-105 transition"
+        >
+          WhatsApp Us
+        </a>
+
+      </div>
+
+    </div>
+
+    
   </div>
 
 </section>
@@ -198,11 +218,23 @@ export default function App() {
   <h2 className="text-5xl font-bold text-center mb-14">
     Placement Support
   </h2>
+<div className="max-w-6xl mx-auto mb-16">
 
+  <p className="text-2xl text-center mb-8">
+    Our students have opportunities with top recruiters and global companies.
+  </p>
+
+  <img
+    src={placementsImg}
+    alt="Top Hiring Companies"
+    className="w-full rounded-3xl shadow-2xl border-4 border-white"
+  />
+
+</div>
   <div className="grid md:grid-cols-3 gap-10 text-center">
 
     <div className="bg-white text-sky-800 p-8 rounded-2xl shadow-xl">
-      <h3 className="text-5xl font-bold mb-4">100+</h3>
+      <h3 className="text-5xl font-bold mb-4">300+</h3>
       <p className="text-xl">Students Trained</p>
     </div>
 
