@@ -1,21 +1,49 @@
+import iitLogo from "./assets/IIT_Roorkee.png";
+import synaptechLogo from "./assets/Synaptech_Education_Logo.png";
 export default function App() {
   return (
     <div className="font-sans bg-sky-50 min-h-screen">
 
       {/* Navbar */}
       <nav className="bg-sky-700 text-white px-8 py-4 flex justify-between items-center shadow-lg">
-        <h1 className="text-3xl font-bold">
-          Synaptech Education
-        </h1>
 
-        <div className="space-x-6 hidden md:flex">
-          <a href="#home" className="hover:text-yellow-300">Home</a>
-          <a href="#about" className="hover:text-yellow-300">About</a>
-          <a href="#courses" className="hover:text-yellow-300">Courses</a>
-          <a href="#placement" className="hover:text-yellow-300">Placement</a>
-          <a href="#contact" className="hover:text-yellow-300">Contact</a>
-        </div>
-      </nav>
+  {/* Left Side */}
+  <div className="flex items-center gap-4">
+
+    <img
+      src={synaptechLogo}
+      alt="Synaptech Logo"
+      className="h-20 w-auto bg-white p-2 rounded-xl"
+    />
+
+    <div>
+      <h1 className="text-2xl font-bold">
+        Synaptech Education
+      </h1>
+
+      <p className="text-sm text-yellow-200">
+        In Collaboration with IIT Roorkee
+      </p>
+    </div>
+
+  </div>
+
+  {/* Menu */}
+  <div className="space-x-6 hidden md:flex">
+    <a href="#home" className="hover:text-yellow-300">Home</a>
+    <a href="#courses" className="hover:text-yellow-300">Courses</a>
+    <a href="#placement" className="hover:text-yellow-300">Placement</a>
+    <a href="#contact" className="hover:text-yellow-300">Contact</a>
+  </div>
+
+  {/* IIT Logo */}
+  <img
+    src={iitLogo}
+    alt="IIT Roorkee"
+    className="h-20 w-auto bg-white p-2 rounded-xl"
+  />
+
+</nav>
 
       {/* Hero Section */}
       <section
@@ -59,80 +87,128 @@ export default function App() {
       </section>
 
       {/* Courses */}
-      <section
-        id="courses"
-        className="bg-white py-20 px-6"
-      >
-        <h3 className="text-4xl font-bold text-center text-sky-700 mb-14">
-          Our Courses
-        </h3>
+      <section id="courses" className="py-16 px-8 bg-white">
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+  <h2 className="text-4xl font-bold text-center mb-12 text-sky-800">
+    Our Courses
+  </h2>
 
-          <div className="bg-sky-100 p-8 rounded-2xl shadow-lg">
-            <h4 className="text-2xl font-bold mb-4">
-              Data Science
-            </h4>
+  <div className="grid md:grid-cols-3 gap-8">
 
-            <p>
-              Learn Python, statistics, machine learning and real-world analytics.
-            </p>
-          </div>
+    {/* Data Analytics */}
+    <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
-          <div className="bg-sky-100 p-8 rounded-2xl shadow-lg">
-            <h4 className="text-2xl font-bold mb-4">
-              Artificial Intelligence
-            </h4>
+      <h3 className="text-2xl font-bold mb-4 text-sky-800">
+        Data Analytics
+      </h3>
 
-            <p>
-              Master neural networks, deep learning and AI applications.
-            </p>
-          </div>
+      <p className="text-gray-700">
+        Learn Excel, SQL, Power BI, Tableau and Python for real-world business analytics and reporting.
+      </p>
 
-          <div className="bg-sky-100 p-8 rounded-2xl shadow-lg">
-            <h4 className="text-2xl font-bold mb-4">
-              Generative AI
-            </h4>
+    </div>
 
-            <p>
-              Build applications using LLMs, ChatGPT APIs and AI agents.
-            </p>
-          </div>
+    {/* Data Science */}
+    <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
-        </div>
-      </section>
+      <h3 className="text-2xl font-bold mb-4 text-sky-800">
+        Data Science
+      </h3>
 
-      {/* Placement */}
-      <section
-        id="placement"
-        className="py-20 px-6 text-center"
-      >
-        <h3 className="text-4xl font-bold text-sky-700 mb-6">
-          Placement Assistance
-        </h3>
+      <p className="text-gray-700">
+        Master Machine Learning, Deep Learning, Python, statistics and real industry projects.
+      </p>
 
-        <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-          We provide internship opportunities, resume building,
-          interview preparation and placement guidance for students.
-        </p>
-      </section>
+    </div>
 
-      {/* Footer */}
-      <footer
-        id="contact"
-        className="bg-sky-800 text-white text-center py-10"
-      >
-        <h4 className="text-2xl font-bold mb-4">
-          Contact Us
-        </h4>
+    {/* Generative AI */}
+    <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
-        <p>Email: royjayadratha81@gmail.com</p>
-        <p>Phone: +91-9876543210</p>
+      <h3 className="text-2xl font-bold mb-4 text-sky-800">
+        Data Science with Generative AI & Agentic AI
+      </h3>
 
-        <p className="mt-6 text-sm text-gray-300">
-          © 2026 Synaptech Education. All rights reserved.
-        </p>
-      </footer>
+      <p className="text-gray-700">
+        Learn LLMs, Generative AI, AI Agents, Prompt Engineering, RAG, Vector Databases and AI automation.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+      {/* Placement Section */}
+
+<section id="placement" className="py-20 px-8 bg-sky-700 text-white">
+
+  <h2 className="text-5xl font-bold text-center mb-14">
+    Placement Support
+  </h2>
+
+  <div className="grid md:grid-cols-3 gap-10 text-center">
+
+    <div className="bg-white text-sky-800 p-8 rounded-2xl shadow-xl">
+      <h3 className="text-5xl font-bold mb-4">100+</h3>
+      <p className="text-xl">Students Trained</p>
+    </div>
+
+    <div className="bg-white text-sky-800 p-8 rounded-2xl shadow-xl">
+      <h3 className="text-5xl font-bold mb-4">20+</h3>
+      <p className="text-xl">Industry Projects</p>
+    </div>
+
+    <div className="bg-white text-sky-800 p-8 rounded-2xl shadow-xl">
+      <h3 className="text-5xl font-bold mb-4">Placement</h3>
+      <p className="text-xl">Internship & Career Support</p>
+    </div>
+
+  </div>
+
+</section>
+
+      {/* Contact Section */}
+
+<section id="contact" className="py-20 px-8 bg-gray-100">
+
+  <h2 className="text-5xl font-bold text-center mb-14 text-sky-800">
+    Contact Us
+  </h2>
+
+  <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-xl">
+
+    <div className="space-y-6 text-lg text-gray-700">
+
+      <p>
+        <span className="font-bold text-sky-800">Institute:</span>
+        {" "}Synaptech Education
+      </p>
+
+      <p>
+        <span className="font-bold text-sky-800">Courses:</span>
+        {" "}Data Analytics, Data Science, Generative AI & Agentic AI
+      </p>
+
+      <p>
+        <span className="font-bold text-sky-800">Phone:</span>
+        {" "}+91 9217766084
+      </p>
+
+      <p>
+        <span className="font-bold text-sky-800">Email:</span>
+        {" "}synaptecheducation@gmail.com
+      </p>
+
+      <p>
+        <span className="font-bold text-sky-800">Location:</span>
+        {" "}Delhi NCR
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
 
     </div>
   )
