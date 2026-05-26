@@ -226,7 +226,16 @@ export default function App() {
   </div>
 
 </section>
+{/* Floating WhatsApp Button */}
 
+<a
+  href="https://wa.me/919217766084"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl text-2xl z-50"
+>
+  💬
+</a>
     </div>
   )
 }
