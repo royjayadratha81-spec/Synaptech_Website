@@ -10,19 +10,19 @@ export default function App() {
     <div className="font-sans bg-sky-50 min-h-screen">
 
       {/* Navbar */}
-      <nav className="bg-slate-100 px-10 py-5 flex justify-between items-center shadow-md">
+      <nav className="bg-slate-100 px-4 md:px-10 py-4 flex flex-col md:flex-row justify-between items-center shadow-md">
 
   {/* Left Side */}
-  <div className="flex items-center gap-4">
+  <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
 
     <img
       src={synaptechLogo}
       alt="Synaptech Logo"
-      className="h-32 w-auto"
+      className="h-20 md:h-32 w-auto"
     />
 
     <div>
-      <h1 className="text-6xl font-extrabold text-blue-900 tracking-tight">
+      <h1 className="text-3xl md:text-6xl font-extrabold text-blue-900 tracking-tight">
         Synaptech Education
       </h1>
 
@@ -94,7 +94,7 @@ export default function App() {
           href="https://docs.google.com/forms/d/e/1FAIpQLSeIGfJLFhZQ7G-SpUF2WUk_yyycZ19dA2B0d4tFscN1fquvRQ/viewform?usp=sharing"
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-white text-blue-800 px-10 py-5 rounded-2xl text-2xl font-bold shadow-xl hover:scale-105 transition"
+          className="bg-white text-blue-800 px-10 py-5 rounded-2xl text-lg md:text-2xl font-bold shadow-xl hover:scale-105 transition"
         >
           Enroll Now
         </a>
@@ -103,7 +103,7 @@ export default function App() {
           href="https://wa.me/919217766084"
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-green-500 hover:bg-green-600 text-white px-10 py-5 rounded-2xl text-2xl font-bold shadow-xl hover:scale-105 transition"
+          className="bg-green-500 hover:bg-green-600 text-white px-10 py-5 rounded-2xl text-lg md:text-2xl font-bold shadow-xl hover:scale-105 transition"
         >
           WhatsApp Us
         </a>
@@ -146,7 +146,7 @@ export default function App() {
     {/* Data Analytics */}
     <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
-      <h3 className="text-2xl font-bold mb-4 text-sky-800">
+      <h3 className="text-lg md:text-2xl font-bold mb-4 text-sky-800">
         Data Analytics
       </h3>
 
@@ -159,7 +159,7 @@ export default function App() {
     {/* Data Science */}
     <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
-      <h3 className="text-2xl font-bold mb-4 text-sky-800">
+      <h3 className="text-lg md:text-2xl font-bold mb-4 text-sky-800">
         Data Science
       </h3>
 
@@ -172,7 +172,7 @@ export default function App() {
     {/* Generative AI */}
     <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
-      <h3 className="text-2xl font-bold mb-4 text-sky-800">
+      <h3 className="text-lg md:text-2xl font-bold mb-4 text-sky-800">
         Data Science with Generative AI & Agentic AI
       </h3>
 
@@ -220,7 +220,7 @@ export default function App() {
   </h2>
 <div className="max-w-6xl mx-auto mb-16">
 
-  <p className="text-2xl text-center mb-8">
+  <p className="text-lg md:text-2xl text-center mb-8">
     Our students have opportunities with top recruiters and global companies.
   </p>
 
@@ -371,7 +371,7 @@ export default function App() {
   href="https://wa.me/919217766084"
   target="_blank"
   rel="noopener noreferrer"
-  className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl text-2xl z-50"
+  className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl text-lg md:text-2xl z-50"
 >
   <FaWhatsapp />
 </a>
