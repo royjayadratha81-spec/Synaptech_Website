@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import placementsImg from "./assets/placements.png";
 import aiHero from "./assets/ai-hero.png";
 import { FaWhatsapp } from "react-icons/fa";
@@ -144,7 +145,8 @@ export default function App() {
   <div className="grid md:grid-cols-3 gap-8">
 
     {/* Data Analytics */}
-    <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
+    <Link to="/courses">
+      <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
       <h3 className="text-lg md:text-2xl font-bold mb-4 text-sky-800">
         Data Analytics
@@ -155,9 +157,12 @@ export default function App() {
       </p>
 
     </div>
+    </Link>
 
     {/* Data Science */}
-    <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
+    <Link to="/courses">
+      <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
+        
 
       <h3 className="text-lg md:text-2xl font-bold mb-4 text-sky-800">
         Data Science
@@ -168,9 +173,11 @@ export default function App() {
       </p>
 
     </div>
+    </Link>
 
     {/* Generative AI */}
-    <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
+    <Link to="/courses">
+      <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
       <h3 className="text-lg md:text-2xl font-bold mb-4 text-sky-800">
         Data Science with Generative AI & Agentic AI
@@ -180,7 +187,9 @@ export default function App() {
         Learn LLMs, Generative AI, AI Agents, Prompt Engineering, RAG, Vector Databases and AI automation.
       </p>
 
-    </div>
+      </div>
+    </Link>
+
 
   </div>
 
