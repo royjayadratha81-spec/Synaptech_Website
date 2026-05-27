@@ -1,3 +1,5 @@
+import Courses from "./pages/Courses";
+import CourseDetails from "./pages/CourseDetails";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -17,6 +19,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/course/:id" element={<CourseDetails />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
