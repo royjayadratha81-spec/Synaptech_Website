@@ -1,3 +1,6 @@
+import ai1 from "./assets/ai1.jpg";
+import ai2 from "./assets/ai2.jpg";
+import ai3 from "./assets/ai3.jpg";
 import { FaRobot, FaBrain, FaChartLine } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import placementsImg from "./assets/placements.png";
@@ -62,99 +65,191 @@ export default function App() {
 </nav>
 
  {/* Hero Section */}
-<section className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-black text-white flex items-center px-8">
+<section className="min-h-screen bg-gradient-to-br from-blue-950 via-indigo-900 to-black text-white px-8 py-20 flex items-center overflow-hidden">
 
-  <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+  <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
 
-    {/* Left Content */}
-    <div>
+    {/* LEFT SIDE */}
 
-      <p className="text-blue-300 text-lg mb-4 uppercase tracking-widest">
+    <div className="space-y-8">
+
+      <p className="uppercase tracking-[8px] text-blue-300 text-sm">
         Synaptech Education
       </p>
 
-      <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+      <h1 className="text-6xl md:text-7xl font-extrabold leading-tight">
 
         Future of
-        <span className="text-blue-400"> AI & Data Science </span>
+        <span className="text-blue-400"> AI & </span>
+
+        <span className="text-cyan-300">
+          Data Science
+        </span>
+
         Learning
 
       </h1>
 
-      <p className="text-xl text-gray-300 leading-relaxed mb-8">
+      <p className="text-xl text-gray-300 leading-relaxed max-w-2xl">
 
         Industry-focused training in Data Science,
         Artificial Intelligence, Generative AI,
-        and Agentic AI with practical exposure
-        and real-world projects.
+        and Agentic AI with practical exposure,
+        real-world projects, and future-ready skills.
 
       </p>
 
-     <div className="flex flex-wrap gap-5">
+      {/* Buttons */}
 
-  <a href="/courses">
+      <div className="flex flex-wrap gap-5 pt-4">
 
-    <button className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl text-lg font-semibold transition shadow-2xl">
+        <a href="/courses">
 
-      Explore Courses
+          <button className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl text-lg font-semibold transition duration-300 shadow-2xl hover:scale-105">
 
-    </button>
+            Explore Courses
 
-  </a>
+          </button>
 
-  <a href="/login">
+        </a>
 
-    <button className="border border-white hover:bg-white hover:text-black px-8 py-4 rounded-2xl text-lg font-semibold transition">
+        <a href="/login">
 
-      Student Portal
+          <button className="border border-white hover:bg-white hover:text-black px-8 py-4 rounded-2xl text-lg font-semibold transition duration-300 hover:scale-105">
 
-    </button>
+            Student Portal
 
-  </a>
+          </button>
 
-</div>
+        </a>
 
-    {/* Right Side Graphics */}
-    <div className="grid grid-cols-2 gap-6">
+      </div>
 
-      <div className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-2xl hover:scale-105 transition">
+    </div>
 
-        <FaRobot className="text-5xl text-blue-400 mb-5" />
+    {/* RIGHT SIDE */}
 
-        <h3 className="text-2xl font-bold mb-3">
-          Artificial Intelligence
-        </h3>
+    <div className="relative">
 
-        <p className="text-gray-300">
-          Learn modern AI technologies and applications.
+      <div className="grid grid-cols-2 gap-6">
+
+        {/* Card 1 */}
+
+        <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl hover:scale-105 transition duration-300">
+
+          <div className="text-5xl mb-6">
+            🤖
+          </div>
+
+          <h3 className="text-3xl font-bold mb-4">
+            Artificial Intelligence
+          </h3>
+
+          <p className="text-gray-300 text-lg">
+            Learn modern AI technologies and real-world applications.
+          </p>
+
+        </div>
+
+        {/* Card 2 */}
+
+        <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl hover:scale-105 transition duration-300 mt-16">
+
+          <div className="text-5xl mb-6">
+            📈
+          </div>
+
+          <h3 className="text-3xl font-bold mb-4">
+            Data Science
+          </h3>
+
+          <p className="text-gray-300 text-lg">
+            Master analytics, visualization, and machine learning.
+          </p>
+
+        </div>
+
+        {/* Large Card */}
+
+        <div className="col-span-2 bg-white/10 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl hover:scale-105 transition duration-300">
+
+          <div className="text-5xl mb-6">
+            🧠
+          </div>
+
+          <h3 className="text-4xl font-bold mb-4">
+            Generative & Agentic AI
+          </h3>
+
+          <p className="text-gray-300 text-xl leading-relaxed">
+
+            Explore the next generation of autonomous AI systems,
+            intelligent agents, and generative technologies.
+
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+{/* Statistics Section */}
+
+<section className="bg-black text-white py-24 px-8">
+
+  <div className="max-w-7xl mx-auto">
+
+    <div className="grid md:grid-cols-4 gap-10">
+
+      <div className="bg-white/10 backdrop-blur-lg p-10 rounded-3xl text-center hover:scale-105 transition shadow-2xl">
+
+        <h2 className="text-5xl font-extrabold text-blue-400 mb-4">
+          500+
+        </h2>
+
+        <p className="text-xl text-gray-300">
+          Students Enrolled
         </p>
 
       </div>
 
-      <div className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-2xl hover:scale-105 transition">
+      <div className="bg-white/10 backdrop-blur-lg p-10 rounded-3xl text-center hover:scale-105 transition shadow-2xl">
 
-        <FaChartLine className="text-5xl text-green-400 mb-5" />
+        <h2 className="text-5xl font-extrabold text-green-400 mb-4">
+          20+
+        </h2>
 
-        <h3 className="text-2xl font-bold mb-3">
-          Data Science
-        </h3>
-
-        <p className="text-gray-300">
-          Master analytics, visualization, and ML.
+        <p className="text-xl text-gray-300">
+          Advanced Courses
         </p>
 
       </div>
 
-      <div className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-2xl hover:scale-105 transition col-span-2">
+      <div className="bg-white/10 backdrop-blur-lg p-10 rounded-3xl text-center hover:scale-105 transition shadow-2xl">
 
-        <FaBrain className="text-5xl text-pink-400 mb-5" />
+        <h2 className="text-5xl font-extrabold text-pink-400 mb-4">
+          10+
+        </h2>
 
-        <h3 className="text-2xl font-bold mb-3">
-          Generative & Agentic AI
-        </h3>
+        <p className="text-xl text-gray-300">
+          AI Specializations
+        </p>
 
-        <p className="text-gray-300">
-          Explore the next generation of autonomous AI systems.
+      </div>
+
+      <div className="bg-white/10 backdrop-blur-lg p-10 rounded-3xl text-center hover:scale-105 transition shadow-2xl">
+
+        <h2 className="text-5xl font-extrabold text-yellow-400 mb-4">
+          100%
+        </h2>
+
+        <p className="text-xl text-gray-300">
+          Practical Learning
         </p>
 
       </div>
@@ -162,6 +257,68 @@ export default function App() {
     </div>
 
   </div>
+
+</section>
+
+{/* AI Showcase Section */}
+
+<section className="bg-gradient-to-b from-black to-gray-950 text-white py-28 px-8">
+
+  <div className="max-w-7xl mx-auto">
+
+    <div className="text-center mb-20">
+
+      <h2 className="text-5xl font-extrabold mb-6">
+
+        Explore The Future of AI
+
+      </h2>
+
+      <p className="text-gray-400 text-xl max-w-3xl mx-auto">
+
+        Learn cutting-edge Artificial Intelligence,
+        Machine Learning, Generative AI,
+        and Agentic AI technologies through
+        practical projects and industry-focused learning.
+
+      </p>
+
+    </div>
+
+    <div className="grid md:grid-cols-3 gap-10">
+
+      <div className="group overflow-hidden rounded-3xl shadow-2xl">
+
+        <img
+          src={ai1}
+          alt="AI"
+          className="w-full h-[450px] object-cover group-hover:scale-110 transition duration-500"
+        />
+
+      </div>
+
+      <div className="group overflow-hidden rounded-3xl shadow-2xl">
+
+        <img
+          src={ai2}
+          alt="Data Science"
+          className="w-full h-[450px] object-cover group-hover:scale-110 transition duration-500"
+        />
+
+      </div>
+
+      <div className="group overflow-hidden rounded-3xl shadow-2xl">
+
+        <img
+          src={ai3}
+          alt="Generative AI"
+          className="w-full h-[450px] object-cover group-hover:scale-110 transition duration-500"
+        />
+
+      </div>
+
+    </div>
+
   </div>
 
 </section>
