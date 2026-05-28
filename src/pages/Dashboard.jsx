@@ -1,5 +1,5 @@
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebase";
+import { auth } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import Progress from "./Progress";
 import Profile from "./Profile";
