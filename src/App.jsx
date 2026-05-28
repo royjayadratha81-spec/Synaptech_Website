@@ -616,11 +616,23 @@ export default function App() {
           </p>
 
           <p>
-            📧 admission@synaptecheducation.in
+            📧 <a
+  href="mailto:admission@synaptecheducation.in"
+  className="hover:text-blue-400 transition"
+>
+  admission@synaptecheducation.in
+</a>
           </p>
 
           <p>
-            📍 Plot No. 15, Bollco Co-working, Vaishali, Ghaziabad, Uttar Pradesh - 201010
+            📍 <a
+  href="https://maps.google.com/?q=Bollco+Co-working+Vaishali+Ghaziabad"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="hover:text-blue-400 transition"
+>
+  Plot No. 15, Bollco Co-working, Vaishali, Ghaziabad, Uttar Pradesh - 201010
+</a>
           </p>
 
           <p>
