@@ -1,3 +1,4 @@
+import heroBg from "./assets/hero-bg.jpg";
 import { useState } from "react";
 import contact1 from "./assets/contact1.jpg";
 import contact2 from "./assets/contact2.jpg";
@@ -69,8 +70,15 @@ export default function App() {
 </nav>
 
  {/* Hero Section */}
-<section className="min-h-screen bg-gradient-to-br from-blue-950 via-indigo-900 to-black text-white px-8 py-20 flex items-center overflow-hidden">
-
+<section
+  className="relative overflow-hidden text-white py-28 px-8"
+  style={{
+    backgroundImage: `linear-gradient(rgba(10,10,30,0.75), rgba(0,0,0,0.85)), url(${heroBg})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  }}
+>
   <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
 
     {/* LEFT SIDE */}
