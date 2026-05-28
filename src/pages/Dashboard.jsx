@@ -1,7 +1,16 @@
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import { useNavigate } from "react-router-dom";
 import Progress from "./Progress";
 import Profile from "./Profile";
 import { Link } from "react-router-dom";
 export default function Dashboard() {
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+  await signOut(auth);
+  navigate("/");
+};
 
   return (
 
@@ -13,9 +22,12 @@ export default function Dashboard() {
           Synaptech Student Portal
         </h1>
 
-        <button className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg">
-          Logout
-        </button>
+        <button
+  onClick={handleLogout}
+  className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg"
+>
+  Logout
+</button>
 
       </nav>
 
