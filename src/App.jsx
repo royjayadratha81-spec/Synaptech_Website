@@ -62,59 +62,95 @@ export default function App() {
 </nav>
 
  {/* Hero Section */}
-<section
-  id="home"
-    className="relative text-white py-28 px-10 overflow-hidden"
-  style={{
-    backgroundImage: `linear-gradient(
-      rgba(37,99,235,0.75),
-      rgba(14,165,233,0.75)
-    ), url(${aiHero})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  }}
->
+<section className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-black text-white flex items-center px-8">
 
-<div className="max-w-7xl mx-auto text-center">
+  <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+
     {/* Left Content */}
     <div>
 
-      <h2 className="text-6xl md:text-7xl font-extrabold leading-tight mb-8">
-        Advanced Certification Programme in Data Science,
-        <br />
-        GenAI & Agentic AI
-      </h2>
-
-      <p className="text-3xl font-medium mb-10">
-        In Collaboration with IIT Roorkee
+      <p className="text-blue-300 text-lg mb-4 uppercase tracking-widest">
+        Synaptech Education
       </p>
 
-      <div className="flex flex-col sm:flex-row gap-6 justify-center">
+      <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
 
-        <a
-          href="https://docs.google.com/forms/d/e/1FAIpQLSeIGfJLFhZQ7G-SpUF2WUk_yyycZ19dA2B0d4tFscN1fquvRQ/viewform?usp=sharing"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-white text-blue-800 px-10 py-5 rounded-2xl text-lg md:text-2xl font-bold shadow-xl hover:scale-105 transition"
-        >
-          Enroll Now
-        </a>
+        Future of
+        <span className="text-blue-400"> AI & Data Science </span>
+        Learning
 
-        <a
-          href="https://wa.me/919217766084"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-green-500 hover:bg-green-600 text-white px-10 py-5 rounded-2xl text-lg md:text-2xl font-bold shadow-xl hover:scale-105 transition"
-        >
-          WhatsApp Us
-        </a>
+      </h1>
+
+      <p className="text-xl text-gray-300 leading-relaxed mb-8">
+
+        Industry-focused training in Data Science,
+        Artificial Intelligence, Generative AI,
+        and Agentic AI with practical exposure
+        and real-world projects.
+
+      </p>
+
+      <div className="flex flex-wrap gap-5">
+
+        <button className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl text-lg font-semibold transition shadow-2xl">
+          Explore Courses
+        </button>
+
+        <button className="border border-white hover:bg-white hover:text-black px-8 py-4 rounded-2xl text-lg font-semibold transition">
+          Student Portal
+        </button>
 
       </div>
 
     </div>
 
-    
+    {/* Right Side Graphics */}
+    <div className="grid grid-cols-2 gap-6">
+
+      <div className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-2xl hover:scale-105 transition">
+
+        <FaRobot className="text-5xl text-blue-400 mb-5" />
+
+        <h3 className="text-2xl font-bold mb-3">
+          Artificial Intelligence
+        </h3>
+
+        <p className="text-gray-300">
+          Learn modern AI technologies and applications.
+        </p>
+
+      </div>
+
+      <div className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-2xl hover:scale-105 transition">
+
+        <FaChartLine className="text-5xl text-green-400 mb-5" />
+
+        <h3 className="text-2xl font-bold mb-3">
+          Data Science
+        </h3>
+
+        <p className="text-gray-300">
+          Master analytics, visualization, and ML.
+        </p>
+
+      </div>
+
+      <div className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl shadow-2xl hover:scale-105 transition col-span-2">
+
+        <FaBrain className="text-5xl text-pink-400 mb-5" />
+
+        <h3 className="text-2xl font-bold mb-3">
+          Generative & Agentic AI
+        </h3>
+
+        <p className="text-gray-300">
+          Explore the next generation of autonomous AI systems.
+        </p>
+
+      </div>
+
+    </div>
+
   </div>
 
 </section>
