@@ -1,3 +1,4 @@
+import { FaRobot, FaBrain, FaChartLine } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import placementsImg from "./assets/placements.png";
 import aiHero from "./assets/ai-hero.png";
