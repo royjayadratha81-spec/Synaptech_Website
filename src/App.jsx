@@ -1,3 +1,6 @@
+import { useState } from "react";
+import contact1 from "./assets/contact1.jpg";
+import contact2 from "./assets/contact2.jpg";
 import ai1 from "./assets/ai1.jpg";
 import ai2 from "./assets/ai2.jpg";
 import ai3 from "./assets/ai3.jpg";
@@ -11,6 +14,7 @@ import synaptechLogo from "./assets/Synaptech_Education_Logo.png";
 import certificate1 from "./assets/Sample_Certificate.png";
 import certificate2 from "./assets/Internship_Certificate.png";
 export default function App() {
+  const [showContactForm, setShowContactForm] = useState(false);
   return (
     <div className="font-sans bg-sky-50 min-h-screen">
 
@@ -209,7 +213,7 @@ export default function App() {
       <div className="bg-white/10 backdrop-blur-lg p-10 rounded-3xl text-center hover:scale-105 transition shadow-2xl">
 
         <h2 className="text-5xl font-extrabold text-blue-400 mb-4">
-          500+
+          300+
         </h2>
 
         <p className="text-xl text-gray-300">
@@ -519,63 +523,171 @@ export default function App() {
 
 </section>
 
-      {/* Contact Section */}
+      {/* Premium Contact Section */}
 
-<section id="contact" className="py-20 px-8 bg-gray-100">
+<section className="bg-black text-white py-28 px-8">
 
-  <h2 className="text-5xl font-bold text-center mb-14 text-sky-800">
-    Contact Us
-  </h2>
+  <div className="max-w-7xl mx-auto">
 
-  <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-xl">
+    <div className="text-center mb-16">
 
-    <div className="space-y-6 text-lg text-gray-700">
+      <h2 className="text-5xl font-extrabold mb-6">
+        Contact Synaptech Education
+      </h2>
 
-      <p>
-        <span className="font-bold text-sky-800">Institute:</span>
-        {" "}Synaptech Education
+      <p className="text-gray-400 text-xl max-w-3xl mx-auto">
+        Connect with us to begin your journey in
+        Data Science, Artificial Intelligence,
+        Generative AI, and future technologies.
       </p>
 
-      <p>
-        <span className="font-bold text-sky-800">Courses:</span>
-        {" "}Data Analytics, Data Science, Generative AI & Agentic AI
-      </p>
+    </div>
 
-      <p>
-        <span className="font-bold text-sky-800">Phone:</span>
-        {" "}+91 9217766084
-      </p>
+    <div className="grid lg:grid-cols-2 gap-14 items-center">
 
-      <p>
-  <span className="font-bold text-sky-800">Email:</span>{" "}
+      {/* Left Side Images */}
 
-  <a
-    href="mailto:admission@synaptecheducation.in"
-    className="text-blue-700 hover:underline"
-  >
-    admission@synaptecheducation.in
-  </a>
-</p>
+      <div className="grid grid-cols-2 gap-6">
 
-      <p>
-  <span className="font-bold text-sky-800">Address:</span>
-  {" "}Plot No. 15, Bollco Co-working Space, Vaishali Sector 5, Ghaziabad, 201010
-</p>
+        <div className="overflow-hidden rounded-3xl shadow-2xl">
 
-<a
-  href="https://maps.google.com/?q=Plot+No+15+Bollco+Co-working+Space+Vaishali+Sector+5+Ghaziabad+201010"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="inline-block mt-4 bg-sky-700 hover:bg-sky-800 text-white px-6 py-3 rounded-xl font-semibold transition"
+          <img
+            src={contact1}
+            alt="Technology"
+            className="w-full h-[320px] object-cover hover:scale-110 transition duration-500"
+          />
+
+        </div>
+
+        <div className="overflow-hidden rounded-3xl shadow-2xl mt-12">
+
+          <img
+            src={contact2}
+            alt="AI Network"
+            className="w-full h-[320px] object-cover hover:scale-110 transition duration-500"
+          />
+
+        </div>
+
+      </div>
+
+      {/* Right Side Contact Card */}
+
+      <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl">
+
+        <h3 className="text-4xl font-bold mb-8">
+          Get In Touch
+        </h3>
+
+        <div className="space-y-6 text-xl">
+
+          <p>
+            📞 +91 9217766084
+          </p>
+
+          <p>
+            📧 admission@synaptecheducation.in
+          </p>
+
+          <p>
+            📍 Plot No. 15, Bollco Co-working, Vaishali, Ghaziabad, Uttar Pradesh - 201010
+          </p>
+
+          <p>
+            🎓 Industry-focused AI & Data Science Training
+          </p>
+
+        </div>
+
+        <button
+  onClick={() => setShowContactForm(true)}
+  className="mt-10 bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl text-lg font-semibold transition shadow-2xl"
 >
-  View on Google Maps
-</a>
+
+  Contact Now
+
+</button>
+        <div className="mt-10 overflow-hidden rounded-3xl shadow-2xl">
+
+  <iframe
+    src="<iframe src='https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4984359575674!2d77.33771217928633!3d28.644790820780845!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfba225a40923%3A0x1c8527e2228cc300!2sBollco%20Co-working%20Vaishali!5e0!3m2!1sen!2sin!4v1779959720602!5m2!1sen!2sin' width='600' height='450' style='border:0;' allowfullscreen='' loading='lazy' referrerpolicy='no-referrer-when-downgrade'></iframe>"
+    width="100%"
+    height="300"
+    style={{ border: 0 }}
+    allowFullScreen=""
+    loading="lazy"
+    referrerPolicy="no-referrer-when-downgrade"
+    className="rounded-3xl"
+  ></iframe>
+
+</div>
+
+      </div>
 
     </div>
 
   </div>
 
 </section>
+{/* Contact Popup Form */}
+
+{showContactForm && (
+
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-6">
+
+    <div className="bg-white rounded-3xl p-10 w-full max-w-2xl relative shadow-2xl">
+
+      <button
+        onClick={() => setShowContactForm(false)}
+        className="absolute top-5 right-5 text-3xl font-bold text-gray-500 hover:text-black"
+      >
+        ×
+      </button>
+
+      <h2 className="text-4xl font-bold text-blue-800 mb-8">
+        Contact Synaptech Education
+      </h2>
+
+      <form className="space-y-6">
+
+        <input
+          type="text"
+          placeholder="Your Name"
+          className="w-full border border-gray-300 rounded-2xl p-4 text-lg"
+        />
+
+        <input
+          type="email"
+          placeholder="Your Email"
+          className="w-full border border-gray-300 rounded-2xl p-4 text-lg"
+        />
+
+        <input
+          type="text"
+          placeholder="Phone Number"
+          className="w-full border border-gray-300 rounded-2xl p-4 text-lg"
+        />
+
+        <textarea
+          placeholder="Your Message"
+          rows="5"
+          className="w-full border border-gray-300 rounded-2xl p-4 text-lg"
+        ></textarea>
+
+        <button
+          type="submit"
+          className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-4 rounded-2xl text-lg font-semibold"
+        >
+          Submit Inquiry
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+)}
 {/* Floating WhatsApp Button */}
 
 <a
