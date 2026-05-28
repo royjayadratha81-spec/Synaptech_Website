@@ -42,6 +42,7 @@ export default function App() {
     </div>
 
   </div>
+  
 <div className="flex items-center gap-4">
 
   <img
@@ -50,20 +51,41 @@ export default function App() {
   className="h-40 md:h-48 w-auto object-contain"
 />
 
-  <div>
-    <h2 className="text-3xl font-bold text-blue-900">
-      IIT Roorkee
-    </h2>
-  </div>
 
 </div>
   {/* Menu */}
-  <div className="space-x-6 hidden md:flex">
-    <a href="#home" className="text-blue-900 hover:text-sky-600 font-semibold text-xl">Home</a>
-    <a href="#courses" className="hover:text-yellow-300">Courses</a>
-    <a href="#placement" className="hover:text-yellow-300">Placement</a>
-    <a href="#contact" className="hover:text-yellow-300">Contact</a>
-  
+  <div className="space-x-6 hidden md:flex items-center text-blue-900 font-semibold text-lg">
+
+  <a
+    href="#home"
+    className="hover:text-yellow-300 transition"
+  >
+    Home
+  </a>
+
+  <a
+    href="#courses"
+    className="hover:text-yellow-300 transition"
+  >
+    Courses
+  </a>
+
+  <a
+    href="#placement"
+    className="hover:text-yellow-300 transition"
+  >
+    Placement
+  </a>
+
+  <button
+    type="button"
+    onClick={() => {
+      setShowContactForm(true);
+    }}
+    className="hover:text-yellow-300 transition cursor-pointer"
+  >
+    Contact
+  </button>
 
 </div>
 
@@ -641,8 +663,7 @@ export default function App() {
 
 {showContactForm && (
 
-  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-6">
-
+<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] px-6">
     <div className="bg-white rounded-3xl p-10 w-full max-w-2xl relative shadow-2xl">
 
       <button
