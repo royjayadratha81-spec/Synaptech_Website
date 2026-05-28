@@ -1,3 +1,4 @@
+import aiBg from "../assets/ai4.jpg";
 import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -31,13 +32,22 @@ export default function Login() {
 
   return (
 
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 px-4">
+    <div
+  className="min-h-screen flex items-center justify-center bg-cover bg-center px-6"
+  style={{
+    backgroundImage: `linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url(${aiBg})`,
+  }}
+>
 
-      <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-10 rounded-3xl shadow-2xl w-full max-w-md text-white">
 
-        <h1 className="text-3xl md:text-4xl font-bold text-center text-blue-900 mb-8">
-          Student Login
-        </h1>
+        <h1 className="text-4xl md:text-5xl font-extrabold text-center text-white mb-4">
+  Student Login
+</h1>
+
+<p className="text-center text-gray-300 mb-8">
+  Access your AI & Data Science learning dashboard
+</p>
 
         <input
           type="email"
