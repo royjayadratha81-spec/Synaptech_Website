@@ -128,10 +128,7 @@ export default function App() {
         </h3>
 
         <p className="max-w-3xl mx-auto text-lg text-gray-700 leading-8">
-          Synaptech Education is an emerging technical institution focused on
-          Data Science, Machine Learning, Artificial Intelligence and
-          Generative AI with industry-oriented training, projects,
-          internships and placement support.
+          Synaptech Education, established in 2025, is an emerging technical institution dedicated to shaping the next generation of professionals in the rapidly evolving domains of Data Science and Artificial Intelligence. The institute is committed to addressing the growing demand for industry-ready talent by delivering high-quality, career-oriented education. With a comprehensive and future-focused curriculum, Synaptech offers a wide range of in-depth modules covering Data Analytics, Data Science, Traditional Artificial Intelligence, Generative AI, and the cutting-edge field of Agentic AI. Each program is designed to equip learners with practical skills, real-world exposure, and a strong conceptual foundation. Aligned with national skill development initiatives, Synaptech Education is registered under the Government of India’s Skill India Mission and is in collaboration with IIT Roorkee, reinforcing its commitment to empowering individuals with employable and future-ready technical expertise.
         </p>
       </section>
 
