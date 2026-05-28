@@ -23,7 +23,7 @@ export default function App() {
       <nav className="bg-slate-100 px-4 md:px-10 py-4 flex flex-col md:flex-row justify-between items-center shadow-md">
 
   {/* Left Side */}
-  <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+  <div className="flex flex-wrap gap-4 mt-8">
 
     <img
       src={synaptechLogo}
@@ -43,7 +43,7 @@ export default function App() {
 
   </div>
   
-<div className="flex items-center gap-4">
+<div className="flex items-center gap-6 flex-wrap">
 
   <img
   src={iitLogo}
@@ -137,25 +137,33 @@ export default function App() {
 
       <div className="flex flex-wrap gap-5 pt-4">
 
-        <a href="/courses">
+        <div className="flex flex-wrap gap-4 mt-8">
 
-          <button className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl text-lg font-semibold transition duration-300 shadow-2xl hover:scale-105">
+  <a href="#courses">
+    <button
+      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition duration-300"
+    >
+      Explore Courses
+    </button>
+  </a>
 
-            Explore Courses
+  <a href="/register">
+    <button
+      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition duration-300"
+    >
+      Enroll Now
+    </button>
+  </a>
 
-          </button>
+  <a href="/login">
+    <button
+      className="border border-white text-white px-6 py-3 rounded-xl hover:bg-white hover:text-black transition duration-300"
+    >
+      Student Portal
+    </button>
+  </a>
 
-        </a>
-
-        <a href="/login">
-
-          <button className="border border-white hover:bg-white hover:text-black px-8 py-4 rounded-2xl text-lg font-semibold transition duration-300 hover:scale-105">
-
-            Student Portal
-
-          </button>
-
-        </a>
+</div>
 
       </div>
 
