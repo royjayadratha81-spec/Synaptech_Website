@@ -90,19 +90,29 @@ export default function App() {
 
       </p>
 
-      <div className="flex flex-wrap gap-5">
+     <div className="flex flex-wrap gap-5">
 
-        <button className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl text-lg font-semibold transition shadow-2xl">
-          Explore Courses
-        </button>
+  <a href="/courses">
 
-        <button className="border border-white hover:bg-white hover:text-black px-8 py-4 rounded-2xl text-lg font-semibold transition">
-          Student Portal
-        </button>
+    <button className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl text-lg font-semibold transition shadow-2xl">
 
-      </div>
+      Explore Courses
 
-    </div>
+    </button>
+
+  </a>
+
+  <a href="/login">
+
+    <button className="border border-white hover:bg-white hover:text-black px-8 py-4 rounded-2xl text-lg font-semibold transition">
+
+      Student Portal
+
+    </button>
+
+  </a>
+
+</div>
 
     {/* Right Side Graphics */}
     <div className="grid grid-cols-2 gap-6">
