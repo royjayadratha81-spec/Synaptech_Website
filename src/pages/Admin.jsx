@@ -1,3 +1,6 @@
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebaseConfig";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { db } from "../firebase/firebaseConfig";
 import {
@@ -10,6 +13,12 @@ import {
 } from "firebase/firestore";
 
 export default function Admin() {
+  const navigate = useNavigate();
+
+const handleLogout = async () => {
+  await signOut(auth);
+  navigate("/admin-login");
+};
 
   const [courseName, setCourseName] = useState("");
   const [videoLink, setVideoLink] = useState("");
@@ -133,9 +142,20 @@ const handleDelete = async (id) => {
 
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
 
-        <h1 className="text-4xl font-bold text-blue-800 mb-8">
-          Admin Panel
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+
+  <h1 className="text-4xl font-bold text-blue-800">
+    Admin Panel
+  </h1>
+
+  <button
+    onClick={handleLogout}
+    className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700"
+  >
+    Logout
+  </button>
+
+</div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
 
