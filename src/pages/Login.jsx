@@ -3,6 +3,12 @@ import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { app } from "../firebase/firebaseConfig";
+import { db } from "../firebase/firebaseConfig";
+
+import {
+  collection,
+  getDocs,
+} from "firebase/firestore";
 
 export default function Login() {
 
@@ -14,21 +20,61 @@ export default function Login() {
 
   const handleLogin = async () => {
 
-    try {
+  try {
 
-      await signInWithEmailAndPassword(auth, email, password);
+    const userCredential =
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+    const userEmail =
+      userCredential.user.email;
+
+    const querySnapshot =
+      await getDocs(
+        collection(db, "students")
+      );
+
+    let approved = false;
+
+    querySnapshot.forEach((docItem) => {
+
+      const data = docItem.data();
+
+      if (
+        data.email === userEmail &&
+        data.approved === true
+      ) {
+        approved = true;
+      }
+
+    });
+
+    if (approved) {
 
       alert("Login Successful");
 
       navigate("/dashboard");
 
-    } catch (error) {
+    } else {
 
-      alert(error.message);
+      auth.signOut();
+
+      alert(
+        "Your admission is pending approval. Please wait for confirmation from Synaptech Education."
+      );
 
     }
 
-  };
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+};
 
   return (
 
@@ -52,14 +98,14 @@ export default function Login() {
         <input
           type="email"
           placeholder="Enter Email"
-          className="w-full border border-gray-300 rounded-lg p-3 mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-white text-black border border-gray-300 rounded-lg p-3 mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="password"
           placeholder="Enter Password"
-          className="w-full border border-gray-300 rounded-lg p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-white text-black border border-gray-300 rounded-lg p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onChange={(e) => setPassword(e.target.value)}
         />
 
