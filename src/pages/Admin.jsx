@@ -6,6 +6,7 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 
 export default function Admin() {
@@ -14,14 +15,17 @@ export default function Admin() {
   const [videoLink, setVideoLink] = useState("");
   const [noteLink, setNoteLink] = useState("");
   const [courses, setCourses] = useState([]);
+  const [students, setStudents] = useState([]);
   useEffect(() => {
 
   fetchCourses();
+  fetchStudents();
 
 }, []);
 
 const fetchCourses = async () => {
 
+  
   const querySnapshot = await getDocs(
     collection(db, "courses")
   );
@@ -38,6 +42,48 @@ const fetchCourses = async () => {
   });
 
   setCourses(courseList);
+
+};
+const fetchStudents = async () => {
+
+  const querySnapshot = await getDocs(
+    collection(db, "students")
+  );
+
+  const studentList = [];
+
+  querySnapshot.forEach((docItem) => {
+
+    studentList.push({
+      id: docItem.id,
+      ...docItem.data(),
+    });
+
+  });
+
+  setStudents(studentList);
+
+};
+const handleApprove = async (id) => {
+
+  await updateDoc(doc(db, "students", id), {
+    approved: true,
+  });
+
+  fetchStudents();
+
+};
+const handleDeleteStudent = async (id) => {
+
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this student?"
+  );
+
+  if (!confirmDelete) return;
+
+  await deleteDoc(doc(db, "students", id));
+
+  fetchStudents();
 
 };
 const handleDelete = async (id) => {
@@ -186,6 +232,60 @@ const handleDelete = async (id) => {
 
   </div>
 ))}
+<h2 className="text-3xl font-bold mt-10 mb-5">
+  Registered Students
+</h2>
+
+{students.map((student) => (
+  <div
+    key={student.id}
+    style={{
+      border: "1px solid #ccc",
+      padding: "10px",
+      marginBottom: "10px",
+    }}
+  >
+    <h3>{student.name}</h3>
+
+    <p>Email: {student.email}</p>
+
+    <p>Course: {student.course}</p>
+
+    <p>
+      Status:
+      {student.approved ? " Approved" : " Pending"}
+    </p>
+
+    {!student.approved && (
+  <>
+    <button
+      onClick={() => handleApprove(student.id)}
+    >
+      Approve Student
+    </button>
+
+    <button
+      onClick={() => handleDeleteStudent(student.id)}
+      style={{
+        marginLeft: "10px",
+        background: "red",
+        color: "white",
+        border: "none",
+        padding: "5px 10px",
+        cursor: "pointer",
+      }}
+    >
+      Delete Student
+    </button>
+  
+
+</>
+
+)}
+
+</div>
+))}
+
 
 
       </div>
