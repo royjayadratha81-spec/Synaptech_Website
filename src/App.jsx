@@ -14,6 +14,7 @@ import iitLogo from "./assets/IIT_Roorkee.png";
 import synaptechLogo from "./assets/Synaptech_Education_Logo.png";
 import certificate1 from "./assets/Sample_Certificate.png";
 import certificate2 from "./assets/Internship_Certificate.png";
+import ThankYou from "./pages/ThankYou";
 export default function App() {
   const [showContactForm, setShowContactForm] = useState(false);
   return (

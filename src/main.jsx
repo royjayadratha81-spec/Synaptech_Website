@@ -12,6 +12,7 @@ import Courses from "./pages/Courses";
 import Assignments from "./pages/Assignments";
 import CourseDetails from "./pages/CourseDetails";
 import ProtectedRoute from "./pages/ProtectedRoute";
+import ThankYou from "./pages/ThankYou";
 
 import "./index.css";
 
@@ -24,6 +25,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/course/:id" element={<CourseDetails />} />
+        <Route path="/thank-you" element={<ThankYou />} />
 
         <Route
   path="/dashboard"

@@ -46,7 +46,7 @@ await emailjs.send(
 
       alert("Registration Successful");
 
-      navigate("/dashboard");
+      navigate("/thank-you");
 
     } catch (error) {
 
