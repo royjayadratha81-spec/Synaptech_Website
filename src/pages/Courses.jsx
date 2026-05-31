@@ -2,17 +2,40 @@ import aiHero from "../assets/hero-bg.jpg";
 import aiGraphic from "../assets/ai3.jpg";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc
+} from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
+import { auth } from "../firebase/firebaseConfig";
 
 export default function Courses() {
-    const [showEnrollForm, setShowEnrollForm] = useState(false);
-
-const [selectedCourse, setSelectedCourse] = useState("");
 
   const [courses, setCourses] = useState([]);
+  const [studentCourse, setStudentCourse] = useState("");
 
   useEffect(() => {
+    const fetchStudentCourse = async () => {
+
+  const user = auth.currentUser;
+
+  if (!user) return;
+
+  const studentDoc = await getDoc(
+    doc(db, "students", user.uid)
+  );
+
+  if (studentDoc.exists()) {
+
+    setStudentCourse(
+      studentDoc.data().course
+    );
+
+  }
+
+};
 
     const fetchCourses = async () => {
 
@@ -35,6 +58,7 @@ const [selectedCourse, setSelectedCourse] = useState("");
 
     };
 
+    fetchStudentCourse();
     fetchCourses();
 
   }, []);
@@ -55,7 +79,12 @@ const [selectedCourse, setSelectedCourse] = useState("");
         
 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
 
-  {courses.map((course) => (
+  {courses
+.filter(
+  (course) =>
+    course.courseName === studentCourse
+)
+.map((course) => (
 
     <div
       key={course.id}
@@ -78,15 +107,9 @@ const [selectedCourse, setSelectedCourse] = useState("");
 
       <div className="flex gap-4">
 
-  <button
-  onClick={() => setShowEnrollForm(true)}
-  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-lg font-semibold transition"
->
-  Enroll Now
-</button>
 
   <Link
-    to={`/course/${course.id}`}
+    to={`/courses/${course.id}`}
     className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl text-lg font-semibold transition shadow-xl inline-block"
   >
     Open Course
@@ -98,66 +121,6 @@ const [selectedCourse, setSelectedCourse] = useState("");
 
   ))}
 
-
-{/* Enrollment Popup */}
-
-{showEnrollForm && (
-
-  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] px-6">
-
-    <div className="bg-white rounded-3xl p-10 w-full max-w-2xl relative shadow-2xl">
-
-      <button
-        onClick={() => setShowEnrollForm(false)}
-        className="absolute top-5 right-5 text-3xl font-bold text-gray-500 hover:text-black"
-      >
-        ×
-      </button>
-
-      <h2 className="text-4xl font-bold text-blue-800 mb-8">
-        Course Enrollment
-      </h2>
-
-      <form className="space-y-6">
-
-        <input
-          type="text"
-          placeholder="Full Name"
-          className="w-full border border-gray-300 rounded-2xl p-4 text-lg"
-        />
-
-        <input
-          type="email"
-          placeholder="Email Address"
-          className="w-full border border-gray-300 rounded-2xl p-4 text-lg"
-        />
-
-        <input
-          type="text"
-          placeholder="Phone Number"
-          className="w-full border border-gray-300 rounded-2xl p-4 text-lg"
-        />
-
-        <input
-          type="text"
-          value={selectedCourse}
-          readOnly
-          className="w-full border border-gray-300 rounded-2xl p-4 text-lg bg-gray-100"
-        />
-
-        <button
-          type="submit"
-          className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl text-lg font-semibold"
-        >
-          Submit Enrollment
-        </button>
-
-      </form>
-
-    </div>
-
-  </div>
-)}
 
 </div>
 </div>

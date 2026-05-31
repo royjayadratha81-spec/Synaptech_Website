@@ -60,7 +60,7 @@ export default function Login() {
 
     } else {
 
-      auth.signOut();
+      await auth.signOut();
 
       alert(
         "Your admission is pending approval. Please wait for confirmation from Synaptech Education."

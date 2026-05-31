@@ -1,79 +1,48 @@
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
 
 export default function CourseDetails() {
   const { id } = useParams();
 
-  const courses = {
-    1: {
-      title: "Python Programming",
-       notes: "/notes/python-notes.pdf",
-      lessons: [
-        {
-          title: "Introduction to Python",
-          video: "https://www.youtube.com/embed/rfscVS0vtbw",
-        },
+  const [course, setCourse] = useState(null);
 
-        {
-          title: "Python Variables",
-          video: "https://www.youtube.com/embed/WGJJIrtnfpk",
-        },
+useEffect(() => {
+  const fetchCourse = async () => {
+    try {
+      console.log("Route ID:", id);
 
-        {
-          title: "Python Functions",
-          video: "https://www.youtube.com/embed/9Os0o3wzS_I",
-        },
-      ],
-    },
+      const docRef = doc(db, "courses", id);
 
-    2: {
-      title: "Data Science",
-      notes: "/notes/ds-notes.pdf",
-      lessons: [
-        {
-          title: "Introduction to Data Science",
-          video: "https://www.youtube.com/embed/ua-CiDNNj30",
-        },
+      const docSnap = await getDoc(docRef);
 
-        {
-          title: "Data Analysis",
-          video: "https://www.youtube.com/embed/LHBE6Q9XlzI",
-        },
+      console.log("Document exists:", docSnap.exists());
 
-        {
-          title: "Machine Learning Basics",
-          video: "https://www.youtube.com/embed/GwIo3gDZCVQ",
-        },
-      ],
-    },
+      if (docSnap.exists()) {
+        console.log("Firestore data:", docSnap.data());
+        setCourse(docSnap.data());
+      } else {
+        console.log("NO DOCUMENT FOUND");
+      }
 
-    3: {
-      title: "Artificial Intelligence",
-        notes: "/notes/ai-notes.pdf",
-      lessons: [
-        {
-          title: "Introduction to AI",
-          video: "https://www.youtube.com/embed/JMUxmLyrhSk",
-        },
-
-        {
-          title: "Neural Networks",
-          video: "https://www.youtube.com/embed/aircAruvnKk",
-        },
-
-        {
-          title: "Deep Learning",
-          video: "https://www.youtube.com/embed/6M5VXKLf4D4",
-        },
-      ],
-    },
+    } catch (error) {
+      console.error("Firestore Error:", error);
+    }
   };
 
-  const course = courses[id];
-
-  const [selectedLesson, setSelectedLesson] = useState(
-    course.lessons[0]
+  fetchCourse();
+}, [id]);
+if (!course) {
+  console.log("Course Data:", course);
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      Loading Course...
+    </div>
   );
+}
+
+
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -82,42 +51,53 @@ export default function CourseDetails() {
       <div className="w-80 bg-white shadow-lg p-5">
 
         <h1 className="text-2xl font-bold text-blue-900 mb-6">
-          {course.title}
+          {course.courseName}
         </h1>
 
         <h2 className="text-xl font-semibold mb-4">
-          Lessons
-        </h2>
+  Course Content
+</h2>
 
-        <div className="space-y-3">
-          {course.lessons.map((lesson, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedLesson(lesson)}
-              className="w-full text-left bg-blue-100 hover:bg-blue-200 p-3 rounded-xl transition"
-            >
-              {lesson.title}
-            </button>
-          ))}
-        </div>
+<div className="space-y-3">
+  <div className="bg-blue-100 p-3 rounded-xl">
+    {course.courseName}
+  </div>
+</div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-6">
 
         <h2 className="text-3xl font-bold text-blue-900 mb-6">
-          {selectedLesson.title}
+          {course.courseName}
         </h2>
 
         <div className="bg-white rounded-2xl shadow-lg p-5">
 
           <div className="aspect-video mb-6">
-            <iframe
-              className="w-full h-full rounded-xl"
-              src={selectedLesson.video}
-              title={selectedLesson.title}
-              allowFullScreen
-            ></iframe>
+            {
+  course.videoLink &&
+  (course.videoLink.includes("youtube") ||
+   course.videoLink.includes("youtu.be")) ? (
+
+    <iframe
+      className="w-full h-full rounded-xl"
+      src={course.videoLink.replace(
+        "youtu.be/",
+        "www.youtube.com/embed/"
+      )}
+      title={course.courseName}
+      allowFullScreen
+    ></iframe>
+
+  ) : (
+
+    <div className="flex items-center justify-center h-full text-gray-500 text-xl">
+      No video available
+    </div>
+
+  )
+}
           </div>
 
           <div>
@@ -127,9 +107,17 @@ export default function CourseDetails() {
 
             <ul className="list-disc ml-6 text-blue-700">
               <li>
-                <a href="#" className="hover:underline">
-                  Download PDF Notes
-                </a>
+                
+
+  <a
+    href={course.noteLink}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="hover:underline text-blue-700"
+  >
+    Download PDF Notes
+  </a>
+
               </li>
 
               <li>
