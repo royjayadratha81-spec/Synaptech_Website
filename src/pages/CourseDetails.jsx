@@ -2,6 +2,9 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
+import dataAnalyticsPDF from "../assets/modules/data-analytics-module.pdf";
+import dataSciencePDF from "../assets/modules/data-science-module.pdf";
+import genAIPDF from "../assets/modules/genai-agenticai-module.pdf";
 
 export default function CourseDetails() {
   const { id } = useParams();
@@ -35,6 +38,7 @@ useEffect(() => {
 }, [id]);
 if (!course) {
   console.log("Course Data:", course);
+  
   return (
     <div className="min-h-screen flex items-center justify-center">
       Loading Course...
@@ -42,7 +46,19 @@ if (!course) {
   );
 }
 
+let modulePDF = "";
 
+if (course.courseName === "Data Analytics") {
+  modulePDF = dataAnalyticsPDF;
+}
+
+if (course.courseName === "Data Science") {
+  modulePDF = dataSciencePDF;
+}
+
+if (course.courseName === "Data Science with Generative AI & Agentic AI") {
+  modulePDF = genAIPDF;
+}
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -92,9 +108,16 @@ if (!course) {
 
   ) : (
 
-    <div className="flex items-center justify-center h-full text-gray-500 text-xl">
-      No video available
-    </div>
+    <div className="flex items-center justify-center h-full bg-gray-100 rounded-xl">
+  <div className="text-center">
+    <h3 className="text-xl font-semibold text-gray-700">
+      Video Coming Soon
+    </h3>
+    <p className="text-gray-500 mt-2">
+      Course modules are available below.
+    </p>
+  </div>
+</div>
 
   )
 }
@@ -102,8 +125,15 @@ if (!course) {
 
           <div>
             <h3 className="text-2xl font-semibold mb-4">
-              Notes & Resources
-            </h3>
+  Course Modules
+</h3>
+
+<iframe
+  src={modulePDF}
+  width="100%"
+  height="800"
+  className="rounded-xl border"
+/>
 
             <ul className="list-disc ml-6 text-blue-700">
               <li>

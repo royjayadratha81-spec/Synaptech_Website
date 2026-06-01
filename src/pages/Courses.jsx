@@ -26,16 +26,36 @@ export default function Courses() {
   const studentDoc = await getDoc(
     doc(db, "students", user.uid)
   );
+  console.log("User UID:", user.uid);
+
+if (studentDoc.exists()) {
+  console.log("Student Data:", studentDoc.data());
+
+  setStudentCourse(
+    studentDoc.data().course
+  );
+}
 
   if (studentDoc.exists()) {
 
-    setStudentCourse(
-      studentDoc.data().course
-    );
+  console.log(
+    "Student Course:",
+    studentDoc.data().course
+  );
+
+  console.log(
+  "Student Course:",
+  studentDoc.data().course
+);
+
+setStudentCourse(
+  studentDoc.data().course
+);
+
+}
 
   }
-
-};
+    // end fetchStudentCourse
 
     const fetchCourses = async () => {
 
@@ -61,7 +81,9 @@ export default function Courses() {
     fetchStudentCourse();
     fetchCourses();
 
-  }, []);
+}, []);
+  console.log("Current studentCourse:", studentCourse);
+console.log("Courses:", courses);
 
   return (
 
@@ -80,12 +102,11 @@ export default function Courses() {
 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
 
   {courses
-.filter(
-  (course) =>
-    course.courseName === studentCourse
-)
-.map((course) => (
-
+  .filter(
+    (course) =>
+      course.courseName === studentCourse
+  )
+  .map((course) => (
     <div
       key={course.id}
       className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl hover:scale-105 transition duration-300 text-white"

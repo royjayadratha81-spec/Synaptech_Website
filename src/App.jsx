@@ -5,9 +5,11 @@ import contact2 from "./assets/contact2.jpg";
 import ai1 from "./assets/ai1.jpg";
 import ai2 from "./assets/ai2.jpg";
 import ai3 from "./assets/ai3.jpg";
+import aboutBg from "./assets/about-bg.jpg";
 import { FaRobot, FaBrain, FaChartLine } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import placementsImg from "./assets/placements.png";
+import placementBg from "./assets/placement-bg.jpg";
 import aiHero from "./assets/ai-hero.png";
 import { FaWhatsapp } from "react-icons/fa";
 import iitLogo from "./assets/IIT_Roorkee.png";
@@ -368,16 +370,22 @@ export default function App() {
 
       {/* About */}
       <section
-        id="about"
-        className="py-20 px-6 text-center"
-      >
-        <h3 className="text-4xl font-bold text-sky-700 mb-6">
+  id="about"
+  className="relative py-20 px-6 text-center bg-cover bg-center"
+  style={{
+    backgroundImage: `url(${aboutBg})`,
+  }}
+>
+  <div className="absolute inset-0 bg-black/60"></div>
+  <div className="relative z-10">
+        <h3 className="text-5xl font-bold text-white mb-8">
           About Synaptech Education
         </h3>
 
-        <p className="max-w-3xl mx-auto text-lg text-gray-700 leading-8">
+        <p className="max-w-4xl mx-auto text-xl text-gray-100 leading-9">
           Synaptech Education, established in 2025, is an emerging technical institution dedicated to shaping the next generation of professionals in the rapidly evolving domains of Data Science and Artificial Intelligence. The institute is committed to addressing the growing demand for industry-ready talent by delivering high-quality, career-oriented education. With a comprehensive and future-focused curriculum, Synaptech offers a wide range of in-depth modules covering Data Analytics, Data Science, Traditional Artificial Intelligence, Generative AI, and the cutting-edge field of Agentic AI. Each program is designed to equip learners with practical skills, real-world exposure, and a strong conceptual foundation. Aligned with national skill development initiatives, Synaptech Education is registered under the Government of India’s Skill India Mission and is in collaboration with IIT Roorkee, reinforcing its commitment to empowering individuals with employable and future-ready technical expertise.
         </p>
+        </div>
       </section>
 
       {/* Courses */}
@@ -390,7 +398,11 @@ export default function App() {
   <div className="grid md:grid-cols-3 gap-8">
 
     {/* Data Analytics */}
-    <Link to="/courses">
+    <a
+      href="/modules/data-analytics-module.pdf"
+      target="_blank"
+      rel="noreferrer"
+    >
       <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
       <h3 className="text-lg md:text-2xl font-bold mb-4 text-sky-800">
@@ -402,10 +414,14 @@ export default function App() {
       </p>
 
     </div>
-    </Link>
+    </a>
 
     {/* Data Science */}
-    <Link to="/courses">
+    <a
+      href="/modules/data-science-module.pdf"
+      target="_blank"
+      rel="noreferrer"
+    >
       <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
         
 
@@ -418,10 +434,14 @@ export default function App() {
       </p>
 
     </div>
-    </Link>
+    </a>
 
     {/* Generative AI */}
-    <Link to="/courses">
+    <a
+  href="/modules/genai-agenticai-module.pdf"
+  target="_blank"
+  rel="noreferrer"
+>
       <div className="bg-sky-100 p-8 rounded-2xl shadow-lg hover:scale-105 transition">
 
       <h3 className="text-lg md:text-2xl font-bold mb-4 text-sky-800">
@@ -433,7 +453,7 @@ export default function App() {
       </p>
 
       </div>
-    </Link>
+    </a>
 
 
   </div>
@@ -467,9 +487,18 @@ export default function App() {
 
       {/* Placement Section */}
 
-<section id="placement" className="py-20 px-8 bg-sky-700 text-white">
+<section
+  id="placement"
+  className="relative py-20 px-8 text-white bg-cover bg-center"
+  style={{
+    backgroundImage: `url(${placementBg})`
+  }}
+>
+  <div className="absolute inset-0 bg-black/60"></div>
 
-  <h2 className="text-5xl font-bold text-center mb-14">
+<div className="relative z-10">
+
+<h2 className="text-5xl font-bold text-center mb-14">
     Placement Support
   </h2>
 <div className="max-w-6xl mx-auto mb-16">
@@ -479,13 +508,13 @@ export default function App() {
   </p>
 
   <img
-    src={placementsImg}
-    alt="Top Hiring Companies"
-    className="w-full rounded-3xl shadow-2xl border-4 border-white"
-  />
+  src={placementsImg}
+  alt="Top Hiring Companies"
+  className="w-full rounded-3xl shadow-2xl border-4 border-white mb-20"
+/>
 
-</div>
-  <div className="grid md:grid-cols-3 gap-10 text-center">
+
+  <div className="grid md:grid-cols-3 gap-10 text-center mt-16">
 
     <div className="bg-white text-sky-800 p-8 rounded-2xl shadow-xl">
       <h3 className="text-5xl font-bold mb-4">300+</h3>
@@ -503,7 +532,8 @@ export default function App() {
     </div>
 
   </div>
-
+</div>
+</div>
 </section>
 {/* Testimonials */}
 
