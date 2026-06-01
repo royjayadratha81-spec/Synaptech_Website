@@ -12,9 +12,13 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Courses from "./pages/Courses";
 import Assignments from "./pages/Assignments";
+import LiveSessions from "./pages/LiveSessions";
+import CreateLiveSession from "./pages/CreateLiveSession";
+import CreateRecording from "./pages/CreateRecording";
 import CourseDetails from "./pages/CourseDetails";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import ThankYou from "./pages/ThankYou";
+
 
 import "./index.css";
 
@@ -22,18 +26,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
+        <Route path="/create-live-session" element={<CreateLiveSession />}/>
+        <Route path="/create-recording" element={<CreateRecording />} />
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register" element={<Register />} />
-        <Route
-  path="/admin"
-  element={
-    <AdminProtectedRoute>
-      <Admin />
-    </AdminProtectedRoute>
-  }
-/>
+        <Route path="/admin" element={<AdminProtectedRoute> <Admin /> </AdminProtectedRoute>}/>
         <Route path="/course/:id" element={<CourseDetails />} />
         <Route path="/thank-you" element={<ThankYou />} />
 
@@ -73,11 +72,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
 <Route
-  path="/admin"
+  path="/live-sessions"
   element={
-  
-      <Admin />
-   
+    <ProtectedRoute>
+      <LiveSessions />
+    </ProtectedRoute>
   }
 />
       </Routes>

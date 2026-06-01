@@ -60,6 +60,19 @@ export default function Dashboard() {
   </div>
 
 </Link>
+<Link to="/live-sessions">
+  <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition cursor-pointer h-full">
+
+    <h3 className="text-xl font-bold mb-3 text-red-700">
+      Live Sessions
+    </h3>
+
+    <p className="text-gray-600">
+      Join upcoming live classes.
+    </p>
+
+  </div>
+</Link>
 
           <div className="bg-white p-6 rounded-2xl shadow-lg h-full">
             <h3 className="text-xl font-bold mb-3 text-green-700">
