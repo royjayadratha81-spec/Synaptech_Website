@@ -96,7 +96,7 @@ export default function App() {
 
  {/* Hero Section */}
 <section
-  className="relative overflow-hidden text-white py-28 px-8"
+  className="relative overflow-hidden text-white py-16 md:py-28 px-4 md:px-8"
   style={{
     backgroundImage: `linear-gradient(rgba(10,10,30,0.75), rgba(0,0,0,0.85)), url(${heroBg})`,
     backgroundSize: "cover",
@@ -114,20 +114,17 @@ export default function App() {
         Synaptech Education
       </p>
 
-      <h1 className="text-6xl md:text-7xl font-extrabold leading-tight">
+      <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight break-words">
 
-        Future of
-        <span className="text-blue-400"> AI & </span>
-
-        <span className="text-cyan-300">
-          Data Science
-        </span>
-
-        Learning
+        Future of <span className="text-blue-400">AI &</span>
+<br />
+<span className="text-cyan-300">Data Science</span>
+<br />
+Learning
 
       </h1>
 
-      <p className="text-xl text-gray-300 leading-relaxed max-w-2xl">
+      <p className="text-base md:text-xl text-gray-300 leading-relaxed max-w-2xl">
 
         Industry-focused training in Data Science,
         Artificial Intelligence, Generative AI,
@@ -378,18 +375,18 @@ export default function App() {
 >
   <div className="absolute inset-0 bg-black/60"></div>
   <div className="relative z-10">
-        <h3 className="text-5xl font-bold text-white mb-8">
+        <h3 className="text-3xl md:text-5xl font-bold text-white mb-8">
           About Synaptech Education
         </h3>
 
-        <p className="max-w-4xl mx-auto text-xl text-gray-100 leading-9">
+        <p className="max-w-4xl mx-auto text-base md:text-xl text-gray-100 leading-8">
           Synaptech Education, established in 2025, is an emerging technical institution dedicated to shaping the next generation of professionals in the rapidly evolving domains of Data Science and Artificial Intelligence. The institute is committed to addressing the growing demand for industry-ready talent by delivering high-quality, career-oriented education. With a comprehensive and future-focused curriculum, Synaptech offers a wide range of in-depth modules covering Data Analytics, Data Science, Traditional Artificial Intelligence, Generative AI, and the cutting-edge field of Agentic AI. Each program is designed to equip learners with practical skills, real-world exposure, and a strong conceptual foundation. Aligned with national skill development initiatives, Synaptech Education is registered under the Government of India’s Skill India Mission and is in collaboration with IIT Roorkee, reinforcing its commitment to empowering individuals with employable and future-ready technical expertise.
         </p>
         </div>
       </section>
 
       {/* Courses */}
-      <section id="courses" className="py-16 px-8 bg-white">
+      <section id="courses" className="py-16 px-4 md:px-8 bg-white">
 
   <h2 className="text-4xl font-bold text-center mb-12 text-sky-800">
     Our Courses
@@ -461,7 +458,7 @@ export default function App() {
 </section>
 {/* Certificates Section */}
 
-<section className="py-20 px-8 bg-gray-100">
+<section className="py-20 px-4 md:px-8 bg-gray-100">
 
   <h2 className="text-5xl font-bold text-center mb-14 text-sky-800">
     Certification
@@ -489,7 +486,7 @@ export default function App() {
 
 <section
   id="placement"
-  className="relative py-20 px-8 text-white bg-cover bg-center"
+  className="relative py-20 px-4 md:px-8 text-white bg-cover bg-center"
   style={{
     backgroundImage: `url(${placementBg})`
   }}
@@ -537,7 +534,7 @@ export default function App() {
 </section>
 {/* Testimonials */}
 
-<section className="py-20 px-8 bg-white">
+<section className="py-20 px-4 md:px-8 bg-white">
 
   <h2 className="text-5xl font-bold text-center mb-14 text-sky-800">
     Student Testimonials
@@ -600,7 +597,7 @@ export default function App() {
 
     <div className="text-center mb-16">
 
-      <h2 className="text-5xl font-extrabold mb-6">
+      <h2 className="text-3xl md:text-5xl font-extrabold mb-6">
         Contact Synaptech Education
       </h2>
 
@@ -774,7 +771,7 @@ export default function App() {
   href="https://wa.me/919217766084"
   target="_blank"
   rel="noopener noreferrer"
-  className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl text-lg md:text-2xl z-50"
+  className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-3 md:p-4 rounded-full shadow-2xl text-base md:text-2xl z-50"
 >
   <FaWhatsapp />
 </a>
