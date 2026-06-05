@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminLogin from "./pages/AdminLogin";
 import AdminProtectedRoute from "./pages/AdminProtectedRoute";
 import CreateAssignment from "./pages/CreateAssignment";
+import ViewSubmissions from "./pages/ViewSubmissions";
 
 import App from "./App";
 import Login from "./pages/Login";
@@ -29,6 +30,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/create-live-session" element={<CreateLiveSession />}/>
         <Route path="/create-recording" element={<CreateRecording />} />
+        <Route
+  path="/view-submissions"
+  element={
+    <AdminProtectedRoute>
+      <ViewSubmissions />
+    </AdminProtectedRoute>
+  }
+/>
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />

@@ -178,6 +178,12 @@ const handleDelete = async (id) => {
   >
     Create Assignment
   </button>
+  <button
+  onClick={() => navigate("/view-submissions")}
+  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
+>
+  View Submissions
+</button>
 
 
 </div>

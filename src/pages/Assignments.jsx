@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc
+} from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
+import { supabase } from "../supabase/supabase";
 
 export default function Assignments() {
 
@@ -25,23 +30,71 @@ export default function Assignments() {
   fetchAssignments();
 }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!selectedFile) {
-      alert("Please select a file");
+  if (!selectedFile) {
+    alert("Please select a file");
+    return;
+  }
+
+  try {
+
+    const fileName =
+      `${Date.now()}-${selectedFile.name}`;
+
+    const { error } =
+      await supabase.storage
+        .from("assignments")
+        .upload(fileName, selectedFile);
+
+    if (error) {
+      console.error(error);
+      alert("Upload Failed");
       return;
     }
 
-    const newSubmission = {
-  fileName: selectedFile.name,
-  date: new Date().toLocaleString(),
-  status: "Submitted",
-};
+    const { data: publicUrlData } =
+      supabase.storage
+        .from("assignments")
+        .getPublicUrl(fileName);
 
-setSubmissions([...submissions, newSubmission]);
-setSubmitted(true);
-  };
+    const fileUrl =
+      publicUrlData.publicUrl;
+
+    await addDoc(
+      collection(db, "submissions"),
+      {
+        fileName: selectedFile.name,
+        fileUrl: fileUrl,
+        submittedAt:
+          new Date().toLocaleString(),
+        status: "Submitted",
+      }
+    );
+
+    const newSubmission = {
+      fileName: selectedFile.name,
+      date: new Date().toLocaleString(),
+      status: "Submitted",
+    };
+
+    setSubmissions([
+      ...submissions,
+      newSubmission,
+    ]);
+
+    setSubmitted(true);
+
+    alert("Assignment Submitted Successfully");
+
+  } catch (error) {
+
+    console.error(error);
+    alert("Submission Failed");
+
+  }
+};
 
   return (
   <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
