@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminLogin from "./pages/AdminLogin";
 import AdminProtectedRoute from "./pages/AdminProtectedRoute";
+import CreateAssignment from "./pages/CreateAssignment";
 
 import App from "./App";
 import Login from "./pages/Login";
@@ -77,6 +78,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ProtectedRoute>
       <LiveSessions />
     </ProtectedRoute>
+  }
+/>
+<Route
+  path="/create-assignment"
+  element={
+    <AdminProtectedRoute>
+      <CreateAssignment />
+    </AdminProtectedRoute>
   }
 />
       </Routes>

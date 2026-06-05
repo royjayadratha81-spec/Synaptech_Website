@@ -1,10 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
 
 export default function Assignments() {
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [submissions, setSubmissions] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  useEffect(() => {
+  const fetchAssignments = async () => {
+    const querySnapshot = await getDocs(
+      collection(db, "assignments")
+    );
+
+    const data = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setAssignments(data);
+  };
+
+  fetchAssignments();
+}, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -45,13 +64,50 @@ setSubmitted(true);
 
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8">
 
-            <h2 className="text-3xl font-bold text-gray-800 mb-3">
-              Python Assignment 1
-            </h2>
+           {assignments.map((assignment) => (
 
-            <p className="text-gray-600 mb-8 text-lg">
-              Submit your assignment in PDF, DOCX, or image format.
-            </p>
+  <div
+    key={assignment.id}
+    className="mb-8 border-b pb-6"
+  >
+
+    <h2 className="text-3xl font-bold text-gray-800 mb-3">
+      {assignment.title}
+    </h2>
+
+    <p className="text-gray-600 text-lg mb-3">
+      {assignment.description}
+    </p>
+
+    <p className="text-red-600 font-semibold mb-4">
+      Due Date: {assignment.dueDate}
+    </p>
+
+    {assignment.fileUrl && (
+      <a
+        href={assignment.fileUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-block bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg mr-3"
+      >
+        📥 Open Assignment
+      </a>
+    )}
+
+    {assignment.assignmentFileUrl && (
+      <a
+        href={assignment.assignmentFileUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
+      >
+        📄 Download Assignment File
+      </a>
+    )}
+
+  </div>
+
+))}
 
             <form onSubmit={handleSubmit}>
 
@@ -60,12 +116,16 @@ setSubmitted(true);
                 <label className="block text-lg font-semibold mb-3 text-gray-700">
                   Select Assignment File
                 </label>
+                <p className="text-gray-600 mb-3">
+  Accepted formats: .ipynb, .pdf, .doc, .docx, .xls, .xlsx, .csv, .py, .jpg, .jpeg, .png
+</p>
 
                 <input
-                  type="file"
-                  className="w-full border-2 border-dashed border-blue-300 bg-white p-6 rounded-2xl cursor-pointer hover:border-blue-500 transition"
-                  onChange={(e) => setSelectedFile(e.target.files[0])}
-                />
+  type="file"
+  accept=".ipynb,.pdf,.doc,.docx,.xls,.xlsx,.csv,.py,.jpg,.jpeg,.png"
+  className="w-full border-2 border-dashed border-blue-300 bg-white p-6 rounded-2xl cursor-pointer hover:border-blue-500 transition"
+  onChange={(e) => setSelectedFile(e.target.files[0])}
+/>
 
               </div>
 

@@ -150,10 +150,35 @@ const handleDelete = async (id) => {
 
   <button
     onClick={handleLogout}
+    
     className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700"
   >
     Logout
   </button>
+
+</div>
+<div className="flex gap-4 mb-8">
+
+  <button
+    onClick={() => navigate("/create-live-session")}
+    className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
+  >
+    Create Live Session
+  </button>
+
+  <button
+    onClick={() => navigate("/create-recording")}
+    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-xl"
+  >
+    Create Recording
+  </button>
+  <button
+    onClick={() => navigate("/create-assignment")}
+    className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-3 rounded-xl"
+  >
+    Create Assignment
+  </button>
+
 
 </div>
 

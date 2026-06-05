@@ -74,14 +74,17 @@ export default function Dashboard() {
   </div>
 </Link>
 
-          <div className="bg-white p-6 rounded-2xl shadow-lg h-full">
-            <h3 className="text-xl font-bold mb-3 text-green-700">
-              Assignments
-            </h3>
-            <p className="text-gray-600">
-              Submit and track assignments.
-            </p>
-          </div>
+          <Link to="/assignments">
+  <div className="bg-white p-6 rounded-2xl shadow-lg h-full hover:shadow-xl cursor-pointer transition">
+    <h3 className="text-xl font-bold mb-3 text-green-700">
+      Assignments
+    </h3>
+
+    <p className="text-gray-600">
+      Submit and track assignments.
+    </p>
+  </div>
+</Link>
 
           <div className="bg-white p-6 rounded-2xl shadow-lg h-full">
             <h3 className="text-xl font-bold mb-3 text-purple-700">
