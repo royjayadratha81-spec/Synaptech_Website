@@ -46,10 +46,21 @@ export default function ViewSubmissions() {
               <h2 className="text-2xl font-bold text-gray-800">
                 {item.fileName}
               </h2>
+              <p className="text-blue-700 font-semibold mt-2">
+  Assignment: {item.assignmentTitle || "Not Available"}
+</p>
 
               <p className="text-gray-600 mt-2">
-                Submitted On: {item.date}
-              </p>
+  Submitted By: {item.studentName || "Unknown Student"}
+</p>
+
+<p className="text-gray-600 mt-1">
+  Email: {item.studentEmail || "No Email"}
+</p>
+
+<p className="text-gray-600 mt-1">
+  Submitted On: {item.submittedAt}
+</p>
 
               <p className="text-green-600 font-semibold mt-2">
                 {item.status}

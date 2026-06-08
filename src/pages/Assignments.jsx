@@ -13,6 +13,8 @@ export default function Assignments() {
   const [submitted, setSubmitted] = useState(false);
   const [submissions, setSubmissions] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [selectedAssignment, setSelectedAssignment] =
+  useState("");
   useEffect(() => {
   const fetchAssignments = async () => {
     const querySnapshot = await getDocs(
@@ -33,6 +35,10 @@ export default function Assignments() {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
+  if (!selectedAssignment) {
+  alert("Please select an assignment");
+  return;
+}
   if (!selectedFile) {
     alert("Please select a file");
     return;
@@ -61,17 +67,31 @@ export default function Assignments() {
 
     const fileUrl =
       publicUrlData.publicUrl;
+      const studentData = JSON.parse(
+  localStorage.getItem("studentData")
+);
 
-    await addDoc(
-      collection(db, "submissions"),
-      {
-        fileName: selectedFile.name,
-        fileUrl: fileUrl,
-        submittedAt:
-          new Date().toLocaleString(),
-        status: "Submitted",
-      }
-    );
+console.log("Student Data:", studentData);
+
+      await addDoc(
+  collection(db, "submissions"),
+  {
+    assignmentTitle: selectedAssignment,
+    fileName: selectedFile.name,
+    fileUrl: fileUrl,
+
+    studentName:
+      studentData?.name || "Unknown",
+
+    studentEmail:
+      studentData?.email || "Unknown",
+
+    submittedAt:
+      new Date().toLocaleString(),
+
+    status: "Submitted",
+  }
+);
 
     const newSubmission = {
       fileName: selectedFile.name,
@@ -165,6 +185,38 @@ export default function Assignments() {
             <form onSubmit={handleSubmit}>
 
               <div className="mb-8">
+                <div className="mb-6">
+
+  <label className="block text-lg font-semibold mb-3 text-gray-700">
+    Select Assignment
+  </label>
+
+  <select
+    value={selectedAssignment}
+    onChange={(e) =>
+      setSelectedAssignment(e.target.value)
+    }
+    className="w-full border p-3 rounded-xl"
+  >
+
+    <option value="">
+      Choose Assignment
+    </option>
+
+    {assignments.map((assignment) => (
+
+      <option
+        key={assignment.id}
+        value={assignment.title}
+      >
+        {assignment.title}
+      </option>
+
+    ))}
+
+  </select>
+
+</div>
 
                 <label className="block text-lg font-semibold mb-3 text-gray-700">
                   Select Assignment File

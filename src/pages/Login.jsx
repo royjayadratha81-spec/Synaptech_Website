@@ -54,11 +54,29 @@ export default function Login() {
 
     if (approved) {
 
-      alert("Login Successful");
+  querySnapshot.forEach((docItem) => {
 
-      navigate("/dashboard");
+    const data = docItem.data();
 
-    } else {
+    if (data.email === userEmail) {
+
+      localStorage.setItem(
+        "studentData",
+        JSON.stringify({
+          name: data.name,
+          email: data.email,
+        })
+      );
+
+    }
+
+  });
+
+  alert("Login Successful");
+
+  navigate("/dashboard");
+
+} else {
 
       await auth.signOut();
 
