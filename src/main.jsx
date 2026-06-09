@@ -20,6 +20,7 @@ import CreateRecording from "./pages/CreateRecording";
 import CourseDetails from "./pages/CourseDetails";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import ThankYou from "./pages/ThankYou";
+import Results from "./pages/Results";
 
 
 import "./index.css";
@@ -78,6 +79,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <ProtectedRoute>
       <Assignments />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/results"
+  element={
+    <ProtectedRoute>
+      <Results />
     </ProtectedRoute>
   }
 />
