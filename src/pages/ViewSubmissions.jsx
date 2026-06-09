@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc
+} from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
 export default function ViewSubmissions() {
   const [submissions, setSubmissions] = useState([]);
+  const [evaluations, setEvaluations] = useState({});
 
   useEffect(() => {
     fetchSubmissions();
@@ -22,6 +28,24 @@ export default function ViewSubmissions() {
     setSubmissions(data);
   };
 
+  const saveEvaluation = async (id) => {
+    try {
+      await updateDoc(
+        doc(db, "submissions", id),
+        {
+          marks: evaluations[id]?.marks || "",
+          remarks: evaluations[id]?.remarks || "",
+          evaluated: true,
+        }
+      );
+
+      alert("Evaluation Saved");
+      fetchSubmissions();
+    } catch (error) {
+      console.error(error);
+      alert("Failed to Save Evaluation");
+    }
+  };
   return (
     <div className="min-h-screen bg-gray-100 p-8">
 
@@ -76,6 +100,56 @@ export default function ViewSubmissions() {
                   Download Submission
                 </a>
               )}
+              <div className="mt-6 border-t pt-4">
+
+  <label className="block font-semibold mb-2">
+    Marks
+  </label>
+
+  <input
+  type="number"
+  placeholder="Enter Marks"
+  className="w-full border p-3 rounded-lg mb-4"
+  onChange={(e) =>
+    setEvaluations({
+      ...evaluations,
+      [item.id]: {
+        ...evaluations[item.id],
+        marks: e.target.value,
+      },
+    })
+  }
+/>
+
+  <label className="block font-semibold mb-2">
+    Remarks
+  </label>
+
+  <textarea
+  placeholder="Enter Remarks"
+  className="w-full border p-3 rounded-lg mb-4"
+  rows="3"
+  onChange={(e) =>
+    setEvaluations({
+      ...evaluations,
+      [item.id]: {
+        ...evaluations[item.id],
+        remarks: e.target.value,
+      },
+    })
+  }
+/>
+
+  <button
+  onClick={() =>
+    saveEvaluation(item.id)
+  }
+  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg"
+>
+  Save Evaluation
+</button>
+
+</div>
 
             </div>
 
