@@ -1,64 +1,116 @@
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
+
 export default function Progress() {
 
-  const courses = [
-    {
-      name: "Python Programming",
-      progress: 75,
-    },
+  const [stats, setStats] = useState({
+    assignmentsSubmitted: 0,
+    assignmentsEvaluated: 0,
+    averageMarks: 0,
+  });
 
-    {
-      name: "Data Science",
-      progress: 50,
-    },
+  useEffect(() => {
+    fetchProgress();
+  }, []);
 
-    {
-      name: "Artificial Intelligence",
-      progress: 30,
-    },
-  ];
+  const fetchProgress = async () => {
+
+    const studentData = JSON.parse(
+      localStorage.getItem("studentData")
+    );
+
+    const querySnapshot = await getDocs(
+      collection(db, "submissions")
+    );
+
+    const submissions = querySnapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .filter(
+        (item) =>
+          item.studentEmail ===
+          studentData?.email
+      );
+
+    const evaluated =
+      submissions.filter(
+        (item) => item.marks
+      );
+
+    const totalMarks =
+      evaluated.reduce(
+        (sum, item) =>
+          sum + Number(item.marks),
+        0
+      );
+
+    const averageMarks =
+      evaluated.length > 0
+        ? (
+            totalMarks /
+            evaluated.length
+          ).toFixed(2)
+        : 0;
+
+    setStats({
+      assignmentsSubmitted:
+        submissions.length,
+
+      assignmentsEvaluated:
+        evaluated.length,
+
+      averageMarks,
+    });
+
+  };
 
   return (
 
-    <div className="bg-white p-6 rounded-2xl shadow-lg">
+    <div className="bg-white p-8 rounded-2xl shadow-lg">
 
-      <h2 className="text-2xl font-bold text-green-700 mb-6">
-        Course Progress
+      <h2 className="text-3xl font-bold text-green-700 mb-8">
+        My Learning Progress
       </h2>
 
       <div className="space-y-6">
 
-        {courses.map((course, index) => (
+        <div className="bg-blue-50 p-5 rounded-xl">
+          <h3 className="font-bold text-xl">
+            Assignments Submitted
+          </h3>
 
-          <div key={index}>
+          <p className="text-3xl text-blue-700 font-bold mt-2">
+            {stats.assignmentsSubmitted}
+          </p>
+        </div>
 
-            <div className="flex justify-between mb-2">
+        <div className="bg-green-50 p-5 rounded-xl">
+          <h3 className="font-bold text-xl">
+            Assignments Evaluated
+          </h3>
 
-              <span className="font-semibold text-lg">
-                {course.name}
-              </span>
+          <p className="text-3xl text-green-700 font-bold mt-2">
+            {stats.assignmentsEvaluated}
+          </p>
+        </div>
 
-              <span className="font-bold text-blue-700">
-                {course.progress}%
-              </span>
+        <div className="bg-yellow-50 p-5 rounded-xl">
+          <h3 className="font-bold text-xl">
+            Average Marks
+          </h3>
 
-            </div>
-
-            <div className="w-full bg-gray-200 rounded-full h-4">
-
-              <div
-                className="bg-blue-600 h-4 rounded-full"
-                style={{ width: `${course.progress}%` }}
-              ></div>
-
-            </div>
-
-          </div>
-
-        ))}
+          <p className="text-3xl text-yellow-700 font-bold mt-2">
+            {stats.averageMarks}
+          </p>
+        </div>
 
       </div>
 
     </div>
 
   );
+
 }

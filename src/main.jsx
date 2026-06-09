@@ -6,6 +6,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminProtectedRoute from "./pages/AdminProtectedRoute";
 import CreateAssignment from "./pages/CreateAssignment";
 import ViewSubmissions from "./pages/ViewSubmissions";
+import Payment from "./pages/Payment";
 
 import App from "./App";
 import Login from "./pages/Login";
@@ -87,6 +88,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <ProtectedRoute>
       <Results />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/payment"
+  element={
+    <ProtectedRoute>
+      <Payment />
     </ProtectedRoute>
   }
 />
