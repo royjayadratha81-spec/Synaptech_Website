@@ -37,46 +37,35 @@ export default function Login() {
         collection(db, "students")
       );
 
-    let approved = false;
+    let studentData = null;
 
     querySnapshot.forEach((docItem) => {
 
       const data = docItem.data();
 
-      if (
-        data.email === userEmail &&
-        data.approved === true
-      ) {
-        approved = true;
+      if (data.email === userEmail) {
+        studentData = data;
       }
 
     });
 
-    if (approved) {
-
-  querySnapshot.forEach((docItem) => {
-
-    const data = docItem.data();
-
-    if (data.email === userEmail) {
+    if (
+      studentData &&
+      studentData.approved === true
+    ) {
 
       localStorage.setItem(
         "studentData",
         JSON.stringify({
-          name: data.name,
-          email: data.email,
+          name: studentData.name,
+          email: studentData.email,
+          course: studentData.course,
         })
       );
 
-    }
+      navigate("/dashboard");
 
-  });
-
-  alert("Login Successful");
-
-  navigate("/dashboard");
-
-} else {
+    } else {
 
       await auth.signOut();
 

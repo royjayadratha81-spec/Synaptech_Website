@@ -184,6 +184,14 @@ const handleDelete = async (id) => {
 >
   View Submissions
 </button>
+<button
+  onClick={() =>
+    navigate("/view-payments")
+  }
+  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
+>
+  View Payments
+</button>
 
 
 </div>

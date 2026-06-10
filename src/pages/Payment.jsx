@@ -3,12 +3,44 @@ import { supabase } from "../supabase/supabase";
 import {
   collection,
   addDoc,
+  getDocs,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebaseConfig";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 export default function Payment() {
     const [paymentFile, setPaymentFile] = useState(null);
+    const [paymentStatus, setPaymentStatus] =
+  useState("Not Submitted");
+  useEffect(() => {
+  fetchPaymentStatus();
+}, []);
+
+const fetchPaymentStatus = async () => {
+
+  const studentData = JSON.parse(
+    localStorage.getItem("studentData")
+  );
+
+  const querySnapshot = await getDocs(
+    collection(db, "payments")
+  );
+
+  const payment = querySnapshot.docs
+    .map((doc) => doc.data())
+    .find(
+      (item) =>
+        item.studentEmail ===
+        studentData?.email
+    );
+
+  if (payment) {
+    setPaymentStatus(
+      payment.paymentStatus
+    );
+  }
+
+};
     const handlePaymentSubmit = async () => {
 
   if (!paymentFile) {
@@ -86,6 +118,17 @@ export default function Payment() {
         <h1 className="text-4xl font-bold text-center text-blue-700 mb-8">
           Course Payment
         </h1>
+        <div className="mb-8 bg-blue-50 border border-blue-200 p-4 rounded-xl">
+
+  <h2 className="font-bold text-xl mb-2">
+    Payment Status
+  </h2>
+
+  <p className="text-lg text-blue-700">
+    {paymentStatus}
+  </p>
+
+</div>
 
         <div className="mb-10">
 

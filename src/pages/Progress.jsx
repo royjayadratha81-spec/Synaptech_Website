@@ -5,10 +5,12 @@ import { db } from "../firebase/firebaseConfig";
 export default function Progress() {
 
   const [stats, setStats] = useState({
-    assignmentsSubmitted: 0,
-    assignmentsEvaluated: 0,
-    averageMarks: 0,
-  });
+  assignmentsSubmitted: 0,
+  assignmentsEvaluated: 0,
+  averageMarks: 0,
+  paymentStatus: "Not Submitted",
+  course: "Not Assigned",
+});
 
   useEffect(() => {
     fetchProgress();
@@ -19,6 +21,24 @@ export default function Progress() {
     const studentData = JSON.parse(
       localStorage.getItem("studentData")
     );
+    const course =
+  studentData?.course ||
+  "Not Assigned";
+    const paymentSnapshot = await getDocs(
+  collection(db, "payments")
+);
+
+const paymentRecord = paymentSnapshot.docs
+  .map((doc) => doc.data())
+  .find(
+    (item) =>
+      item.studentEmail ===
+      studentData?.email
+  );
+
+const paymentStatus =
+  paymentRecord?.paymentStatus ||
+  "Not Submitted";
 
     const querySnapshot = await getDocs(
       collection(db, "submissions")
@@ -56,14 +76,12 @@ export default function Progress() {
         : 0;
 
     setStats({
-      assignmentsSubmitted:
-        submissions.length,
-
-      assignmentsEvaluated:
-        evaluated.length,
-
-      averageMarks,
-    });
+  assignmentsSubmitted: submissions.length,
+  assignmentsEvaluated: evaluated.length,
+  averageMarks,
+  paymentStatus,
+  course,
+});
 
   };
 
@@ -106,6 +124,28 @@ export default function Progress() {
             {stats.averageMarks}
           </p>
         </div>
+        <div className="bg-purple-50 p-5 rounded-xl">
+
+  <h3 className="font-bold text-xl">
+    Payment Status
+  </h3>
+
+  <p className="text-3xl text-purple-700 font-bold mt-2">
+    {stats.paymentStatus}
+  </p>
+
+</div>
+<div className="bg-indigo-50 p-5 rounded-xl">
+
+  <h3 className="font-bold text-xl">
+    My Course
+  </h3>
+
+  <p className="text-xl text-indigo-700 font-bold mt-2">
+    {stats.course}
+  </p>
+
+</div>
 
       </div>
 
