@@ -157,7 +157,7 @@ const handleDelete = async (id) => {
   </button>
 
 </div>
-<div className="flex gap-4 mb-8">
+<div className="grid md:grid-cols-3 gap-4 mb-8">
 
   <button
     onClick={() => navigate("/create-live-session")}
@@ -191,6 +191,20 @@ const handleDelete = async (id) => {
   className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
 >
   View Payments
+</button>
+<button
+  onClick={() =>
+    navigate("/create-certificate")
+  }
+  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
+>
+  Upload Certificate
+</button>
+<button
+  onClick={() => navigate("/view-certificates")}
+  className="bg-red-600 text-white px-6 py-4 rounded-xl"
+>
+  View Certificates
 </button>
 
 

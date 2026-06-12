@@ -95,14 +95,12 @@ export default function Dashboard() {
   Download completion certificates.
 </p>
 
-<a
-  href="/certificates/ds-certificate.pdf"
-  target="_blank"
-  rel="noreferrer"
+<Link
+  to="/certificates"
   className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl font-semibold"
 >
-  Download Certificate
-</a>
+  View Certificates
+</Link>
           </div>
 
         </div>

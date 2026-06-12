@@ -12,6 +12,9 @@ import Privacy from "./pages/Privacy";
 import RefundPolicy from "./pages/RefundPolicy";
 import Contact from "./pages/Contact";
 import ViewPayments from "./pages/ViewPayments";
+import Certificates from "./pages/Certificates";
+import CreateCertificate from "./pages/CreateCertificate";
+import ViewCertificates from "./pages/ViewCertificates";
 
 import App from "./App";
 import Login from "./pages/Login";
@@ -51,6 +54,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ViewPayments />
   }
 />
+<Route path="/view-certificates" element={<ViewCertificates />} />
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
@@ -59,6 +63,18 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/course/:id" element={<CourseDetails />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/terms" element={<Terms />} />
+        <Route
+  path="/certificates"
+  element={<Certificates />}
+/>
+<Route
+  path="/create-certificate"
+  element={
+    <AdminProtectedRoute>
+      <CreateCertificate />
+    </AdminProtectedRoute>
+  }
+/>
 
 <Route path="/privacy" element={<Privacy />} />
 
