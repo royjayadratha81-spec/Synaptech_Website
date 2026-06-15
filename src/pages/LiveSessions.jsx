@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import {
   collection,
-  getDocs
+  getDocs,
+  query,
+  where
 } from "firebase/firestore";
-import { db } from "../firebase/firebaseConfig";
+import { db, auth } from "../firebase/firebaseConfig";
 
 export default function LiveSessions() {
     const [recordings, setRecordings] = useState([]);
@@ -29,6 +31,38 @@ export default function LiveSessions() {
 }, []);
 
   const [sessions, setSessions] = useState([]);
+  const [studentBatch, setStudentBatch] = useState("");
+  useEffect(() => {
+
+  fetchStudentBatch();
+
+}, []);
+
+const fetchStudentBatch = async () => {
+
+  const user = auth.currentUser;
+
+  if (!user) return;
+
+  const q = query(
+    collection(db, "students"),
+    where("email", "==", user.email)
+  );
+
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+
+    const studentData =
+      snapshot.docs[0].data();
+
+    setStudentBatch(
+      studentData.batchId || ""
+    );
+
+  }
+
+};
   useEffect(() => {
 
     const fetchSessions = async () => {
@@ -49,13 +83,18 @@ export default function LiveSessions() {
 
       });
 
-      setSessions(sessionList);
+      setSessions(
+  sessionList.filter(
+    (session) =>
+      session.batchId === studentBatch
+  )
+);
 
     };
 
     fetchSessions();
 
-  }, []);
+  }, [studentBatch]);
 
   return (
 
@@ -64,6 +103,9 @@ export default function LiveSessions() {
       <h1 className="text-4xl font-bold text-blue-900 mb-10">
         Live Sessions
       </h1>
+      <p className="mb-4 text-green-700 font-bold">
+  Batch: {studentBatch}
+</p>
 
       <div className="space-y-8">
 

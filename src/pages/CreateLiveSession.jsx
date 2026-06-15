@@ -1,5 +1,10 @@
-import { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { useState, useEffect } from "react";
+
+import {
+  collection,
+  addDoc,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
 export default function CreateLiveSession() {
@@ -8,21 +13,48 @@ export default function CreateLiveSession() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [meetLink, setMeetLink] = useState("");
+  const [batchId, setBatchId] = useState("");
+  const [batches, setBatches] = useState([]);
 
+  useEffect(() => {
+  fetchBatches();
+}, []);
+
+const fetchBatches = async () => {
+
+  const snapshot = await getDocs(
+    collection(db, "batches")
+  );
+
+  const batchList = [];
+
+  snapshot.forEach((docItem) => {
+
+    batchList.push({
+      id: docItem.id,
+      ...docItem.data(),
+    });
+
+  });
+
+  setBatches(batchList);
+
+};
   const handleSubmit = async () => {
 
     try {
 
       await addDoc(
-        collection(db, "liveSessions"),
-        {
-          title,
-          date,
-          time,
-          meetLink,
-          active: true,
-        }
-      );
+  collection(db, "liveSessions"),
+  {
+    title,
+    date,
+    time,
+    meetLink,
+    batchId,
+    active: true,
+  }
+);
 
       alert("Live Session Created");
 
@@ -30,6 +62,7 @@ export default function CreateLiveSession() {
       setDate("");
       setTime("");
       setMeetLink("");
+      setBatchId("");
 
     } catch (error) {
 
@@ -71,6 +104,28 @@ export default function CreateLiveSession() {
   onChange={(e) => setTime(e.target.value)}
   className="w-full border p-3 rounded-lg mb-4"
 />
+<select
+  value={batchId}
+  onChange={(e) => setBatchId(e.target.value)}
+  className="w-full border p-3 rounded-lg mb-4"
+>
+
+  <option value="">
+    Select Batch
+  </option>
+
+  {batches.map((batch) => (
+
+    <option
+      key={batch.id}
+      value={batch.id}
+    >
+      {batch.batchName}
+    </option>
+
+  ))}
+
+</select>
 
         <input
           type="text"

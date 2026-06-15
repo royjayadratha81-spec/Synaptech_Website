@@ -213,6 +213,12 @@ const handleDelete = async (id) => {
   View Certificates
 </button>
 <button
+  onClick={() => navigate("/assign-batch")}
+  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
+>
+  Assign Batch
+</button>
+<button
   onClick={() => navigate("/attendance")}
   className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
 >
@@ -337,6 +343,9 @@ const handleDelete = async (id) => {
     <p>Course: {student.course}</p>
 
     <p>
+      <p>
+  Batch: {student.batchId || "Not Assigned"}
+</p>
       Status:
       {student.approved ? " Approved" : " Pending"}
     </p>

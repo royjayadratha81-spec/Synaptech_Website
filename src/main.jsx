@@ -15,8 +15,10 @@ import ViewPayments from "./pages/ViewPayments";
 import Certificates from "./pages/Certificates";
 import CreateCertificate from "./pages/CreateCertificate";
 import ViewCertificates from "./pages/ViewCertificates";
+import AssignBatch from "./pages/AssignBatch";
 import Attendance from "./pages/Attendance";
 import CreateBatch from "./pages/CreateBatch";
+
 
 import App from "./App";
 import Login from "./pages/Login";
@@ -90,6 +92,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <AdminProtectedRoute>
       <CreateCertificate />
+    </AdminProtectedRoute>
+  }
+/>
+<Route
+  path="/assign-batch"
+  element={
+    <AdminProtectedRoute>
+      <AssignBatch />
     </AdminProtectedRoute>
   }
 />
