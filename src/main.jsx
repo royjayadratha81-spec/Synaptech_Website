@@ -15,6 +15,8 @@ import ViewPayments from "./pages/ViewPayments";
 import Certificates from "./pages/Certificates";
 import CreateCertificate from "./pages/CreateCertificate";
 import ViewCertificates from "./pages/ViewCertificates";
+import Attendance from "./pages/Attendance";
+import CreateBatch from "./pages/CreateBatch";
 
 import App from "./App";
 import Login from "./pages/Login";
@@ -41,6 +43,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/create-live-session" element={<CreateLiveSession />}/>
         <Route path="/create-recording" element={<CreateRecording />} />
         <Route
+  path="/create-batch"
+  element={
+    <AdminProtectedRoute>
+      <CreateBatch />
+    </AdminProtectedRoute>
+  }
+/>
+        <Route
   path="/view-submissions"
   element={
     <AdminProtectedRoute>
@@ -55,6 +65,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
 <Route path="/view-certificates" element={<ViewCertificates />} />
+<Route
+  path="/attendance"
+  element={
+    <AdminProtectedRoute>
+      <Attendance />
+    </AdminProtectedRoute>
+  }
+/>
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />

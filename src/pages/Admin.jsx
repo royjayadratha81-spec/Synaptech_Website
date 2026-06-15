@@ -149,6 +149,12 @@ const handleDelete = async (id) => {
   </h1>
 
   <button
+  onClick={() => navigate("/create-batch")}
+  className="bg-indigo-600 text-white px-5 py-3 rounded-xl"
+>
+  Create Batch
+</button>
+  <button
     onClick={handleLogout}
     
     className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700"
@@ -205,6 +211,12 @@ const handleDelete = async (id) => {
   className="bg-red-600 text-white px-6 py-4 rounded-xl"
 >
   View Certificates
+</button>
+<button
+  onClick={() => navigate("/attendance")}
+  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
+>
+  Attendance
 </button>
 
 
