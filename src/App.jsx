@@ -18,6 +18,7 @@ import certificate1 from "./assets/Sample_Certificate.png";
 import certificate2 from "./assets/Internship_Certificate.png";
 import ThankYou from "./pages/ThankYou";
 import Footer from "./components/Footer";
+
 export default function App() {
   const [showContactForm, setShowContactForm] = useState(false);
   return (

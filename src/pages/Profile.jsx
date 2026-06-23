@@ -2,8 +2,9 @@ import { getAuth } from "firebase/auth";
 
 export default function Profile() {
 
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const studentData = JSON.parse(
+  localStorage.getItem("studentData")
+);
 
   return (
 
@@ -17,7 +18,7 @@ export default function Profile() {
 
         <p className="text-lg">
           <span className="font-semibold">Email:</span>{" "}
-          {user?.email}
+          {studentData?.email}
         </p>
 
         <p className="text-lg">

@@ -15,9 +15,12 @@ export default function CreateLiveSession() {
   const [meetLink, setMeetLink] = useState("");
   const [batchId, setBatchId] = useState("");
   const [batches, setBatches] = useState([]);
+  const [moduleId, setModuleId] = useState("");
+const [modules, setModules] = useState([]);
 
   useEffect(() => {
   fetchBatches();
+  fetchModules();
 }, []);
 
 const fetchBatches = async () => {
@@ -40,6 +43,30 @@ const fetchBatches = async () => {
   setBatches(batchList);
 
 };
+const fetchModules = async () => {
+
+  const snapshot = await getDocs(
+    collection(db, "modules")
+  );
+
+  const moduleList = [];
+
+  snapshot.forEach((docItem) => {
+
+    moduleList.push({
+      id: docItem.id,
+      ...docItem.data(),
+    });
+
+  });
+
+  moduleList.sort(
+    (a, b) => a.moduleOrder - b.moduleOrder
+  );
+
+  setModules(moduleList);
+
+};
   const handleSubmit = async () => {
 
     try {
@@ -52,6 +79,7 @@ const fetchBatches = async () => {
     time,
     meetLink,
     batchId,
+    moduleId,
     active: true,
   }
 );
@@ -63,6 +91,7 @@ const fetchBatches = async () => {
       setTime("");
       setMeetLink("");
       setBatchId("");
+      setModuleId("");
 
     } catch (error) {
 
@@ -121,6 +150,27 @@ const fetchBatches = async () => {
       value={batch.id}
     >
       {batch.batchName}
+    </option>
+
+  ))}
+
+</select>
+<select
+  value={moduleId}
+  onChange={(e) => setModuleId(e.target.value)}
+  className="w-full border p-3 rounded-lg mb-4"
+>
+  <option value="">
+    Select Module
+  </option>
+
+  {modules.map((module) => (
+
+    <option
+      key={module.id}
+      value={module.id}
+    >
+      {module.moduleName}
     </option>
 
   ))}

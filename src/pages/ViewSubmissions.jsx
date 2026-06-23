@@ -83,7 +83,13 @@ export default function ViewSubmissions() {
 </p>
 
 <p className="text-gray-600 mt-1">
-  Submitted On: {item.submittedAt}
+  Submitted On: {
+    item.submittedAt?.seconds
+      ? new Date(
+          item.submittedAt.seconds * 1000
+        ).toLocaleString()
+      : item.submittedAt
+  }
 </p>
 
               <p className="text-green-600 font-semibold mt-2">

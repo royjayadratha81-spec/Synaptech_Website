@@ -1,5 +1,9 @@
-import { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import {
+  collection,
+  addDoc,
+  getDocs
+} from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
 export default function CreateRecording() {
@@ -8,6 +12,63 @@ export default function CreateRecording() {
   const [videoLink, setVideoLink] = useState("");
   const [duration, setDuration] = useState("");
   const [platform, setPlatform] = useState("");
+  const [batchId, setBatchId] = useState("");
+const [moduleId, setModuleId] = useState("");
+
+const [batches, setBatches] = useState([]);
+const [modules, setModules] = useState([]);
+useEffect(() => {
+
+  fetchBatches();
+  fetchModules();
+
+}, []);
+
+const fetchBatches = async () => {
+
+  const snapshot = await getDocs(
+    collection(db, "batches")
+  );
+
+  const batchList = [];
+
+  snapshot.forEach((docItem) => {
+
+    batchList.push({
+      id: docItem.id,
+      ...docItem.data(),
+    });
+
+  });
+
+  setBatches(batchList);
+
+};
+
+const fetchModules = async () => {
+
+  const snapshot = await getDocs(
+    collection(db, "modules")
+  );
+
+  const moduleList = [];
+
+  snapshot.forEach((docItem) => {
+
+    moduleList.push({
+      id: docItem.id,
+      ...docItem.data(),
+    });
+
+  });
+
+  moduleList.sort(
+    (a, b) => a.moduleOrder - b.moduleOrder
+  );
+
+  setModules(moduleList);
+
+};
 
   const handleSubmit = async () => {
 
@@ -17,6 +78,8 @@ export default function CreateRecording() {
   collection(db, "recordedSessions"),
   {
     title,
+    batchId,
+    moduleId,
     videoLink,
     duration,
     platform,
@@ -27,6 +90,8 @@ export default function CreateRecording() {
       alert("Recording Added Successfully");
 
       setTitle("");
+setBatchId("");
+setModuleId("");
 setVideoLink("");
 setDuration("");
 setPlatform("");
@@ -57,6 +122,52 @@ setPlatform("");
           onChange={(e) => setTitle(e.target.value)}
           className="w-full border p-3 rounded-lg mb-4"
         />
+        <select
+  value={batchId}
+  onChange={(e) =>
+    setBatchId(e.target.value)
+  }
+  className="w-full border p-3 rounded-lg mb-4"
+>
+  <option value="">
+    Select Batch
+  </option>
+
+  {batches.map((batch) => (
+
+    <option
+      key={batch.id}
+      value={batch.id}
+    >
+      {batch.batchName}
+    </option>
+
+  ))}
+
+</select>
+<select
+  value={moduleId}
+  onChange={(e) =>
+    setModuleId(e.target.value)
+  }
+  className="w-full border p-3 rounded-lg mb-4"
+>
+  <option value="">
+    Select Module
+  </option>
+
+  {modules.map((module) => (
+
+    <option
+      key={module.id}
+      value={module.id}
+    >
+      {module.moduleName}
+    </option>
+
+  ))}
+
+</select>
 
         <input
           type="text"

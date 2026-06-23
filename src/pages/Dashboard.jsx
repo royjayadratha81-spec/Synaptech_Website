@@ -4,8 +4,18 @@ import { useNavigate } from "react-router-dom";
 import Progress from "./Progress";
 import Profile from "./Profile";
 import { Link } from "react-router-dom";
+import dashboardBg from "../assets/dashboard-bg.jpg";
 export default function Dashboard() {
   const navigate = useNavigate();
+  const studentData = JSON.parse(
+  localStorage.getItem("studentData")
+);
+
+const studentName =
+  studentData?.name || "Student";
+
+const studentCourse =
+  studentData?.course || "";
   
   const handleLogout = async () => {
   await signOut(auth);
@@ -14,7 +24,13 @@ export default function Dashboard() {
 
   return (
 
-    <div className="min-h-screen bg-gray-100">
+    <div
+  className="min-h-screen bg-cover bg-center bg-fixed"
+  style={{
+    backgroundImage: `url(${dashboardBg})`,
+  }}
+>
+  <div className="min-h-screen bg-white/70 backdrop-blur-sm">
 
       <nav className="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow-lg">
 
@@ -33,11 +49,20 @@ export default function Dashboard() {
 
       <div className="p-6">
 
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">
-          Welcome Student 👋
-        </h2>
+        <div className="bg-white/80 rounded-2xl p-6 shadow-lg mb-6">
+
+  <h2 className="text-3xl font-bold text-blue-900">
+    Welcome, {studentName} 👋
+  </h2>
+
+  <p className="text-lg text-gray-700 mt-2">
+    {studentCourse}
+  </p>
+
+</div>
         <div className="mb-10">
   <Profile />
+  
 </div>
 <div className="mb-10">
   <Progress />
@@ -45,44 +70,19 @@ export default function Dashboard() {
 
          <div className="grid md:grid-cols-3 gap-8 items-stretch">
 
-          <Link to="/courses">
+          
 
-  <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition cursor-pointer h-full">
-
-    <h3 className="text-xl font-bold mb-3 text-blue-800">
-      My Courses
-    </h3>
-
-    <p className="text-gray-600">
-      Access your enrolled courses.
-    </p>
-
-  </div>
-
-</Link>
-<Link to="/live-sessions">
-  <div className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition cursor-pointer h-full">
-
-    <h3 className="text-xl font-bold mb-3 text-red-700">
-      Live Sessions
-    </h3>
-
-    <p className="text-gray-600">
-      Join upcoming live classes.
-    </p>
-
-  </div>
-</Link>
-
-          <Link to="/assignments">
+<Link to="/modules">
   <div className="bg-white p-6 rounded-2xl shadow-lg h-full hover:shadow-xl cursor-pointer transition">
-    <h3 className="text-xl font-bold mb-3 text-green-700">
-      Assignments
+
+    <h3 className="text-xl font-bold mb-3 text-indigo-700">
+      Course Modules
     </h3>
 
     <p className="text-gray-600">
-      Submit and track assignments.
+      Access Python, NumPy, Pandas, Machine Learning, Generative AI and other learning modules.
     </p>
+
   </div>
 </Link>
 
@@ -108,6 +108,7 @@ export default function Dashboard() {
       </div>
 
     </div>
+  </div>
 
   );
 

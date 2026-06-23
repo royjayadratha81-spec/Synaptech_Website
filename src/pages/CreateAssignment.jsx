@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../supabase/supabase";
-import { collection, addDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs
+} from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
 export default function CreateAssignment() {
@@ -9,6 +13,63 @@ export default function CreateAssignment() {
   const [dueDate, setDueDate] = useState("");
   const [assignmentFile, setAssignmentFile] = useState(null);
   const [fileUrl, setFileUrl] = useState("");
+  const [batchId, setBatchId] = useState("");
+const [moduleId, setModuleId] = useState("");
+
+const [batches, setBatches] = useState([]);
+const [modules, setModules] = useState([]);
+useEffect(() => {
+
+  fetchBatches();
+  fetchModules();
+
+}, []);
+
+const fetchBatches = async () => {
+
+  const snapshot = await getDocs(
+    collection(db, "batches")
+  );
+
+  const batchList = [];
+
+  snapshot.forEach((docItem) => {
+
+    batchList.push({
+      id: docItem.id,
+      ...docItem.data(),
+    });
+
+  });
+
+  setBatches(batchList);
+
+};
+
+const fetchModules = async () => {
+
+  const snapshot = await getDocs(
+    collection(db, "modules")
+  );
+
+  const moduleList = [];
+
+  snapshot.forEach((docItem) => {
+
+    moduleList.push({
+      id: docItem.id,
+      ...docItem.data(),
+    });
+
+  });
+
+  moduleList.sort(
+    (a, b) => a.moduleOrder - b.moduleOrder
+  );
+
+  setModules(moduleList);
+
+};
 
   const handleSubmit = async () => {
   try {
@@ -41,20 +102,31 @@ if (error) {
     }
 
     await addDoc(collection(db, "assignments"), {
-      title,
-      description,
-      dueDate,
-      fileUrl,
-      assignmentFileUrl,
-      createdAt: new Date(),
-    });
+  title,
+  description,
+  dueDate,
+
+  batchId,
+  moduleId,
+
+  fileUrl,
+  assignmentFileUrl,
+
+  createdAt: new Date(),
+  active: true,
+});
 
     alert("Assignment Created Successfully");
 
     setTitle("");
 setDescription("");
 setDueDate("");
+
+setBatchId("");
+setModuleId("");
+
 setFileUrl("");
+setAssignmentFile(null);
   } catch (error) {
     console.error(error);
     alert("Error Creating Assignment");
@@ -75,6 +147,52 @@ setFileUrl("");
           onChange={(e) => setTitle(e.target.value)}
           className="w-full border p-3 rounded-lg mb-4"
         />
+        <select
+  value={batchId}
+  onChange={(e) =>
+    setBatchId(e.target.value)
+  }
+  className="w-full border p-3 rounded-lg mb-4"
+>
+  <option value="">
+    Select Batch
+  </option>
+
+  {batches.map((batch) => (
+
+    <option
+      key={batch.id}
+      value={batch.id}
+    >
+      {batch.batchName}
+    </option>
+
+  ))}
+
+</select>
+<select
+  value={moduleId}
+  onChange={(e) =>
+    setModuleId(e.target.value)
+  }
+  className="w-full border p-3 rounded-lg mb-4"
+>
+  <option value="">
+    Select Module
+  </option>
+
+  {modules.map((module) => (
+
+    <option
+      key={module.id}
+      value={module.id}
+    >
+      {module.moduleName}
+    </option>
+
+  ))}
+
+</select>
 
         <textarea
           placeholder="Assignment Description"

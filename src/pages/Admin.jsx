@@ -142,89 +142,132 @@ const handleDelete = async (id) => {
 
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8">
 
-  <h1 className="text-4xl font-bold text-blue-800">
-    Admin Panel
-  </h1>
+  <div className="flex justify-between items-center">
 
-  <button
+    <h1 className="text-4xl font-bold text-blue-800">
+      Admin Panel
+    </h1>
+
+    <button
+      onClick={handleLogout}
+      className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700"
+    >
+      Logout
+    </button>
+
+  </div>
+
+</div>
+<div className="grid md:grid-cols-2 gap-4 mb-8">
+  <h2 className="text-xl font-bold col-span-2 text-blue-700">
+  Academic Management
+</h2>
+<button
   onClick={() => navigate("/create-batch")}
-  className="bg-indigo-600 text-white px-5 py-3 rounded-xl"
+  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
 >
   Create Batch
 </button>
-  <button
-    onClick={handleLogout}
-    
-    className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700"
-  >
-    Logout
-  </button>
 
-</div>
-<div className="grid md:grid-cols-3 gap-4 mb-8">
-
-  <button
-    onClick={() => navigate("/create-live-session")}
-    className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
-  >
-    Create Live Session
-  </button>
-
-  <button
-    onClick={() => navigate("/create-recording")}
-    className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-xl"
-  >
-    Create Recording
-  </button>
-  <button
-    onClick={() => navigate("/create-assignment")}
-    className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-3 rounded-xl"
-  >
-    Create Assignment
-  </button>
-  <button
-  onClick={() => navigate("/view-submissions")}
-  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
->
-  View Submissions
-</button>
-<button
-  onClick={() =>
-    navigate("/view-payments")
-  }
-  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
->
-  View Payments
-</button>
-<button
-  onClick={() =>
-    navigate("/create-certificate")
-  }
-  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
->
-  Upload Certificate
-</button>
-<button
-  onClick={() => navigate("/view-certificates")}
-  className="bg-red-600 text-white px-6 py-4 rounded-xl"
->
-  View Certificates
-</button>
 <button
   onClick={() => navigate("/assign-batch")}
   className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
 >
   Assign Batch
 </button>
+
+<button
+  onClick={() => navigate("/upload-course-material")}
+  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
+>
+  Upload Course Material
+</button>
+<h2 className="text-xl font-bold col-span-2 text-purple-700 mt-4">
+  Assessments
+</h2>
+<button
+  onClick={() => navigate("/create-assignment")}
+  className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-3 rounded-xl"
+>
+  Create Assignment
+</button>
+
+<button
+  onClick={() => navigate("/create-mcq-test")}
+  className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-xl"
+>
+  Create MCQ Test
+</button>
+
+<button
+  onClick={() => navigate("/view-submissions")}
+  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
+>
+  View Submissions
+</button>
+
+<button
+  onClick={() => navigate("/view-mcq-results")}
+  className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl"
+>
+  View MCQ Results
+</button>
+  
+<h2 className="text-xl font-bold col-span-2 text-green-700 mt-4">
+  Learning Content
+</h2>
+
+<button
+  onClick={() => navigate("/create-live-session")}
+  className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
+>
+  Create Live Session
+</button>
+
+<button
+  onClick={() => navigate("/create-recording")}
+  className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-xl"
+>
+  Create Recording
+</button>
+
+<h2 className="text-xl font-bold col-span-2 text-green-700 mt-4">
+  Finance & Certificates
+</h2>
+
+<button
+  onClick={() => navigate("/view-payments")}
+  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
+>
+  View Payments
+</button>
+
+<button
+  onClick={() => navigate("/create-certificate")}
+  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
+>
+  Upload Certificate
+</button>
+
+<button
+  onClick={() => navigate("/view-certificates")}
+  className="bg-red-600 text-white px-6 py-3 rounded-xl"
+>
+  View Certificates
+</button>
+
+<h2 className="text-xl font-bold col-span-2 text-indigo-700 mt-4">
+  Operations
+</h2>
+
 <button
   onClick={() => navigate("/attendance")}
   className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
 >
   Attendance
 </button>
-
 
 </div>
 

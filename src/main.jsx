@@ -6,6 +6,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminProtectedRoute from "./pages/AdminProtectedRoute";
 import CreateAssignment from "./pages/CreateAssignment";
 import ViewSubmissions from "./pages/ViewSubmissions";
+import ViewMcqResults from "./pages/ViewMcqResults";
 import Payment from "./pages/Payment";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -15,9 +16,16 @@ import ViewPayments from "./pages/ViewPayments";
 import Certificates from "./pages/Certificates";
 import CreateCertificate from "./pages/CreateCertificate";
 import ViewCertificates from "./pages/ViewCertificates";
+import UploadCourseMaterial from "./pages/UploadCourseMaterial";
 import AssignBatch from "./pages/AssignBatch";
 import Attendance from "./pages/Attendance";
 import CreateBatch from "./pages/CreateBatch";
+import Modules from "./pages/Modules";
+import ModuleDetails from "./pages/ModuleDetails";
+import AssignmentSubmissions
+from "./pages/AssignmentSubmissions";
+import CreateMcqTest from "./pages/CreateMcqTest";
+
 
 
 import App from "./App";
@@ -45,6 +53,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/create-live-session" element={<CreateLiveSession />}/>
         <Route path="/create-recording" element={<CreateRecording />} />
         <Route
+  path="/create-mcq-test"
+  element={
+    <AdminProtectedRoute>
+      <CreateMcqTest />
+    </AdminProtectedRoute>
+  }
+/>
+        <Route
   path="/create-batch"
   element={
     <AdminProtectedRoute>
@@ -57,6 +73,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <AdminProtectedRoute>
       <ViewSubmissions />
+    </AdminProtectedRoute>
+  }
+/>
+<Route
+  path="/view-mcq-results"
+  element={
+    <AdminProtectedRoute>
+      <ViewMcqResults />
     </AdminProtectedRoute>
   }
 />
@@ -96,11 +120,25 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
 <Route
+  path="/upload-course-material"
+  element={
+    <AdminProtectedRoute>
+      <UploadCourseMaterial />
+    </AdminProtectedRoute>
+  }
+/>
+<Route
   path="/assign-batch"
   element={
     <AdminProtectedRoute>
       <AssignBatch />
     </AdminProtectedRoute>
+  }
+/>
+<Route
+  path="/assignment-submissions"
+  element={
+    <AssignmentSubmissions />
   }
 />
 
@@ -124,6 +162,22 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <ProtectedRoute>
       <Courses />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/modules"
+  element={
+    <ProtectedRoute>
+      <Modules />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/module/:moduleId"
+  element={
+    <ProtectedRoute>
+      <ModuleDetails />
     </ProtectedRoute>
   }
 />

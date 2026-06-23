@@ -5,11 +5,9 @@ import { Link } from "react-router-dom";
 import {
   collection,
   getDocs,
-  doc,
-  getDoc
 } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
-import { auth } from "../firebase/firebaseConfig";
+
 
 export default function Courses() {
 
@@ -19,42 +17,15 @@ export default function Courses() {
   useEffect(() => {
     const fetchStudentCourse = async () => {
 
-  const user = auth.currentUser;
-
-  if (!user) return;
-
-  const studentDoc = await getDoc(
-    doc(db, "students", user.uid)
-  );
-  console.log("User UID:", user.uid);
-
-if (studentDoc.exists()) {
-  console.log("Student Data:", studentDoc.data());
-
-  setStudentCourse(
-    studentDoc.data().course
-  );
-}
-
-  if (studentDoc.exists()) {
-
-  console.log(
-    "Student Course:",
-    studentDoc.data().course
+  const studentData = JSON.parse(
+    localStorage.getItem("studentData")
   );
 
-  console.log(
-  "Student Course:",
-  studentDoc.data().course
-);
+  if (!studentData) return;
 
-setStudentCourse(
-  studentDoc.data().course
-);
+  setStudentCourse(studentData.course);
 
-}
-
-  }
+};
     // end fetchStudentCourse
 
     const fetchCourses = async () => {
