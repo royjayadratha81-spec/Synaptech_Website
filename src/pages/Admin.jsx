@@ -1,6 +1,7 @@
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import emailjs from "@emailjs/browser";
 import { useState, useEffect } from "react";
 import { db } from "../firebase/firebaseConfig";
 import {
@@ -80,6 +81,61 @@ const handleApprove = async (id) => {
   });
 
   fetchStudents();
+
+};
+const handleReject = async (student) => {
+
+  const confirmReject = window.confirm(
+    `Are you sure you want to reject ${student.name}?`
+  );
+
+  if (!confirmReject) return;
+
+  try {
+
+    alert("Reject button clicked");
+
+    const docRef = await addDoc(
+      collection(db, "rejectedStudents"),
+      {
+        name: student.name,
+        email: student.email,
+        course: student.course,
+        batchId: student.batchId || "",
+        approved: false,
+        status: "Rejected",
+        rejectedAt: new Date(),
+      }
+    );
+    await emailjs.send(
+  "service_fn8zbdq",
+  "template_d9tehm1",
+  {
+    student_name: student.name,
+    student_email: student.email,
+    course_name: student.course,
+    reason: "Admission application has been rejected.",
+  },
+  "HjqRvMOk3WuEtbitd"
+);
+
+    alert("Saved to rejectedStudents");
+
+    await deleteDoc(
+      doc(db, "students", student.id)
+    );
+
+    alert("Deleted from students");
+
+    fetchStudents();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
 
 };
 const handleDeleteStudent = async (id) => {
@@ -386,39 +442,51 @@ const handleDelete = async (id) => {
     <p>Course: {student.course}</p>
 
     <p>
-      <p>
   Batch: {student.batchId || "Not Assigned"}
 </p>
-      Status:
-      {student.approved ? " Approved" : " Pending"}
-    </p>
 
-    {!student.approved && (
-  <>
+<p>
+  Status:
+  {student.approved ? " Approved" : " Pending"}
+</p>
+
+    <>
+  {!student.approved && (
     <button
       onClick={() => handleApprove(student.id)}
     >
       Approve Student
     </button>
+  )}
 
-    <button
-      onClick={() => handleDeleteStudent(student.id)}
-      style={{
-        marginLeft: "10px",
-        background: "red",
-        color: "white",
-        border: "none",
-        padding: "5px 10px",
-        cursor: "pointer",
-      }}
-    >
-      Delete Student
-    </button>
-  
+  <button
+    onClick={() => handleReject(student)}
+    style={{
+      marginLeft: "10px",
+      background: "orange",
+      color: "white",
+      border: "none",
+      padding: "5px 10px",
+      cursor: "pointer",
+    }}
+  >
+    Reject Student
+  </button>
 
+  <button
+    onClick={() => handleDeleteStudent(student.id)}
+    style={{
+      marginLeft: "10px",
+      background: "red",
+      color: "white",
+      border: "none",
+      padding: "5px 10px",
+      cursor: "pointer",
+    }}
+  >
+    Delete Student
+  </button>
 </>
-
-)}
 
 </div>
 ))}

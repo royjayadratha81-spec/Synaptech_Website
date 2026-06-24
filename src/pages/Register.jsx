@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { app } from "../firebase/firebaseConfig";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import aiBg from "../assets/ai3.jpg";
-import emailjs from "@emailjs/browser";
+
 
 export default function Register() {
 
@@ -33,28 +33,35 @@ await setDoc(doc(db, "students", user.uid), {
   approved: false,
   createdAt: new Date(),
 });
-await emailjs.send(
-  "service_5vgn1e4",
-  "template_btlsdzj",
-  {
-    name: name,
-    course: course,
-    email: email,
-  },
-  "rdTcDeBnoocEPDQkn"
+
+
+      
+alert(
+  "Enrollment submitted successfully. Our admissions team will review your application."
 );
-
-      alert("Registration Successful");
-
       navigate("/thank-you");
 
     } catch (error) {
 
-      console.log(error);
+  console.log(error);
 
-  alert(JSON.stringify(error));
+  if (
+    error.code === "auth/email-already-in-use"
+  ) {
 
-    }
+    alert(
+      "This email is already registered. Please login or use another email address."
+    );
+
+  } else {
+
+    alert(
+      "Registration failed. Please try again."
+    );
+
+  }
+
+}
 
   };
 
