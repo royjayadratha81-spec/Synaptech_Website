@@ -3,7 +3,8 @@ import {
   collection,
   getDocs,
   updateDoc,
-  doc
+  doc,
+  getDoc
 } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
@@ -18,8 +19,8 @@ export default function ViewPayments() {
   const fetchPayments = async () => {
 
     const querySnapshot = await getDocs(
-      collection(db, "payments")
-    );
+    collection(db, "finance")
+);
 
     const data = querySnapshot.docs.map((docItem) => ({
       id: docItem.id,
@@ -29,17 +30,50 @@ export default function ViewPayments() {
     setPayments(data);
   };
 
-  const approvePayment = async (id) => {
+  const approvePayment = async (item) => {
 
-    await updateDoc(
-      doc(db, "payments", id),
-      {
-        paymentStatus: "Approved",
-      }
-    );
+  const financeRef = doc(
+    db,
+    "finance",
+    item.studentId
+  );
 
-    fetchPayments();
-  };
+  const financeSnap = await getDoc(financeRef);
+  const financeData = financeSnap.data();
+  // Prevent duplicate approval
+if (item.paymentStatus === "Approved") {
+
+  alert("This payment has already been approved.");
+
+  return;
+  await updateDoc(
+    doc(db, "students", item.studentId),
+    {
+        approved: true,
+        paymentStatus: "Paid",
+        approvedAt: new Date().toLocaleString(),
+        approvedBy: "Admin",
+    }
+);
+
+alert("Student approved successfully.");
+
+}
+
+console.log("Finance Data :", financeData);
+
+  if (!financeSnap.exists()) {
+
+    alert("Finance record not found.");
+
+    return;
+
+  }
+
+  alert("Finance record found.");
+
+};
+
 
   const rejectPayment = async (id) => {
 
@@ -79,6 +113,10 @@ export default function ViewPayments() {
             </p>
 
             <p className="mt-2">
+  Student ID: {item.studentId}
+</p>
+
+            <p className="mt-2">
               Submitted On: {item.submittedAt}
             </p>
 
@@ -100,7 +138,7 @@ export default function ViewPayments() {
             <div className="mt-4 flex gap-4">
 
               <button
-                onClick={() => approvePayment(item.id)}
+                onClick={() => approvePayment(item)}
                 className="bg-green-600 text-white px-4 py-2 rounded-lg"
               >
                 Approve

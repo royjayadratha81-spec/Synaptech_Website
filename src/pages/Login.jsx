@@ -6,8 +6,10 @@ import { app } from "../firebase/firebaseConfig";
 import { db } from "../firebase/firebaseConfig";
 
 import {
-  collection,
-  getDocs,
+    collection,
+    query,
+    where,
+    getDocs
 } from "firebase/firestore";
 
 export default function Login() {
@@ -32,48 +34,98 @@ export default function Login() {
     const userEmail =
       userCredential.user.email;
 
-    const querySnapshot =
-      await getDocs(
-        collection(db, "students")
-      );
+    const studentQuery = query(
+    collection(db, "students"),
+    where("email", "==", userEmail)
+);
 
-    let studentData = null;
+const querySnapshot = await getDocs(studentQuery);
 
-    querySnapshot.forEach((docItem) => {
+let studentData = null;
 
-      const data = docItem.data();
+if (!querySnapshot.empty) {
 
-      if (data.email === userEmail) {
-        studentData = data;
-      }
+    const studentDoc = querySnapshot.docs[0];
 
-    });
+    studentData = {
+        studentId: studentDoc.id,
+        ...studentDoc.data(),
+    };
+    console.log("Student found:", studentData);
 
-    if (
-      studentData &&
-      studentData.approved === true
-    ) {
+}
 
-      localStorage.setItem(
-        "studentData",
-        JSON.stringify({
-          name: studentData.name,
-          email: studentData.email,
-          course: studentData.course,
-        })
-      );
+    if (!studentData) {
 
-      navigate("/dashboard");
+    await auth.signOut();
 
-    } else {
+    alert("Student record not found.");
 
-      await auth.signOut();
+    return;
+}
 
-      alert(
-        "Your admission is pending approval. Please wait for confirmation from Synaptech Education."
-      );
+// Registration received but not approved
+if (!studentData.approved) {
 
-    }
+    await auth.signOut();
+
+    alert(
+        "Your registration has been received and is awaiting admin approval."
+    );
+
+    return;
+}
+
+// Approved but fee pending
+if (studentData.status === "Fee Pending") {
+
+    await auth.signOut();
+
+    alert(
+        "Your payment is pending verification. LMS access will be activated once your payment is verified."
+    );
+
+    return;
+}
+
+// Admitted but LMS not yet activated
+if (
+    studentData.status === "Admitted" &&
+    !studentData.lmsAccess
+) {
+
+    await auth.signOut();
+
+    alert(
+        "Your admission has been completed. Your LMS account is currently being activated."
+    );
+
+    return;
+}
+
+// Active but LMS flag missing
+if (
+    studentData.status === "Active" &&
+    !studentData.lmsAccess
+) {
+
+    await auth.signOut();
+
+    alert(
+        "Your LMS access has not yet been enabled. Please contact Synaptech Education."
+    );
+
+    return;
+}
+
+// Everything is correct
+
+localStorage.setItem(
+    "studentData",
+    JSON.stringify(studentData)
+);
+
+navigate("/learning-hub");
 
   } catch (error) {
 

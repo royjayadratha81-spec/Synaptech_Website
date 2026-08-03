@@ -17,18 +17,28 @@ export default function Assignments() {
   useState("");
   useEffect(() => {
   const fetchAssignments = async () => {
-    const querySnapshot = await getDocs(
-      collection(db, "assignments")
-    );
 
-    const data = querySnapshot.docs.map((doc) => ({
+  const studentData = JSON.parse(
+    localStorage.getItem("studentData")
+  );
+
+  const querySnapshot = await getDocs(
+    collection(db, "assignments")
+  );
+
+  const data = querySnapshot.docs
+    .map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    }));
+    }))
+    .filter(
+      (assignment) =>
+        assignment.batchId === studentData?.batchId
+    );
 
-    setAssignments(data);
-  };
+  setAssignments(data);
 
+};
   fetchAssignments();
 }, []);
 
@@ -72,24 +82,78 @@ export default function Assignments() {
 );
 
 console.log("Student Data:", studentData);
+const submissionData = {
+  assignmentId: selectedAssignment.id,
+
+  assignmentTitle: selectedAssignment.title,
+
+  assignmentType: selectedAssignment.type,
+
+  moduleId: selectedAssignment.moduleId,
+
+  batchId: studentData.batchId,
+
+  batchName: studentData.batchName,
+
+  fileName: selectedFile.name,
+
+  fileUrl: fileUrl,
+
+  studentName: studentData.name,
+
+  studentEmail: studentData.email,
+
+  submittedAt: new Date().toLocaleString(),
+
+  status: "Submitted",
+
+  evaluated: false,
+
+  marks: 0,
+
+  remarks: "",
+};
+
+console.log("SUBMISSION DATA", submissionData);
+
+await addDoc(
+  collection(db, "submissions"),
+  submissionData
+);
 
       await addDoc(
   collection(db, "submissions"),
   {
-    assignmentTitle: selectedAssignment,
+    assignmentId: selectedAssignment.id,
+
+    assignmentTitle: selectedAssignment.title,
+
+    assignmentType: selectedAssignment.type,
+
+    moduleId: selectedAssignment.moduleId,
+
+    batchId: studentData.batchId,
+
+    batchName: studentData.batchName,
+
     fileName: selectedFile.name,
+
     fileUrl: fileUrl,
 
-    studentName:
-      studentData?.name || "Unknown",
+    studentName: studentData.name,
 
-    studentEmail:
-      studentData?.email || "Unknown",
+    studentEmail: studentData.email,
 
-    submittedAt:
-      new Date().toLocaleString(),
+    submittedAt: new Date().toLocaleString(),
 
     status: "Submitted",
+
+    evaluated: false,
+
+    marks: 0,
+
+    remarks: "",
+
   }
 );
 
@@ -192,29 +256,33 @@ console.log("Student Data:", studentData);
   </label>
 
   <select
-    value={selectedAssignment}
-    onChange={(e) =>
-      setSelectedAssignment(e.target.value)
-    }
-    className="w-full border p-3 rounded-xl"
-  >
+  value={selectedAssignment?.id || ""}
+  onChange={(e) => {
+    const assignment = assignments.find(
+      (a) => a.id === e.target.value
+    );
 
-    <option value="">
-      Choose Assignment
+    setSelectedAssignment(assignment);
+  }}
+  className="w-full border p-3 rounded-xl"
+>
+
+  <option value="">
+    Choose Assignment
+  </option>
+
+  {assignments.map((assignment) => (
+
+    <option
+      key={assignment.id}
+      value={assignment.id}
+    >
+      {assignment.title}
     </option>
 
-    {assignments.map((assignment) => (
+  ))}
 
-      <option
-        key={assignment.id}
-        value={assignment.title}
-      >
-        {assignment.title}
-      </option>
-
-    ))}
-
-  </select>
+</select>
 
 </div>
 

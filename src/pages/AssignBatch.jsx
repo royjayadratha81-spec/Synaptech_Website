@@ -5,7 +5,9 @@ import {
   getDocs,
   doc,
   updateDoc,
+  getDoc,
 } from "firebase/firestore";
+import { createStudentAnalytics } from "../utils/createStudentAnalytics";
 
 export default function AssignBatch() {
   const [students, setStudents] = useState([]);
@@ -42,30 +44,50 @@ export default function AssignBatch() {
 
     snapshot.forEach((docItem) => {
       batchList.push({
-        id: docItem.id,
-        ...docItem.data(),
-      });
+    id: docItem.id,
+    batchId: docItem.id,
+    ...docItem.data(),
+});
     });
 
     setBatches(batchList);
   };
 
   const assignBatch = async (
-    studentId,
-    batchId
-  ) => {
+  studentId,
+  batchId
+) => {
 
-    await updateDoc(
-      doc(db, "students", studentId),
-      {
-        batchId,
-      }
-    );
+  const selectedBatch = batches.find(
+    (batch) => batch.batchId === batchId
+);
 
-    alert("Batch Assigned");
+  if (!selectedBatch) {
+    alert("Batch not found");
+    return;
+  }
 
-    fetchStudents();
-  };
+  await updateDoc(
+  doc(db, "students", studentId),
+  {
+    batchId: selectedBatch.batchId,
+    batchName: selectedBatch.batchName,
+    course: selectedBatch.course,
+    startDate: selectedBatch.startDate,
+    endDate: selectedBatch.endDate,
+  }
+);
+  const studentRef = doc(db, "students", studentId);
+
+const studentSnap = await getDoc(studentRef);
+
+const student = studentSnap.data();
+await createStudentAnalytics(student);
+
+  alert("Batch Assigned Successfully");
+
+  fetchStudents();
+};
 
   return (
     <div className="min-h-screen p-10">
@@ -74,7 +96,9 @@ export default function AssignBatch() {
         Assign Batch
       </h1>
 
-      {students.map((student) => (
+      {students
+  .filter((student) => student.approved === true)
+  .map((student) => (
         <div
           key={student.id}
           className="border p-4 mb-4 rounded"
@@ -84,31 +108,32 @@ export default function AssignBatch() {
           <p>{student.email}</p>
 
           <p>
-            Current Batch:
-            {" "}
-            {student.batchId || "Not Assigned"}
-          </p>
+Current Batch:
+{" "}
+{student.batchName || "Not Assigned"}
+</p>
 
           <select
-            onChange={(e) =>
-              assignBatch(
-                student.id,
-                e.target.value
-              )
-            }
-            className="border p-2 mt-2"
-          >
-            <option>
-              Select Batch
-            </option>
+  value={student.batchId || ""}
+  onChange={(e) =>
+    assignBatch(
+      student.id,
+      e.target.value
+    )
+  }
+  className="border p-2 mt-2"
+>
+            <option value="">
+  Select Batch
+</option>
 
             {batches.map((batch) => (
               <option
-                key={batch.id}
-                value={batch.id}
-              >
-                {batch.batchName}
-              </option>
+    key={batch.id}
+    value={batch.batchId}
+>
+    {batch.batchName}
+</option>
             ))}
           </select>
 

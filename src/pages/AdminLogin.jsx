@@ -1,35 +1,73 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
+import {
+  doc,
+  getDoc,
+} from "firebase/firestore";
+
+import { db } from "../firebase/firebaseConfig";
+
 export default function AdminLogin() {
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+
     try {
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+
+      const adminRef = doc(db, "admins", email);
+
+      const adminSnap = await getDoc(adminRef);
+
+      if (!adminSnap.exists()) {
+
+        alert("Admin not found");
+
+        return;
+
+      }
+
+      const adminData = adminSnap.data();
+
+      if (adminData.password !== password) {
+
+        alert("Incorrect Password");
+
+        return;
+
+      }
+
+      localStorage.setItem("isAdmin", "true");
+      localStorage.setItem("adminEmail", email);
 
       navigate("/admin");
-    } catch (error) {
-      alert("Invalid Admin Credentials");
+
     }
+
+    catch (error) {
+
+      console.error(error);
+
+      alert("Login Failed");
+
+    }
+
   };
 
   return (
+
     <div className="min-h-screen flex justify-center items-center bg-gray-100">
 
       <div className="bg-white p-8 rounded-2xl shadow-xl w-96">
 
         <h1 className="text-3xl font-bold text-center mb-6">
+
           Admin Login
+
         </h1>
 
         <input
@@ -56,5 +94,7 @@ export default function AdminLogin() {
       </div>
 
     </div>
+
   );
+
 }

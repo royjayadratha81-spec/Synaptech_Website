@@ -1,114 +1,236 @@
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
-import { useNavigate } from "react-router-dom";
-import Progress from "./Progress";
-import Profile from "./Profile";
-import { Link } from "react-router-dom";
-import dashboardBg from "../assets/dashboard-bg.jpg";
+import { useState, useEffect } from "react";
+import { auth, db } from "../firebase/firebaseConfig";
+import {
+    doc,
+    getDoc,
+    collection,
+    getDocs,
+} from "firebase/firestore";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import WelcomeCard from "../components/WelcomeCard";
+import StatsCard from "../components/StatsCard";
+
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const studentData = JSON.parse(
-  localStorage.getItem("studentData")
+    const [dashboardData, setDashboardData] = useState({
+
+    course: "Loading...",
+
+    attendance: 0,
+
+    assignments: 0,
+
+    averageScore: 0
+
+});
+useEffect(() => {
+
+    const fetchDashboard = async () => {
+
+        if (!auth.currentUser) return;
+
+        const docRef = doc(db, "students", auth.currentUser.uid);
+
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+
+            const student = docSnap.data();
+
+            setDashboardData((prev) => ({
+
+                ...prev,
+
+                course: student.course
+
+            }));
+            const submissionSnapshot = await getDocs(
+    collection(db, "submissions")
 );
 
-const studentName =
-  studentData?.name || "Student";
+let assignmentCount = 0;
+let totalMarks = 0;
+let evaluatedAssignments = 0;
 
-const studentCourse =
-  studentData?.course || "";
-  
-  const handleLogout = async () => {
-  await signOut(auth);
-  navigate("/");
-};
+submissionSnapshot.forEach((docItem) => {
+
+    const submission = docItem.data();
+
+    console.log("Document ID:", docItem.id);
+    console.log(submission);
+
+    if (submission.studentEmail === auth.currentUser.email) {
+
+        assignmentCount++;
+
+if (
+    submission.evaluated === true &&
+    submission.marks
+) {
+
+    totalMarks += Number(submission.marks);
+
+    evaluatedAssignments++;
+
+}
+
+    }
+
+});
+console.log("Final Assignment Count:", assignmentCount);
+
+setDashboardData((prev) => ({
+
+    ...prev,
+
+    assignments: assignmentCount,
+
+}));
+const averageScore =
+    evaluatedAssignments === 0
+        ? 0
+        : ((totalMarks / evaluatedAssignments) * 10);
+
+setDashboardData((prev) => ({
+
+    ...prev,
+
+    averageScore: averageScore.toFixed(1),
+
+}));
+
+        }
+        const attendanceSnapshot = await getDocs(
+    collection(db, "attendance")
+);
+
+let total = 0;
+let present = 0;
+
+attendanceSnapshot.forEach((docItem) => {
+
+    const attendance = docItem.data();
+
+    if (
+        attendance.studentEmail === auth.currentUser.email
+    ) {
+
+        total++;
+
+        if (attendance.status === "Present") {
+
+            present++;
+
+        }
+
+    }
+
+});
+
+const attendancePercentage =
+    total === 0
+        ? 0
+        : Math.round((present / total) * 100);
+
+setDashboardData((prev) => ({
+
+    ...prev,
+
+    attendance: attendancePercentage,
+
+}));
+
+    };
+
+    fetchDashboard();
+
+}, []);
 
   return (
 
-    <div
-  className="min-h-screen bg-cover bg-center bg-fixed"
-  style={{
-    backgroundImage: `url(${dashboardBg})`,
-  }}
->
-  <div className="min-h-screen bg-white/70 backdrop-blur-sm">
+    <div className="min-h-screen bg-gray-100">
 
-      <nav className="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow-lg">
+      <Navbar />
 
-        <h1 className="text-2xl font-bold">
-          Synaptech Student Portal
-        </h1>
+      <div className="flex">
 
-        <button
-  onClick={handleLogout}
-  className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg"
->
-  Logout
-</button>
+        <Sidebar />
 
-      </nav>
+        <main className="flex-1 p-8">
 
-      <div className="p-6">
+          <WelcomeCard />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
 
-        <div className="bg-white/80 rounded-2xl p-6 shadow-lg mb-6">
+    <StatsCard
 
-  <h2 className="text-3xl font-bold text-blue-900">
-    Welcome, {studentName} 👋
-  </h2>
+    title="My Course"
 
-  <p className="text-lg text-gray-700 mt-2">
-    {studentCourse}
-  </p>
+    value={dashboardData.course}
+
+    color="text-blue-600"
+
+    icon="📚"
+
+    borderColor="border-blue-600"
+
+    badge="🟢 Active"
+
+/>
+<StatsCard
+
+    title="Attendance"
+
+    value={`${dashboardData.attendance}%`}
+
+    color="text-green-600"
+
+    icon="📅"
+
+    borderColor="border-green-600"
+
+    badge="Updated Today"
+
+/>
+<StatsCard
+
+    title="Assignments"
+
+    value={dashboardData.assignments}
+
+    color="text-orange-600"
+
+    icon="📝"
+
+    borderColor="border-orange-500"
+
+    badge={`${dashboardData.assignments} Submitted`}
+
+/>
+<StatsCard
+
+    title="Average Score"
+
+    value={`${dashboardData.averageScore}%`}
+
+    color="text-purple-600"
+
+    icon="🏆"
+
+    borderColor="border-purple-600"
+
+    badge="Excellent"
+
+/>
 
 </div>
-        <div className="mb-10">
-  <Profile />
-  
-</div>
-<div className="mb-10">
-  <Progress />
-</div>
 
-         <div className="grid md:grid-cols-3 gap-8 items-stretch">
 
-          
 
-<Link to="/modules">
-  <div className="bg-white p-6 rounded-2xl shadow-lg h-full hover:shadow-xl cursor-pointer transition">
-
-    <h3 className="text-xl font-bold mb-3 text-indigo-700">
-      Course Modules
-    </h3>
-
-    <p className="text-gray-600">
-      Access Python, NumPy, Pandas, Machine Learning, Generative AI and other learning modules.
-    </p>
-
-  </div>
-</Link>
-
-          <div className="bg-white p-6 rounded-2xl shadow-lg h-full">
-            <h3 className="text-xl font-bold mb-3 text-purple-700">
-  Certificates
-</h3>
-
-<p className="text-gray-600 mb-4">
-  Download completion certificates.
-</p>
-
-<Link
-  to="/certificates"
-  className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl font-semibold"
->
-  View Certificates
-</Link>
-          </div>
-
-        </div>
+</main>
 
       </div>
 
     </div>
-  </div>
 
   );
 

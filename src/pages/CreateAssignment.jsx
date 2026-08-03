@@ -15,6 +15,8 @@ export default function CreateAssignment() {
   const [fileUrl, setFileUrl] = useState("");
   const [batchId, setBatchId] = useState("");
 const [moduleId, setModuleId] = useState("");
+const [assessmentType, setAssessmentType] =
+  useState("Assignment");
 
 const [batches, setBatches] = useState([]);
 const [modules, setModules] = useState([]);
@@ -75,6 +77,30 @@ const fetchModules = async () => {
   try {
 
     let assignmentFileUrl = "";
+    const today = new Date();
+
+const due = new Date(today);
+
+if (assessmentType === "assignment") {
+
+  due.setDate(today.getDate() + 14);
+
+}
+
+else if (assessmentType === "project") {
+
+  due.setDate(today.getDate() + 21);
+
+}
+
+else if (assessmentType === "capstone") {
+
+  due.setDate(today.getDate() + 30);
+
+}
+
+const calculatedDueDate =
+  due.toISOString().split("T")[0];
 
     if (assignmentFile) {
 
@@ -104,10 +130,11 @@ if (error) {
     await addDoc(collection(db, "assignments"), {
   title,
   description,
-  dueDate,
+  dueDate: calculatedDueDate,
 
   batchId,
   moduleId,
+  type: assessmentType,
 
   fileUrl,
   assignmentFileUrl,
@@ -127,6 +154,7 @@ setModuleId("");
 
 setFileUrl("");
 setAssignmentFile(null);
+setAssessmentType("assignment");
   } catch (error) {
     console.error(error);
     alert("Error Creating Assignment");
@@ -191,6 +219,28 @@ setAssignmentFile(null);
     </option>
 
   ))}
+  </select>
+
+{/* Assessment Type */}
+
+<select
+  value={assessmentType}
+  onChange={(e) =>
+    setAssessmentType(e.target.value)
+  }
+  className="w-full border p-3 rounded-lg mb-4"
+>
+  <option value="Assignment">
+    Assignment
+  </option>
+
+  <option value="Project">
+    Project
+  </option>
+
+  <option value="Capstone Project">
+    Capstone Project
+  </option>
 
 </select>
 
@@ -202,12 +252,14 @@ setAssignmentFile(null);
           rows="5"
         />
 
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="w-full border p-3 rounded-lg mb-6"
-        />
+        {/*
+<input
+  type="date"
+  value={dueDate}
+  onChange={(e) => setDueDate(e.target.value)}
+  className="w-full border p-3 rounded-lg mb-6"
+/>
+*/}
         <input
   type="text"
   placeholder="Google Drive Assignment Link"

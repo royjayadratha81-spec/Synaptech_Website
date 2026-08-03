@@ -1,9 +1,11 @@
+import { updateStudentAnalytics } from "../utils/updateStudentAnalytics";
 import { useEffect, useState } from "react";
 import {
   collection,
   getDocs,
   doc,
-  updateDoc
+  updateDoc,
+  serverTimestamp
 } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
@@ -29,23 +31,44 @@ export default function ViewSubmissions() {
   };
 
   const saveEvaluation = async (id) => {
-    try {
-      await updateDoc(
-        doc(db, "submissions", id),
-        {
-          marks: evaluations[id]?.marks || "",
-          remarks: evaluations[id]?.remarks || "",
-          evaluated: true,
-        }
+
+  try {
+
+    await updateDoc(
+      doc(db, "submissions", id),
+      {
+        marks: Number(evaluations[id]?.marks || 0),
+        remarks: evaluations[id]?.remarks || "",
+        evaluated: true,
+        evaluatedBy: "Admin",
+        evaluationDate: serverTimestamp(),
+      }
+    );
+
+    // Find this submission
+    const submission =
+      submissions.find(
+        (item) => item.id === id
       );
 
-      alert("Evaluation Saved");
-      fetchSubmissions();
-    } catch (error) {
-      console.error(error);
-      alert("Failed to Save Evaluation");
-    }
-  };
+    // Update analytics automatically
+    await updateStudentAnalytics(
+      submission.studentEmail
+    );
+
+    alert("Evaluation Saved");
+
+    fetchSubmissions();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Failed to Save Evaluation");
+
+  }
+
+};
   return (
     <div className="min-h-screen bg-gray-100 p-8">
 
@@ -148,8 +171,11 @@ export default function ViewSubmissions() {
 
   <button
   onClick={() =>
-    saveEvaluation(item.id)
-  }
+  saveEvaluation(
+    item.id,
+    item.studentEmail
+  )
+}
   className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg"
 >
   Save Evaluation

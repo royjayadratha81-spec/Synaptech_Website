@@ -43,23 +43,9 @@ alert(
 
     } catch (error) {
 
-  console.log(error);
+  console.log("Registration Error:", error);
 
-  if (
-    error.code === "auth/email-already-in-use"
-  ) {
-
-    alert(
-      "This email is already registered. Please login or use another email address."
-    );
-
-  } else {
-
-    alert(
-      "Registration failed. Please try again."
-    );
-
-  }
+  alert(error.code);
 
 }
 

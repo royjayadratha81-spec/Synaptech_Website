@@ -22,9 +22,12 @@ import Attendance from "./pages/Attendance";
 import CreateBatch from "./pages/CreateBatch";
 import Modules from "./pages/Modules";
 import ModuleDetails from "./pages/ModuleDetails";
-import AssignmentSubmissions
-from "./pages/AssignmentSubmissions";
 import CreateMcqTest from "./pages/CreateMcqTest";
+import Analytics from "./pages/Analytics";
+import AdminAnalytics from "./pages/AdminAnalytics";
+import InitializeAnalytics from "./pages/InitializeAnalytics";
+import LearningHub from "./pages/LearningHub";
+import Profile from "./pages/Profile";
 
 
 
@@ -33,6 +36,11 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import AdminStudents from "./pages/AdminStudents";
+import PaymentMigration from "./pages/PaymentMigration";
+import FinanceDashboard from "./pages/FinanceDashboard";
+import FinanceMigration from "./pages/FinanceMigration";
+import FinanceFinalFeeMigration from "./pages/FinanceFinalFeeMigration";
 import Courses from "./pages/Courses";
 import Assignments from "./pages/Assignments";
 import LiveSessions from "./pages/LiveSessions";
@@ -42,6 +50,9 @@ import CourseDetails from "./pages/CourseDetails";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import ThankYou from "./pages/ThankYou";
 import Results from "./pages/Results";
+import PaymentStudentIdMigration from "./pages/PaymentStudentIdMigration";
+import BackupData from "./pages/BackupData";
+import { Toaster } from "react-hot-toast";
 
 
 import "./index.css";
@@ -90,6 +101,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ViewPayments />
   }
 />
+<Route
+  path="/payment-studentid-migration"
+  element={<PaymentStudentIdMigration />}
+/>
 <Route path="/view-certificates" element={<ViewCertificates />} />
 <Route
   path="/attendance"
@@ -104,6 +119,54 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<AdminProtectedRoute> <Admin /> </AdminProtectedRoute>}/>
+        <Route
+    path="/admin/students"
+    element={
+        <AdminProtectedRoute>
+            <AdminStudents />
+        </AdminProtectedRoute>
+    }
+/>
+<Route
+    path="/payment-migration"
+    element={
+        <AdminProtectedRoute>
+            <PaymentMigration />
+        </AdminProtectedRoute>
+    }
+/>
+<Route
+    path="/finance"
+    element={
+        <AdminProtectedRoute>
+            <FinanceDashboard />
+        </AdminProtectedRoute>
+    }
+/>
+<Route
+    path="/finance-migration"
+    element={
+        <AdminProtectedRoute>
+            <FinanceMigration />
+        </AdminProtectedRoute>
+    }
+/>
+        <Route
+  path="/admin-analytics"
+  element={
+    <AdminProtectedRoute>
+      <AdminAnalytics />
+    </AdminProtectedRoute>
+  }
+/>
+<Route
+  path="/initialize-analytics"
+  element={
+    <AdminProtectedRoute>
+      <InitializeAnalytics />
+    </AdminProtectedRoute>
+  }
+/>
         <Route path="/course/:id" element={<CourseDetails />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/terms" element={<Terms />} />
@@ -136,12 +199,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
 <Route
-  path="/assignment-submissions"
-  element={
-    <AssignmentSubmissions />
-  }
+  path="/finance-finalfee-migration"
+  element={<FinanceFinalFeeMigration />}
 />
-
 <Route path="/privacy" element={<Privacy />} />
 
 <Route path="/refund-policy" element={<RefundPolicy />} />
@@ -162,6 +222,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <ProtectedRoute>
       <Courses />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/learning-hub"
+  element={
+    <ProtectedRoute>
+      <LearningHub />
     </ProtectedRoute>
   }
 />
@@ -224,6 +292,22 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
 <Route
+  path="/analytics"
+  element={
+    <ProtectedRoute>
+      <Analytics />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      <Profile />
+    </ProtectedRoute>
+  }
+/>
+<Route
   path="/create-assignment"
   element={
     <AdminProtectedRoute>
@@ -231,7 +315,19 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </AdminProtectedRoute>
   }
 />
+<Route
+  path="/backup-data"
+  element={
+    <AdminProtectedRoute>
+      <BackupData />
+    </AdminProtectedRoute>
+  }
+/>
       </Routes>
+      <Toaster
+      position="top-right"
+      reverseOrder={false}
+    />
     </BrowserRouter>
   </React.StrictMode>
 );

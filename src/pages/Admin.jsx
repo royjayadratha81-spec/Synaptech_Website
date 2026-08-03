@@ -1,5 +1,25 @@
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import Background from "../components/ui/Background";
+import GlassCard from "../components/ui/GlassCard";
+import StatsCard from "../components/StatsCard";
+import {
+  FaUserGraduate,
+  FaCheckCircle,
+  FaClock,
+  FaBook,
+  FaLayerGroup,
+  FaClipboardList,
+  FaQuestionCircle,
+  FaFileAlt,
+  FaChartBar,
+  FaVideo,
+  FaPlayCircle,
+  FaMoneyCheckAlt,
+  FaCertificate,
+  FaAward,
+  FaClipboardCheck,
+  FaTools,
+} from "react-icons/fa";
+import QuickActionCard from "../components/QuickActionCard";
 import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
 import { useState, useEffect } from "react";
@@ -11,491 +31,562 @@ import {
   deleteDoc,
   doc,
   updateDoc,
+  getDoc,
+  setDoc,
 } from "firebase/firestore";
 
 export default function Admin() {
   const navigate = useNavigate();
 
-const handleLogout = async () => {
-  await signOut(auth);
-  navigate("/admin-login");
-};
+  const handleLogout = () => {
+
+    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("adminEmail");
+
+    navigate("/admin-login");
+
+  };
 
   const [courseName, setCourseName] = useState("");
   const [videoLink, setVideoLink] = useState("");
   const [noteLink, setNoteLink] = useState("");
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
+  const [approvedStudents, setApprovedStudents] = useState(0);
+
+  const [pendingStudents, setPendingStudents] = useState(0);
+
+  const [totalCourses, setTotalCourses] = useState(0);
+  const [selectedSection, setSelectedSection] = useState("");
   useEffect(() => {
 
-  fetchCourses();
-  fetchStudents();
+    fetchCourses();
+    fetchStudents();
 
-}, []);
+  }, []);
 
-const fetchCourses = async () => {
+  const fetchCourses = async () => {
 
-  
-  const querySnapshot = await getDocs(
-    collection(db, "courses")
-  );
+    try {
 
-  const courseList = [];
+      const querySnapshot = await getDocs(
+        collection(db, "courses")
+      );
 
-  querySnapshot.forEach((docItem) => {
+      const courseList = [];
 
-    courseList.push({
-      id: docItem.id,
-      ...docItem.data(),
-    });
+      querySnapshot.forEach((docItem) => {
+        courseList.push({
+          id: docItem.id,
+          ...docItem.data(),
+        });
+      });
 
-  });
+      console.log("Courses Loaded:", courseList);
 
-  setCourses(courseList);
+      setCourses(courseList);
+      setTotalCourses(courseList.length);
 
-};
-const fetchStudents = async () => {
+    } catch (error) {
 
-  const querySnapshot = await getDocs(
-    collection(db, "students")
-  );
+      console.error("fetchCourses Error:", error);
 
-  const studentList = [];
+      alert(error.message);
 
-  querySnapshot.forEach((docItem) => {
+    }
 
-    studentList.push({
-      id: docItem.id,
-      ...docItem.data(),
-    });
+  };
+  const handleDeleteStudent = async (id) => {
 
-  });
-
-  setStudents(studentList);
-
-};
-const handleApprove = async (id) => {
-
-  await updateDoc(doc(db, "students", id), {
-    approved: true,
-  });
-
-  fetchStudents();
-
-};
-const handleReject = async (student) => {
-
-  const confirmReject = window.confirm(
-    `Are you sure you want to reject ${student.name}?`
-  );
-
-  if (!confirmReject) return;
-
-  try {
-
-    alert("Reject button clicked");
-
-    const docRef = await addDoc(
-      collection(db, "rejectedStudents"),
-      {
-        name: student.name,
-        email: student.email,
-        course: student.course,
-        batchId: student.batchId || "",
-        approved: false,
-        status: "Rejected",
-        rejectedAt: new Date(),
-      }
-    );
-    await emailjs.send(
-  "service_fn8zbdq",
-  "template_d9tehm1",
-  {
-    student_name: student.name,
-    student_email: student.email,
-    course_name: student.course,
-    reason: "Admission application has been rejected.",
-  },
-  "HjqRvMOk3WuEtbitd"
-);
-
-    alert("Saved to rejectedStudents");
-
-    await deleteDoc(
-      doc(db, "students", student.id)
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this student?"
     );
 
-    alert("Deleted from students");
+    if (!confirmDelete) return;
+
+    await deleteDoc(doc(db, "students", id));
 
     fetchStudents();
 
-  } catch (error) {
+  };
+  const handleDelete = async (id) => {
 
-    console.error(error);
+    await deleteDoc(doc(db, "courses", id));
 
-    alert(error.message);
-
-  }
-
-};
-const handleDeleteStudent = async (id) => {
-
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this student?"
-  );
-
-  if (!confirmDelete) return;
-
-  await deleteDoc(doc(db, "students", id));
-
-  fetchStudents();
-
-};
-const handleDelete = async (id) => {
-
-  await deleteDoc(doc(db, "courses", id));
-
-  fetchCourses();
-
-};
-
-  const handleSubmit = async (e) => {
-    
-
-  e.preventDefault();
-
-  try {
-
-    await addDoc(collection(db, "courses"), {
-
-      courseName,
-      videoLink,
-      noteLink,
-      createdAt: new Date(),
-
-    });
-
-    alert("Course Added Successfully");
     fetchCourses();
 
-    setCourseName("");
-    setVideoLink("");
-    setNoteLink("");
+  };
 
-  } catch (error) {
+  const handleSubmit = async (e) => {
 
-    console.log(error);
 
-    alert("Error adding course");
+    e.preventDefault();
 
+    try {
+
+      await addDoc(collection(db, "courses"), {
+
+        courseName,
+        videoLink,
+        noteLink,
+        createdAt: new Date(),
+
+      });
+
+      alert("Course Added Successfully");
+      fetchCourses();
+
+      setCourseName("");
+      setVideoLink("");
+      setNoteLink("");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Error adding course");
+
+    }
+
+  };
+  const fetchStudents = async () => {
+
+    try {
+
+      const querySnapshot = await getDocs(
+        collection(db, "students")
+      );
+
+      const studentList = [];
+
+      querySnapshot.forEach((docItem) => {
+
+        studentList.push({
+          id: docItem.id,
+          ...docItem.data(),
+        });
+
+      });
+
+      console.log("Students Loaded:", studentList);
+
+      setStudents(studentList);
+      setApprovedStudents(
+        studentList.filter(student => student.approved).length
+      );
+
+      setPendingStudents(
+        studentList.filter(student => !student.approved).length
+      );
+
+    } catch (error) {
+
+      console.error("fetchStudents Error:", error);
+
+      alert(error.message);
+
+    }
+
+  };
+  const handleApprove = async (studentId) => {
+
+    try {
+
+      const studentRef = doc(db, "students", studentId);
+
+      await updateDoc(studentRef, {
+
+        approved: true,
+
+      });
+
+      alert("Student approved successfully.");
+
+      fetchStudents();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Error approving student.");
+
+    }
+
+  };
+  const hour = new Date().getHours();
+
+  let greeting = "";
+
+  if (hour < 12) {
+    greeting = "Good Morning";
+  } else if (hour < 17) {
+    greeting = "Good Afternoon";
+  } else {
+    greeting = "Good Evening";
   }
-
-};
-
   return (
 
-    <div className="min-h-screen bg-gray-100 p-10">
+    <Background>
 
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
+      <div className="min-h-screen px-12 py-10">
 
-        <div className="mb-8">
+        <GlassCard className="max-w-[1400px] mx-auto p-8">
 
-  <div className="flex justify-between items-center">
+          <div className="mb-8">
 
-    <h1 className="text-4xl font-bold text-blue-800">
-      Admin Panel
-    </h1>
+            <div className="flex justify-between items-start mb-8">
 
-    <button
-      onClick={handleLogout}
-      className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700"
-    >
-      Logout
-    </button>
+              <div>
 
-  </div>
+                <h1 className="text-4xl font-bold text-blue-800">
+                  {greeting}, Admin 👋
+                </h1>
 
-</div>
-<div className="grid md:grid-cols-2 gap-4 mb-8">
-  <h2 className="text-xl font-bold col-span-2 text-blue-700">
-  Academic Management
-</h2>
-<button
-  onClick={() => navigate("/create-batch")}
-  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
->
-  Create Batch
-</button>
+                <p className="text-gray-600 mt-2 text-lg">
+                  Welcome back to Synaptech Education LMS
+                </p>
 
-<button
-  onClick={() => navigate("/assign-batch")}
-  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
->
-  Assign Batch
-</button>
+                <p className="text-gray-500 mt-1">
+                  Admin Dashboard
+                </p>
 
-<button
-  onClick={() => navigate("/upload-course-material")}
-  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
->
-  Upload Course Material
-</button>
-<h2 className="text-xl font-bold col-span-2 text-purple-700 mt-4">
-  Assessments
-</h2>
-<button
-  onClick={() => navigate("/create-assignment")}
-  className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-3 rounded-xl"
->
-  Create Assignment
-</button>
+              </div>
 
-<button
-  onClick={() => navigate("/create-mcq-test")}
-  className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-xl"
->
-  Create MCQ Test
-</button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg shadow-md transition-all"
+              >
+                Logout
+              </button>
 
-<button
-  onClick={() => navigate("/view-submissions")}
-  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
->
-  View Submissions
-</button>
+            </div>
 
-<button
-  onClick={() => navigate("/view-mcq-results")}
-  className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl"
->
-  View MCQ Results
-</button>
-  
-<h2 className="text-xl font-bold col-span-2 text-green-700 mt-4">
-  Learning Content
-</h2>
+          </div>
+          {/* Dashboard Statistics */}
 
-<button
-  onClick={() => navigate("/create-live-session")}
-  className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
->
-  Create Live Session
-</button>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
 
-<button
-  onClick={() => navigate("/create-recording")}
-  className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-xl"
->
-  Create Recording
-</button>
+            <StatsCard
+              title="Students"
+              value={students.length}
+              color="text-blue-700"
+              borderColor="border-blue-600"
+              badge="Live Data"
+              subtitle="Total Registered Students"
+              icon={<FaUserGraduate />}
+              iconBg="from-blue-500 to-blue-700"
+              onClick={() => navigate("/admin/students")}
+            />
 
-<h2 className="text-xl font-bold col-span-2 text-green-700 mt-4">
-  Finance & Certificates
-</h2>
+            <StatsCard
+              title="Approved"
+              value={approvedStudents}
+              color="text-green-700"
+              borderColor="border-green-600"
+              badge="Active"
+              subtitle="Approved Students"
+              icon={<FaCheckCircle />}
+              iconBg="from-green-500 to-green-700"
+              onClick={() => console.log("Approved Students")}
+            />
 
-<button
-  onClick={() => navigate("/view-payments")}
-  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
->
-  View Payments
-</button>
+            <StatsCard
+              title="Pending"
+              value={pendingStudents}
+              color="text-yellow-600"
+              borderColor="border-yellow-500"
+              badge="Needs Review"
+              subtitle="Awaiting Approval"
+              icon={<FaClock />}
+              iconBg="from-yellow-500 to-orange-500"
+              onClick={() => console.log("Pending Students")}
+            />
 
-<button
-  onClick={() => navigate("/create-certificate")}
-  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
->
-  Upload Certificate
-</button>
+            <StatsCard
+              title="Courses"
+              value={totalCourses}
+              color="text-purple-700"
+              borderColor="border-purple-600"
+              badge="Available"
+              subtitle="Published Courses"
+              icon={<FaBook />}
+              iconBg="from-purple-500 to-purple-700"
+              onClick={() => console.log("Courses")}
+            />
+          </div>
 
-<button
-  onClick={() => navigate("/view-certificates")}
-  className="bg-red-600 text-white px-6 py-3 rounded-xl"
->
-  View Certificates
-</button>
+          <h2 className="text-xl font-bold text-blue-700 mt-8 mb-4">
+            Academic Management
+          </h2>
 
-<h2 className="text-xl font-bold col-span-2 text-indigo-700 mt-4">
-  Operations
-</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 
-<button
-  onClick={() => navigate("/attendance")}
-  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl"
->
-  Attendance
-</button>
+            <QuickActionCard
+              title="Create Batch"
+              description="Create a new student batch for upcoming courses."
+              icon={<FaLayerGroup />}
+              iconBg="from-indigo-500 to-indigo-700"
+              cardBg="from-indigo-50 via-white to-blue-100"
+              onClick={() => navigate("/create-batch")}
+            />
 
-</div>
+            <QuickActionCard
+              title="Assign Batch"
+              description="Assign students to an existing batch."
+              icon={<FaUserGraduate />}
+              iconBg="from-green-500 to-green-700"
+              cardBg="from-green-50 via-white to-green-100"
+              onClick={() => navigate("/assign-batch")}
+            />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+            <QuickActionCard
+              title="Upload Course Material"
+              description="Upload PDFs, PPTs, notes and other learning resources."
+              icon={<FaBook />}
+              iconBg="from-purple-500 to-purple-700"
+              cardBg="from-purple-50 via-white to-purple-100"
+              onClick={() => navigate("/upload-course-material")}
+            />
+          </div>
+          <h2 className="text-xl font-bold text-purple-700 mt-8 mb-4">
+            Assessments
+          </h2>
 
-          <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
 
-            <label className="block text-lg font-semibold mb-2">
-              Course Name
-            </label>
+            <QuickActionCard
+              title="Create Assignment"
+              description="Create assignments for students."
+              icon={<FaClipboardList />}
+              iconBg="from-orange-500 to-orange-700"
+              cardBg="from-orange-50 via-white to-orange-100"
+              onClick={() => navigate("/create-assignment")}
+            />
 
-            <input
-              type="text"
-              value={courseName}
-              onChange={(e) => setCourseName(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl p-4"
-              placeholder="Enter Course Name"
-              required
+            <QuickActionCard
+              title="Create MCQ Test"
+              description="Design and publish MCQ tests."
+              icon={<FaQuestionCircle />}
+              iconBg="from-purple-500 to-purple-700"
+              cardBg="from-purple-50 via-white to-purple-100"
+              onClick={() => navigate("/create-mcq-test")}
+            />
+
+            <QuickActionCard
+              title="View Submissions"
+              description="Review student assignment submissions."
+              icon={<FaFileAlt />}
+              iconBg="from-blue-500 to-blue-700"
+              cardBg="from-blue-50 via-white to-blue-100"
+              onClick={() => navigate("/view-submissions")}
+            />
+
+            <QuickActionCard
+              title="View MCQ Results"
+              description="View MCQ test scores and analytics."
+              icon={<FaChartBar />}
+              iconBg="from-green-500 to-green-700"
+              cardBg="from-green-50 via-white to-green-100"
+              onClick={() => navigate("/view-mcq-results")}
+            />
+          </div>
+
+          <h2 className="text-xl font-bold text-green-700 mt-8 mb-4">
+            Learning Content
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+
+            <QuickActionCard
+              title="Create Live Session"
+              description="Schedule live online classes."
+              icon={<FaVideo />}
+              iconBg="from-green-500 to-green-700"
+              cardBg="from-green-50 via-white to-green-100"
+              onClick={() => navigate("/create-live-session")}
+            />
+
+            <QuickActionCard
+              title="Create Recording"
+              description="Upload recorded class sessions."
+              icon={<FaPlayCircle />}
+              iconBg="from-purple-500 to-purple-700"
+              cardBg="from-purple-50 via-white to-purple-100"
+              onClick={() => navigate("/create-recording")}
             />
 
           </div>
 
-          <div>
+          <h2 className="text-xl font-bold text-green-700 mt-8 mb-4">
+            Finance & Certificates
+          </h2>
 
-            <label className="block text-lg font-semibold mb-2">
-              Video Link
-            </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 
-            <input
-              type="text"
-              value={videoLink}
-              onChange={(e) => setVideoLink(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl p-4"
-              placeholder="Paste YouTube Embed Link"
-              required
+            <QuickActionCard
+              title="View Payments"
+              description="Review student payment records."
+              icon={<FaMoneyCheckAlt />}
+              iconBg="from-green-500 to-green-700"
+              cardBg="from-green-50 via-white to-green-100"
+              onClick={() => navigate("/view-payments")}
+            />
+
+            <QuickActionCard
+              title="Upload Certificate"
+              description="Generate and upload certificates."
+              icon={<FaCertificate />}
+              iconBg="from-blue-500 to-blue-700"
+              cardBg="from-blue-50 via-white to-blue-100"
+              onClick={() => navigate("/create-certificate")}
+            />
+
+            <QuickActionCard
+              title="View Certificates"
+              description="Browse all issued certificates."
+              icon={<FaAward />}
+              iconBg="from-red-500 to-red-700"
+              cardBg="from-red-50 via-white to-red-100"
+              onClick={() => navigate("/view-certificates")}
             />
 
           </div>
 
-          <div>
+          <h2 className="text-xl font-bold text-indigo-700 mt-8 mb-4">
+            Operations
+          </h2>
 
-            <label className="block text-lg font-semibold mb-2">
-              Notes Link
-            </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
 
-            <input
-              type="text"
-              value={noteLink}
-              onChange={(e) => setNoteLink(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl p-4"
-              placeholder="Paste Notes PDF Link"
-              required
+            <QuickActionCard
+              title="Attendance"
+              description="Track and manage attendance."
+              icon={<FaClipboardCheck />}
+              iconBg="from-indigo-500 to-indigo-700"
+              cardBg="from-indigo-50 via-white to-indigo-100"
+              onClick={() => navigate("/attendance")}
             />
 
           </div>
 
-          <button
-            type="submit"
-            className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-4 rounded-xl text-lg font-semibold"
-          >
-            Add Course
-          </button>
+          <h2 className="text-xl font-bold text-red-700 mt-8 mb-4">
+            System Maintenance
+          </h2>
 
-        </form>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
 
+            <QuickActionCard
+              title="Initialize Analytics"
+              description="Repair or create analytics data."
+              icon={<FaTools />}
+              iconBg="from-red-500 to-red-700"
+              cardBg="from-red-50 via-white to-red-100"
+              onClick={() => navigate("/initialize-analytics")}
+            />
 
-<h2>All Courses</h2>
+          </div>
 
-{courses.map((course) => (
-  <div
-    key={course.id}
-    style={{
-      border: "1px solid gray",
-      padding: "10px",
-      marginBottom: "10px",
-    }}
-  >
-    <h3>{course.courseName}</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
 
-    <a href={course.videoLink} target="_blank">
-      Video Link
-    </a>
+            <div>
 
-    <br />
+              <label className="block text-lg font-semibold mb-2">
+                Course Name
+              </label>
 
-    <a href={course.noteLink} target="_blank">
-      Notes Link
-    </a>
+              <input
+                type="text"
+                value={courseName}
+                onChange={(e) => setCourseName(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl p-4"
+                placeholder="Enter Course Name"
+                required
+              />
 
-    <br />
-    <br />
+            </div>
 
-    <button onClick={() => handleDelete(course.id)}>
-      Delete Course
-    </button>
+            <div>
 
-  </div>
-))}
-<h2 className="text-3xl font-bold mt-10 mb-5">
-  Registered Students
-</h2>
+              <label className="block text-lg font-semibold mb-2">
+                Video Link
+              </label>
 
-{students.map((student) => (
-  <div
-    key={student.id}
-    style={{
-      border: "1px solid #ccc",
-      padding: "10px",
-      marginBottom: "10px",
-    }}
-  >
-    <h3>{student.name}</h3>
+              <input
+                type="text"
+                value={videoLink}
+                onChange={(e) => setVideoLink(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl p-4"
+                placeholder="Paste YouTube Embed Link"
+                required
+              />
 
-    <p>Email: {student.email}</p>
+            </div>
 
-    <p>Course: {student.course}</p>
+            <div>
 
-    <p>
-  Batch: {student.batchId || "Not Assigned"}
-</p>
+              <label className="block text-lg font-semibold mb-2">
+                Notes Link
+              </label>
 
-<p>
-  Status:
-  {student.approved ? " Approved" : " Pending"}
-</p>
+              <input
+                type="text"
+                value={noteLink}
+                onChange={(e) => setNoteLink(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl p-4"
+                placeholder="Paste Notes PDF Link"
+                required
+              />
 
-    <>
-  {!student.approved && (
-    <button
-      onClick={() => handleApprove(student.id)}
-    >
-      Approve Student
-    </button>
-  )}
+            </div>
 
-  <button
-    onClick={() => handleReject(student)}
-    style={{
-      marginLeft: "10px",
-      background: "orange",
-      color: "white",
-      border: "none",
-      padding: "5px 10px",
-      cursor: "pointer",
-    }}
-  >
-    Reject Student
-  </button>
+            <button
+              type="submit"
+              className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-4 rounded-xl text-lg font-semibold"
+            >
+              Add Course
+            </button>
 
-  <button
-    onClick={() => handleDeleteStudent(student.id)}
-    style={{
-      marginLeft: "10px",
-      background: "red",
-      color: "white",
-      border: "none",
-      padding: "5px 10px",
-      cursor: "pointer",
-    }}
-  >
-    Delete Student
-  </button>
-</>
-
-</div>
-))}
+          </form>
 
 
+          <h2>All Courses</h2>
 
-      </div>
+          {courses.map((course) => (
+            <div
+              key={course.id}
+              style={{
+                border: "1px solid gray",
+                padding: "10px",
+                marginBottom: "10px",
+              }}
+            >
+              <h3>{course.courseName}</h3>
+
+              <a href={course.videoLink} target="_blank">
+                Video Link
+              </a>
+
+              <br />
+
+              <a href={course.noteLink} target="_blank">
+                Notes Link
+              </a>
+
+              <br />
+              <br />
+
+              <button onClick={() => handleDelete(course.id)}>
+                Delete Course
+              </button>
+
+            </div>
+          ))}
+          
+
+    </GlassCard>
 
     </div>
+  </Background>
 
   );
 }

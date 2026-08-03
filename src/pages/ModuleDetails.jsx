@@ -10,7 +10,8 @@ import {
   getDocs,
   addDoc,
   query,
-  where
+  where,
+  updateDoc
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
@@ -40,6 +41,13 @@ const [bestScore, setBestScore] =
   useState(0);
   const [testHistory, setTestHistory] =
   useState([]);
+  const [moduleCompleted, setModuleCompleted] =
+useState(false);
+const [readingProgress, setReadingProgress] = useState({});
+const [practiceProgress, setPracticeProgress] = useState({});
+const [practiceCompleted, setPracticeCompleted] = useState(false);
+const [interviewCompleted, setInterviewCompleted] = useState(false);
+
   const [totalQuestions, setTotalQuestions] =
   useState(0);
   const auth = getAuth();
@@ -533,21 +541,68 @@ const handleAssignmentSubmit =
       )
       .getPublicUrl(fileName);
 
-    await addDoc(
-      collection(
-        db,
-        "submissions"
-      ),
-      {
-        assignmentId,
-        fileUrl:
-          publicUrlData.publicUrl,
-        submittedAt:
-          new Date(),
-        status:
-          "Submitted",
-      }
-    );
+    const studentData = JSON.parse(
+  localStorage.getItem("studentData")
+);
+
+const assignment =
+  assignments.find(
+    (a) => a.id === assignmentId
+  );
+  console.log("Student:", studentData);
+
+console.log("Assignment:", assignment);
+
+await addDoc(
+  collection(db, "submissions"),
+  {
+
+    assignmentId: assignment.id,
+
+    assignmentTitle:
+      assignment.title,
+
+    assignmentType:
+      assignment.type,
+
+    moduleId:
+      assignment.moduleId,
+
+    batchId:
+      studentData.batchId,
+
+    batchName:
+      studentData.batchName,
+
+    studentName:
+      studentData.name,
+
+    studentEmail:
+      studentData.email,
+
+    fileName:
+      submissionFile.name,
+
+    fileUrl:
+      publicUrlData.publicUrl,
+
+    submittedAt:
+      new Date(),
+
+    status:
+      "Submitted",
+
+    evaluated:
+      false,
+
+    marks:
+      0,
+
+    remarks:
+      "",
+
+  }
+);
 
     alert(
       "Assignment Submitted Successfully"
@@ -566,19 +621,633 @@ const handleAssignmentSubmit =
   }
 
 };
+const handleModuleComplete = async () => {
+
+    const student = JSON.parse(
+        localStorage.getItem("studentData")
+    );
+
+    if (!student) return;
+
+    const analyticsRef = doc(
+        db,
+        "studentAnalytics",
+        student.email
+    );
+
+    const analyticsSnap =
+        await getDoc(analyticsRef);
+
+    if (!analyticsSnap.exists()) return;
+
+    const analytics =
+        analyticsSnap.data();
+
+    const materialProgress =
+        analytics.materialProgress || {};
+
+    const moduleProgress =
+        materialProgress[moduleName] || {};
+
+    const pendingItems = [];
+
+    // ===============================
+    // READING MATERIALS
+    // ===============================
+
+    if (readingMaterials.length > 0) {
+
+        const readingData =
+            moduleProgress.reading || {};
+
+        const completedReading =
+            readingMaterials.filter(material =>
+                readingData[material.id]?.completed === true
+            ).length;
+
+        if (completedReading !== readingMaterials.length) {
+
+            pendingItems.push(
+
+                `Reading Materials (${completedReading}/${readingMaterials.length})`
+
+            );
+
+        }
+
+    }
+
+    // ===============================
+    // PRACTICE MATERIALS
+    // ===============================
+
+    if (practiceMaterials.length > 0) {
+
+        const practiceData =
+            moduleProgress.practice || {};
+
+        const completedPractice =
+            practiceMaterials.filter(material =>
+                practiceData[material.id]?.opened === true
+            ).length;
+
+        if (completedPractice !== practiceMaterials.length) {
+
+            pendingItems.push(
+
+                `Practice Materials (${completedPractice}/${practiceMaterials.length})`
+
+            );
+
+        }
+
+    }
+
+    // ===============================
+    // INTERVIEW QUESTIONS
+    // ===============================
+
+    if (interviewMaterials.length > 0) {
+
+        const interviewData =
+            moduleProgress.interview || {};
+
+        const completedInterview =
+            interviewMaterials.filter(material =>
+                interviewData[material.id]?.opened === true
+            ).length;
+
+        if (completedInterview !== interviewMaterials.length) {
+
+            pendingItems.push(
+
+                `Interview Questions (${completedInterview}/${interviewMaterials.length})`
+
+            );
+
+        }
+
+    }
+
+    // ===============================
+    // ASSIGNMENTS
+    // ===============================
+
+    if (assignments.length > 0) {
+
+        const submittedAssignments =
+            submissions.filter(sub =>
+
+                sub.studentEmail === student.email &&
+                sub.moduleId === moduleId
+
+            ).length;
+
+        if (submittedAssignments !== assignments.length) {
+
+            pendingItems.push(
+
+                `Assignments (${submittedAssignments}/${assignments.length})`
+
+            );
+
+        }
+
+    }
+
+    // ===============================
+    // MINI TEST
+    // ===============================
+
+    if (mcqTests.length > 0) {
+
+        if (attemptCount === 0) {
+
+            pendingItems.push("Mini Test");
+
+        }
+
+    }
+
+    // ===============================
+    // STOP IF ANYTHING IS PENDING
+    // ===============================
+
+    if (pendingItems.length > 0) {
+
+        alert(
+
+`You cannot complete this module yet.
+
+Please complete:
+
+• ${pendingItems.join("\n• ")}`
+
+        );
+
+        return;
+
+    }
+
+    // ===============================
+    // UPDATE MODULE COMPLETION
+    // ===============================
+
+    const moduleKey =
+        moduleName
+            .toLowerCase()
+            .replace(/\s+/g, "")
+            .replace("&", "");
+
+    const updatedModules = {
+
+        ...analytics.modules,
+
+        [moduleKey]: 100,
+
+    };
+
+    const completedModules =
+        Object.values(updatedModules)
+            .filter(value => value === 100)
+            .length;
+
+    const overallProgress =
+        Math.round(
+
+            (completedModules /
+                analytics.totalModules) * 100
+
+        );
+
+    await updateDoc(
+
+        analyticsRef,
+
+        {
+
+            modules: updatedModules,
+
+            modulesCompleted: completedModules,
+
+            overallProgress,
+
+        }
+
+    );
+
+    setModuleCompleted(true);
+
+    alert("🎉 Module Completed Successfully!");
+
+};
+
+    
+const loadStudentProgress = async () => {
+
+    const student = JSON.parse(
+        localStorage.getItem("studentData")
+    );
+
+    if (!student) return;
+
+    const analyticsRef = doc(
+        db,
+        "studentAnalytics",
+        student.email
+    );
+
+    const analyticsSnap = await getDoc(analyticsRef);
+
+    if (!analyticsSnap.exists()) return;
+
+    const analytics = analyticsSnap.data();
+
+    const materialProgress =
+        analytics.materialProgress || {};
+
+    const moduleMaterial =
+        materialProgress[moduleName] || {};
+
+    const readingData =
+    moduleMaterial.reading || {};
+
+setReadingProgress(readingData);
+const practiceData =
+    moduleMaterial.practice || {};
+
+setPracticeProgress(practiceData);
+
+    setPracticeCompleted(
+        moduleMaterial.practice || false
+    );
+
+    setInterviewCompleted(
+        moduleMaterial.interview || false
+    );
+};
+const isMaterialOpened = (materialId) => {
+    return readingProgress[materialId]?.opened || false;
+};
+const isPracticeOpened = (materialId) => {
+    return practiceProgress[materialId]?.opened || false;
+};
+
+const isPracticeCompleted = (materialId) => {
+    return practiceProgress[materialId]?.completed || false;
+};
+
+const isMaterialCompleted = (materialId) => {
+    return readingProgress[materialId]?.completed || false;
+};
+const trackMaterial = async (materialId) => {
+
+    try {
+
+        const student = JSON.parse(
+            localStorage.getItem("studentData")
+        );
+
+        if (!student) return;
+
+        const analyticsRef = doc(
+            db,
+            "studentAnalytics",
+            student.email
+        );
+
+        const analyticsSnap = await getDoc(analyticsRef);
+
+        if (!analyticsSnap.exists()) return;
+
+        const analytics = analyticsSnap.data();
+
+        const materialProgress =
+            analytics.materialProgress || {};
+
+        if (!materialProgress[moduleName]) {
+            materialProgress[moduleName] = {};
+        }
+
+        // Convert old boolean structure to new object structure
+if (
+    typeof materialProgress[moduleName].reading !== "object" ||
+    materialProgress[moduleName].reading === null
+) {
+    materialProgress[moduleName].reading = {};
+}
+
+        const existing =
+            materialProgress[moduleName]
+                .reading[materialId] || {};
+
+        materialProgress[moduleName]
+            .reading[materialId] = {
+
+            ...existing,
+
+            opened: true,
+
+            completed: true,
+
+        };
+
+        await updateDoc(
+            analyticsRef,
+            {
+                materialProgress,
+            }
+        );
+        console.log("Firestore updated successfully");
+console.log(materialProgress);
+
+        await loadStudentProgress();
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+};
+const trackPracticeMaterial = async (material) => {
+
+    const student = JSON.parse(
+        localStorage.getItem("studentData")
+    );
+
+    if (!student) return;
+
+    const analyticsRef = doc(
+        db,
+        "studentAnalytics",
+        student.email
+    );
+
+    const analyticsSnap =
+        await getDoc(analyticsRef);
+
+    if (!analyticsSnap.exists()) return;
+
+    const analytics =
+        analyticsSnap.data();
+
+    const materialProgress =
+        analytics.materialProgress || {};
+
+    if (!materialProgress[moduleName]) {
+        materialProgress[moduleName] = {};
+    }
+
+    if (!materialProgress[moduleName].practice) {
+        materialProgress[moduleName].practice = {};
+    }
+
+    const existing =
+        materialProgress[moduleName]
+            .practice[material.id] || {};
+
+    materialProgress[moduleName]
+        .practice[material.id] = {
+
+        ...existing,
+
+        opened: true,
+
+    };
+
+    await updateDoc(analyticsRef, {
+
+        materialProgress,
+
+    });
+
+    setPracticeProgress(
+        materialProgress[moduleName]
+            .practice
+    );
+
+    window.open(
+        material.fileUrl,
+        "_blank"
+    );
+
+};
+const completePracticeMaterial = async (materialId) => {
+
+    const student = JSON.parse(
+        localStorage.getItem("studentData")
+    );
+
+    if (!student) return;
+
+    const analyticsRef = doc(
+        db,
+        "studentAnalytics",
+        student.email
+    );
+
+    const analyticsSnap = await getDoc(analyticsRef);
+
+    if (!analyticsSnap.exists()) return;
+
+    const analytics = analyticsSnap.data();
+
+    const materialProgress =
+        analytics.materialProgress || {};
+
+    if (!materialProgress[moduleName])
+        materialProgress[moduleName] = {};
+
+    if (!materialProgress[moduleName].practice)
+        materialProgress[moduleName].practice = {};
+
+    materialProgress[moduleName].practice[materialId] = {
+
+        ...(materialProgress[moduleName].practice[materialId] || {}),
+
+        opened: true,
+
+        completed: true,
+
+    };
+
+    await updateDoc(analyticsRef, {
+
+        materialProgress,
+
+    });
+
+    await loadStudentProgress();
+
+};
+
+const handleOpenMaterial = async (material) => {
+
+    try {
+
+        const student = JSON.parse(
+            localStorage.getItem("studentData")
+        );
+
+        if (!student) return;
+
+        const analyticsRef = doc(
+            db,
+            "studentAnalytics",
+            student.email
+        );
+
+        const analyticsSnap = await getDoc(
+            analyticsRef
+        );
+
+        if (!analyticsSnap.exists()) return;
+
+        const analytics =
+            analyticsSnap.data();
+
+        const materialProgress =
+            analytics.materialProgress || {};
+
+        if (!materialProgress[moduleName]) {
+            materialProgress[moduleName] = {};
+        }
+
+        // Convert old boolean structure to new object structure
+if (
+    typeof materialProgress[moduleName].reading !== "object" ||
+    materialProgress[moduleName].reading === null
+) {
+    materialProgress[moduleName].reading = {};
+}
+
+        const existing =
+            materialProgress[moduleName]
+                .reading[material.id] || {};
+
+        materialProgress[moduleName]
+            .reading[material.id] = {
+
+            ...existing,
+
+            opened: true,
+
+        };
+
+        await updateDoc(
+            analyticsRef,
+            {
+                materialProgress,
+            }
+        );
+
+        await loadStudentProgress();
+
+        window.open(
+            material.fileUrl,
+            "_blank"
+        );
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+};
+
+const handleMarkRead = async (material) => {
+
+    try {
+
+        const student = JSON.parse(
+            localStorage.getItem("studentData")
+        );
+
+        if (!student) return;
+
+        const analyticsRef = doc(
+            db,
+            "studentAnalytics",
+            student.email
+        );
+
+        const analyticsSnap = await getDoc(analyticsRef);
+
+        if (!analyticsSnap.exists()) return;
+
+        const analytics = analyticsSnap.data();
+
+        const materialProgress =
+            analytics.materialProgress || {};
+
+        if (!materialProgress[moduleName]) {
+            materialProgress[moduleName] = {};
+        }
+
+        if (!materialProgress[moduleName].reading) {
+            materialProgress[moduleName].reading = {};
+        }
+
+        const existing =
+            materialProgress[moduleName].reading[
+                material.id
+            ] || {};
+
+        materialProgress[moduleName].reading[
+            material.id
+        ] = {
+            ...existing,
+            opened: true,
+            completed: true,
+        };
+
+        await updateDoc(
+            analyticsRef,
+            {
+                materialProgress,
+            }
+        );
+
+        await loadStudentProgress();
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+
+};
 useEffect(() => {
 
-  fetchModule();
-  fetchMaterials();
-  fetchLiveSessions();
-  fetchRecordedSessions();
-  fetchAssignments();
-  fetchSubmissions();
-  fetchMcqTests();
-  fetchTestAttempts();
-  fetchMcqHistory();
+    const loadEverything = async () => {
 
-}, []);
+        await fetchModule();
+
+        await fetchMaterials();
+
+        await fetchLiveSessions();
+
+        await fetchRecordedSessions();
+
+        await fetchAssignments();
+
+        await fetchSubmissions();
+
+        await fetchMcqTests();
+
+        await fetchTestAttempts();
+
+        await fetchMcqHistory();
+
+        await loadStudentProgress();
+
+    };
+
+    loadEverything();
+
+}, [moduleName]);
 
   return (
 
@@ -614,15 +1283,139 @@ useEffect(() => {
         <p className="font-semibold">
           {material.title}
         </p>
+        <div className="flex items-center gap-2 mt-1">
 
-        <a
-          href={material.fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
+    <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+        📘 PDF
+    </span>
+
+    <span className="text-gray-500 text-sm">
+        Reading Material
+    </span>
+
+</div>
+<p className="text-gray-500 text-sm mt-2">
+
+    Estimated Reading Time :
+    <strong> 60 mins</strong>
+
+</p>
+
+        <div className="mt-3 flex flex-col gap-3">
+
+    <div className="flex items-center justify-between">
+
+        <span className="text-sm font-medium text-gray-600">
+            Status
+        </span>
+
+        {isMaterialCompleted(material.id) ? (
+
+    <span className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+        ✅ Completed
+    </span>
+
+) : isMaterialOpened(material.id) ? (
+
+    <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">
+        🟡 In Progress
+    </span>
+
+) : (
+
+    <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-semibold">
+        Not Started
+    </span>
+
+)}
+
+    </div>
+
+    <button
+     type="button"
+    onClick={async () => {
+
+    try {
+
+        const student = JSON.parse(
+            localStorage.getItem("studentData")
+        );
+
+        const analyticsRef = doc(
+            db,
+            "studentAnalytics",
+            student.email
+        );
+
+        const analyticsSnap = await getDoc(analyticsRef);
+
+        if (!analyticsSnap.exists()) return;
+
+        const analytics = analyticsSnap.data();
+
+        const materialProgress =
+            analytics.materialProgress || {};
+
+        const moduleProgress =
+            materialProgress[moduleName] || {};
+
+        moduleProgress.reading = moduleProgress.reading || {};
+
+moduleProgress.reading[material.id] = {
+
+    opened: true,
+
+};
+
+        materialProgress[moduleName] = moduleProgress;
+
+        await updateDoc(analyticsRef, {
+            materialProgress,
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+    }
+
+    window.open(material.fileUrl, "_blank");
+   
+
+}}
+
+    className="w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl transition"
+>
+        Open Material
+    </button>
+
+    {isMaterialCompleted(material.id) ? (
+
+        <button
+            disabled
+            className="w-full bg-green-600 text-white py-2 rounded-xl opacity-70 cursor-not-allowed"
         >
-          Open Material
-        </a>
+            ✓ Read
+        </button>
+
+    ) : (
+
+        <button
+    disabled={!isMaterialOpened(material.id)}
+    onClick={() => handleMarkRead(material)}
+    className={`w-full py-2 rounded-xl text-white transition
+        ${
+            isMaterialOpened(material.id)
+                ? "bg-green-500 hover:bg-green-600"
+                : "bg-gray-400 cursor-not-allowed"
+        }`}
+>
+    {isMaterialOpened(material.id) ? "Mark as Read" : "Open Material First"}
+</button>
+
+    )}
+
+</div>
 
       </div>
 
@@ -650,27 +1443,75 @@ useEffect(() => {
 
     practiceMaterials.map((material) => (
 
-      <div
-        key={material.id}
-        className="border-b py-3"
-      >
+<div
+    key={material.id}
+    className="border-b py-4"
+>
 
-        <p className="font-semibold">
-          {material.title}
-        </p>
+    <p className="font-semibold">
+        {material.title}
+    </p>
 
-        <a
-          href={material.fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-green-600 hover:underline"
+    <div className="mt-2 flex justify-between items-center">
+
+        <span className="text-sm font-medium">
+            Status
+        </span>
+
+        {isPracticeCompleted(material.id) ? (
+
+            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                ✅ Completed
+            </span>
+
+        ) : isPracticeOpened(material.id) ? (
+
+            <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-semibold">
+                🟡 In Progress
+            </span>
+
+        ) : (
+
+            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
+                Not Started
+            </span>
+
+        )}
+
+    </div>
+
+    <button
+        onClick={() => trackPracticeMaterial(material)}
+        className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl"
+    >
+        Open Practice Material
+    </button>
+
+    {isPracticeOpened(material.id) && !isPracticeCompleted(material.id) && (
+
+        <button
+            onClick={() => completePracticeMaterial(material.id)}
+            className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl"
         >
-          Open Material
-        </a>
+            Mark Practice as Completed
+        </button>
 
-      </div>
+    )}
 
-    ))
+    {isPracticeCompleted(material.id) && (
+
+        <button
+            disabled
+            className="mt-2 w-full bg-green-500 text-white py-2 rounded-xl opacity-70 cursor-not-allowed"
+        >
+            ✓ Practice Completed
+        </button>
+
+    )}
+
+</div>
+
+))
 
   )}
 
@@ -704,13 +1545,14 @@ useEffect(() => {
         </p>
 
         <a
-          href={material.fileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-purple-600 hover:underline"
-        >
-          Open Material
-        </a>
+    href={material.fileUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={() => trackMaterial("interview")}
+    className="text-purple-600 hover:underline"
+>
+    Open Material
+</a>
 
       </div>
 
@@ -1211,11 +2053,59 @@ useEffect(() => {
 
 )}
 
+
   </div>
 
 )}
 
 </div>
+{/* Module Completion */}
+
+<div className="bg-white p-6 rounded-2xl shadow-lg mt-8">
+
+  <h2 className="text-2xl font-bold text-green-700 mb-4">
+    ✅ Module Completion
+  </h2>
+
+  <p className="text-gray-600 mb-4">
+    Once you have completed this module,
+    click below to update your learning progress.
+  </p>
+
+  {moduleCompleted ? (
+
+    <button
+      disabled
+      className="
+        w-full
+        bg-green-600
+        text-white
+        py-3
+        rounded-xl
+        cursor-not-allowed
+      "
+    >
+      Module Completed ✓
+    </button>
+
+  ) : (
+
+    <button
+      onClick={handleModuleComplete}
+      className="
+        w-full
+        bg-blue-700
+        hover:bg-blue-800
+        text-white
+        py-3
+        rounded-xl
+        font-semibold
+      "
+    >
+      Mark Module as Completed
+    </button>
+    )}
+    </div>
 
 </div>
 
