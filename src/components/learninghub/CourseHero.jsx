@@ -1,3 +1,4 @@
+import StudentPerformancePanel from "./StudentPerformancePanel";
 import { useNavigate } from "react-router-dom";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
@@ -5,7 +6,16 @@ import Badge from "../ui/Badge";
 import ProgressRing from "../ui/ProgressRing";
 import InfoItem from "../ui/InfoItem";
 
-export default function CourseHero({ student, analytics }) {
+export default function CourseHero({
+    student,
+    analytics,
+    dashboardStats,
+    latestAssignment,
+    nextLiveClass,
+    currentModule,
+    moduleProgress,
+    learningGoalModules = [],
+}) {
     const navigate = useNavigate();
     const hour = new Date().getHours();
 
@@ -67,83 +77,102 @@ else if (hour < 17) {
 
                     </p>
 
-                    <div className="mt-8">
+                    <div className="mt-10">
 
-                        <Button
-    onClick={() => navigate("/modules")}
->
+    <Button
+        onClick={() => navigate("/modules")}
+    >
+        Continue Learning →
+    </Button>
 
-    Continue Learning →
+</div>
 
-</Button>
+<div className="mt-8 max-w-xl">
 
-                    </div>
+    <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6">
+
+        <div className="flex justify-between items-center">
+
+            <h3 className="text-xl font-bold text-white">
+                Today's Learning Goal
+            </h3>
+
+            <Badge>
+                AI Recommended
+            </Badge>
+
+        </div>
+
+        <div className="mt-6">
+
+    <p className="text-blue-100 text-sm">
+        Today's Learning Goal
+    </p>
+
+    <div className="flex flex-wrap gap-2 mt-2">
+
+        {learningGoalModules.length > 0 ? (
+
+            learningGoalModules.map((module) => (
+
+                <span
+                    key={module.id}
+                    className="px-4 py-2 rounded-full bg-white/15 border border-white/20 text-white font-semibold"
+                >
+                    {module.moduleName}
+                </span>
+
+            ))
+
+        ) : (
+
+            <span className="text-2xl font-bold text-white">
+                {currentModule?.moduleName ||
+                "Continue your current module"}
+            </span>
+
+        )}
+
+    </div>
+
+</div>
+
+        <div className="mt-6">
+
+    <p className="text-blue-100 text-sm">
+        Completion
+    </p>
+
+    <p className="text-green-300 text-xl font-bold mt-1">
+        {moduleProgress || 0}%
+    </p>
+
+</div>
+
+        <div className="mt-6 h-3 bg-white/20 rounded-full overflow-hidden">
+
+            <div
+                className="h-full bg-gradient-to-r from-green-400 to-cyan-400"
+                style={{
+                    width: `${moduleProgress || 0}%`
+                }}
+            />
+
+        </div>
+
+    </div>
+
+</div>
 
                 </div>
 
                 {/* RIGHT SIDE */}
 
-                <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border border-white/10">
-
-                    <div className="flex justify-center mb-8">
-
-                        <ProgressRing
-    progress={analytics?.overallProgress ?? 0}
-    label="Learning Progress"
-    color="#22C55E"
+<StudentPerformancePanel
+    analytics={analytics}
+    studentData={student}
+    dashboardStats={dashboardStats}
 />
-
-                    </div>
-
-                    <InfoItem
-
-    label="Batch"
-
-    value={student?.batchId ?? "--"}
-
-/>
-<InfoItem
-
-    label="Started"
-
-    value={student?.startDate ?? "--"}
-
-/>
-
-<InfoItem
-
-    label="Ends"
-
-    value={student?.endDate ?? "--"}
-
-/>
-                
-
-                    <InfoItem
-
-                        label="Duration"
-
-                        value="10 Months"
-
-                    />
-
-                    <InfoItem
-
-                        label="Internship"
-
-                        value="6 weeks"
-
-                    />
-
-                    <InfoItem
-
-                        label="Mode"
-
-                        value="Offline + Live"
-
-                    />
-
-                </div>
 
             </div>
 

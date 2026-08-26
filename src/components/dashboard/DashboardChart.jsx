@@ -10,96 +10,62 @@ Cell
 } from "recharts";
 
 
-export default function DashboardChart({ analytics }) {
-    const data = [
-  {
-    module: "Python",
-    progress: analytics?.modules?.python ?? 0,
-    color: "#2563eb",
-  },
-  {
-    module: "NumPy",
-    progress: analytics?.modules?.numpy ?? 0,
-    color: "#22c55e",
-  },
-  {
-    module: "Pandas",
-    progress: analytics?.modules?.pandas ?? 0,
-    color: "#9333ea",
-  },
-  {
-    module: "Data Visualization",
-    progress: analytics?.modules?.datavisualization ?? 0,
-    color: "#f97316",
-  },
-  {
-    module: "EDA",
-    progress: analytics?.modules?.eda ?? 0,
-    color: "#06b6d4",
-  },
-  {
-    module: "Stats & Maths",
-    progress: analytics?.modules?.statistics ?? 0,
-    color: "#6366f1",
-  },
-  {
-    module: "SQL",
-    progress: analytics?.modules?.sql ?? 0,
-    color: "#f59e0b",
-  },
-  {
-    module: "Excel",
-    progress: analytics?.modules?.excel ?? 0,
-    color: "#84cc16",
-  },
-  {
-    module: "Power BI",
-    progress: analytics?.modules?.powerbi ?? 0,
-    color: "#eab308",
-  },
-  {
-    module: "Tableau",
-    progress: analytics?.modules?.tableau ?? 0,
-    color: "#ec4899",
-  },
-  {
-    module: "Machine Learning",
-    progress: analytics?.modules?.machinelearning ?? 0,
-    color: "#ef4444",
-  },
-  {
-    module: "Deep Learning",
-    progress: analytics?.modules?.deeplearning ?? 0,
-    color: "#8b5cf6",
-  },
-  {
-    module: "Gen AI",
-    progress: analytics?.modules?.generativeai ?? 0,
-    color: "#10b981",
-  },
-  {
-    module: "Agentic AI",
-    progress: analytics?.modules?.agenticai ?? 0,
-    color: "#0ea5e9",
-  },
-  {
-    module: "MLOps",
-    progress: analytics?.modules?.mlops ?? 0,
-    color: "#6b7280",
-  },
+export default function DashboardChart({ analytics, modules = [] }) {
+    const getAnalyticsModuleKey = (moduleName) => {
+    const name = String(moduleName || "")
+        .trim()
+        .toLowerCase();
 
-  // Analytics-based progress (not module progress)
-  {
-    module: "Projects",
-    progress: analytics?.projectAverage ?? 0,
-    color: "#1d4ed8",
-  },
-  {
-    module: "Interview",
-    progress: analytics?.modules?.interview ?? 0,
-    color: "#65a30d",
-  },
-];
+    const keyMap = {
+        "r language": "rlanguage",
+        "statistics & mathematics": "statistics",
+        "generative ai": "generativeai",
+        "agentic ai": "agenticai",
+        "machine learning": "machinelearning",
+        "deep learning": "deeplearning",
+        "data visualization": "datavisualization",
+        "power bi": "powerbi",
+        "mlops": "mlops",
+        "python": "python",
+        "numpy": "numpy",
+        "pandas": "pandas",
+        "eda": "eda",
+        "tableau": "tableau",
+        "sql": "sql",
+        "excel": "excel",
+    };
+
+    return keyMap[name] || name.replace(/\s+/g, "");
+};
+
+const data = modules.map((module, index) => {
+    const key = getAnalyticsModuleKey(module.moduleName);
+
+    return {
+        module: module.moduleName,
+        progress: Number(
+            analytics?.modules?.[key] ?? 0
+        ),
+        color: [
+            "#2563eb",
+            "#22c55e",
+            "#9333ea",
+            "#f97316",
+            "#06b6d4",
+            "#6366f1",
+            "#f59e0b",
+            "#84cc16",
+            "#eab308",
+            "#ec4899",
+            "#ef4444",
+            "#8b5cf6",
+            "#10b981",
+            "#0ea5e9",
+            "#6b7280",
+            "#7c3aed",
+        ][index % 16],
+    };
+});
 
     return (
         <div className="bg-white rounded-3xl shadow-lg p-6">

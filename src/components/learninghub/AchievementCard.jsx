@@ -1,4 +1,7 @@
-export default function AchievementCard() {
+export default function AchievementCard({
+    analytics,
+    latestAchievement,
+}) {
 
     return (
 
@@ -20,17 +23,17 @@ export default function AchievementCard() {
 
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 mt-5">
+            <h3 className="text-2xl font-bold text-slate-800">
+    {latestAchievement
+        ? `${latestAchievement.moduleName} Completed`
+        : "No Achievement Yet"}
+</h3>
 
-                Python Fundamentals Completed
-
-            </h2>
-
-            <p className="text-gray-500 mt-2">
-
-                Congratulations! You successfully completed this module.
-
-            </p>
+            <p className="text-slate-500 mt-3">
+    {latestAchievement
+        ? "Congratulations! You successfully completed this module."
+        : "Complete your first module to unlock achievements."}
+</p>
 
             <div className="mt-6">
 
@@ -42,9 +45,20 @@ export default function AchievementCard() {
 
             </div>
 
-            <button className="w-full mt-6 bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-xl font-semibold hover:scale-105 transition">
+            <button
+    disabled={!analytics?.certificateIssued}
+    className={`w-full mt-6 py-3 rounded-xl font-semibold transition ${
+        analytics?.certificateIssued
+            ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:scale-105"
+            : "bg-gray-300 text-gray-600 cursor-not-allowed"
+    }`}
+>
 
-                View Certificate
+               {
+analytics?.certificateIssued
+    ? "View Certificate"
+    : "Certificate Locked"
+}
 
             </button>
 

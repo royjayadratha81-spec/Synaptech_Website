@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getAuth } from "firebase/auth";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -8,6 +8,11 @@ import AccountInformation from "../components/profile/AccountInformation";
 import ProfileSummary from "../components/profile/ProfileSummary";
 import AccountStatus from "../components/profile/AccountStatus";
 import toast from "react-hot-toast";
+import { supabase } from "../supabase/supabase";
+import AIBackground from "../components/ui/AIBackground";
+import StudentQuickStats from "../components/profile/StudentQuickStats";
+import StudentIDCard from "../components/idcard/StudentIDCard";
+import DownloadIDCard from "../components/idcard/DownloadIDCard";
 
 export default function Profile() {
 
@@ -28,8 +33,84 @@ const [profile, setProfile] = useState({
   linkedin: studentData?.linkedin || "",
   github: studentData?.github || "",
   portfolio: studentData?.portfolio || "",
+  photoURL: studentData?.photoURL || "",
 });
+const profileFields = [
+  profile.photoURL,
+  profile.phone,
+  profile.gender,
+  profile.dob,
+  profile.address,
+  profile.city,
+  profile.state,
+  profile.country,
+  profile.qualification,
+  profile.college,
+  profile.linkedin,
+  profile.github,
+  profile.portfolio,
+];
+
+const completedFields = profileFields.filter(
+  (field) => field && field.toString().trim() !== ""
+).length;
+
+const profileCompletion = Math.round(
+  (completedFields / profileFields.length) * 100
+);
 const [originalProfile, setOriginalProfile] = useState({});
+const idCardRef = useRef(null);
+const handlePhotoUpload = async (e) => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  // Allow only images
+  if (
+    !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+  ) {
+    toast.error("Only JPG, PNG and WEBP images are allowed.");
+    return;
+  }
+
+  // Max 2 MB
+  if (file.size > 2 * 1024 * 1024) {
+    toast.error("Image must be smaller than 2 MB.");
+    return;
+  }
+
+  try {
+    const fileName = `${studentData.studentId}-${Date.now()}`;
+
+    const { error } = await supabase.storage
+      .from("profile-photos")
+      .upload(fileName, file, {
+        upsert: true,
+      });
+
+    if (error) throw error;
+
+    const { data } = supabase.storage
+      .from("profile-photos")
+      .getPublicUrl(fileName);
+      await updateDoc(
+  doc(db, "students", studentData.studentId),
+  {
+    photoURL: data.publicUrl,
+  }
+);
+
+    setProfile((prev) => ({
+      ...prev,
+      photoURL: data.publicUrl,
+    }));
+
+    toast.success("Photo uploaded successfully.");
+  } catch (err) {
+    console.error(err);
+    toast.error("Photo upload failed.");
+  }
+};
 useEffect(() => {
 
   const loadProfile = async () => {
@@ -38,6 +119,7 @@ useEffect(() => {
 
     try {
 
+      console.log("Profile Student ID:", studentData.studentId);
       const studentRef = doc(db, "students", studentData.studentId);
 
       const snap = await getDoc(studentRef);
@@ -58,6 +140,7 @@ useEffect(() => {
   linkedin: data.linkedin || "",
   github: data.github || "",
   portfolio: data.portfolio || "",
+  photoURL: data.photoURL || "",
 };
 
 setProfile(loadedProfile);
@@ -92,6 +175,7 @@ const handleSaveProfile = async () => {
       linkedin: profile.linkedin,
       github: profile.github,
       portfolio: profile.portfolio,
+      photoURL: profile.photoURL,
     });
 
     setOriginalProfile(profile);
@@ -104,39 +188,88 @@ const handleSaveProfile = async () => {
     toast.error("Failed to update profile.");
   }
 };
+const downloadIDCard = async () => {
+    await DownloadIDCard(idCardRef, studentData);
+};
 
   return (
 
-<div className="min-h-screen bg-gray-100 p-8">
+<div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
 
-<div className="max-w-5xl mx-auto">
+    <AIBackground />
+    <div className="relative z-10">
 
-<div className="flex justify-between items-center mb-8">
+    
 
-  <div>
+<div className="max-w-7xl mx-auto px-8">
 
-    <div className="mb-10">
 
-  <h1 className="text-4xl font-bold text-blue-800">
-    My Profile
-  </h1>
+  <div className="relative overflow-hidden rounded-[32px] shadow-2xl mb-10 border border-white/30 backdrop-blur-xl">
 
-  <p className="text-gray-500 mt-2 text-lg">
-    Complete your profile and keep your account information up to date.
-  </p>
+  <div className="absolute inset-0 bg-gradient-to-r from-[#1E40AF] via-[#4F46E5] to-[#7C3AED]"></div>
 
+  <div className="absolute -top-16 -right-10 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+
+  <div className="absolute bottom-0 left-20 w-52 h-52 bg-cyan-300/20 rounded-full blur-2xl"></div>
+  <div className="absolute top-10 left-1/3 w-32 h-32 bg-cyan-400/20 rounded-full blur-3xl animate-pulse"></div>
+
+<div className="absolute bottom-10 right-40 w-40 h-40 bg-pink-400/20 rounded-full blur-3xl animate-pulse"></div>
+
+  <div className="relative z-10 p-10 text-white">
+
+      <p className="uppercase tracking-[6px] text-blue-100 text-sm">
+          Synaptech Student Portal
+      </p>
+
+      <h1 className="text-5xl font-bold mt-3">
+          My Profile
+      </h1>
+
+      <p className="text-blue-100 text-lg mt-4 max-w-2xl leading-8">
+          Keep your personal information updated to unlock
+          personalized learning, AI-powered recommendations,
+          certificates and placement services.
+      </p>
+
+  
+  <div className="mt-10 grid grid-cols-3 gap-8">
+
+<div>
+<p className="text-3xl font-bold">120+</p>
+<p className="text-blue-100 text-sm">Learning Hours</p>
 </div>
+
+<div>
+<p className="text-3xl font-bold">18</p>
+<p className="text-blue-100 text-sm">Modules</p>
+</div>
+
+<div>
+<p className="text-3xl font-bold">AI</p>
+<p className="text-blue-100 text-sm">Powered LMS</p>
+</div>
+</div>
+
 
   </div>
 
 
 
 </div>
-
+<StudentQuickStats
+    studentData={studentData}
+    profileCompletion={profileCompletion}
+/>
 
 {/* ===================== PROFILE SUMMARY ===================== */}
 <ProfileSummary
     studentData={studentData}
+    profile={profile}
+    isEditing={isEditing}
+    setIsEditing={setIsEditing}
+    handlePhotoUpload={handlePhotoUpload}
+    profileCompletion={profileCompletion}
+    downloadIDCard={downloadIDCard}
 />
 
 <div className="grid md:grid-cols-2 gap-8 mt-8">
@@ -157,12 +290,28 @@ const handleSaveProfile = async () => {
 
 </div>
 
-<AccountStatus
-    studentData={studentData}
-/>
+<div className="mt-8">
+    <AccountStatus
+        studentData={studentData}
+    />
+    <div className="mt-12 flex justify-center">
+
+    <div ref={idCardRef}>
+
+        <StudentIDCard
+            studentData={studentData}
+            profile={profile}
+        />
+
+    </div>
+
+</div>
+</div>
 
       </div>
     </div>
+
+</div>
 
   );
 }

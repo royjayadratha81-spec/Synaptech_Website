@@ -1,4 +1,34 @@
 User-agent: *
 Allow: /
 
+# Public pages are crawlable; application/admin areas are not SEO targets.
+Disallow: /login
+Disallow: /register
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /dashboard
+Disallow: /courses
+Disallow: /learning-hub
+Disallow: /student-attendance
+Disallow: /manage-live-sessions
+Disallow: /modules
+Disallow: /module/
+Disallow: /assignments
+Disallow: /results
+Disallow: /payment
+Disallow: /analytics
+Disallow: /profile
+Disallow: /backup-data
+Disallow: /create-
+Disallow: /view-
+Disallow: /assign-batch
+Disallow: /attendance
+Disallow: /finance
+Disallow: /initialize-analytics
+Disallow: /payment-migration
+Disallow: /finance-migration
+Disallow: /finance-finalfee-migration
+Disallow: /payment-studentid-migration
+Disallow: /upload-course-material
+
 Sitemap: https://synaptecheducation.in/sitemap.xml

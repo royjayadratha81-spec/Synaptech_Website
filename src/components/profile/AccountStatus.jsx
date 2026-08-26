@@ -1,10 +1,15 @@
+import { ShieldCheck } from "lucide-react";
+import SectionHeader from "../ui/SectionHeader";
+import GlassCard from "../ui/GlassCard";
 export default function AccountStatus({ studentData }) {
   return (
-    <div className="bg-white rounded-3xl shadow-lg p-6 mt-8">
+    <GlassCard className="p-8">
 
-      <h3 className="text-xl font-bold text-blue-700 mb-5">
-        Account Status
-      </h3>
+      <SectionHeader
+    icon={<ShieldCheck />}
+    title="Account Status"
+    color="from-emerald-500 to-green-600"
+/>
 
       <div className="grid md:grid-cols-3 gap-6">
 
@@ -40,6 +45,6 @@ export default function AccountStatus({ studentData }) {
 
       </div>
 
-    </div>
+    </GlassCard>
   );
 }

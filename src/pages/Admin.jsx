@@ -18,6 +18,7 @@ import {
   FaAward,
   FaClipboardCheck,
   FaTools,
+FaChalkboardTeacher,
 } from "react-icons/fa";
 import QuickActionCard from "../components/QuickActionCard";
 import { useNavigate } from "react-router-dom";
@@ -339,7 +340,7 @@ export default function Admin() {
               onClick={() => navigate("/assign-batch")}
             />
 
-            <QuickActionCard
+                        <QuickActionCard
               title="Upload Course Material"
               description="Upload PDFs, PPTs, notes and other learning resources."
               icon={<FaBook />}
@@ -347,6 +348,37 @@ export default function Admin() {
               cardBg="from-purple-50 via-white to-purple-100"
               onClick={() => navigate("/upload-course-material")}
             />
+
+          </div>
+
+          {/* -------------------------------------------------
+              FACULTY & ACADEMIC NETWORK
+          -------------------------------------------------- */}
+
+          <h2 className="text-xl font-bold text-cyan-700 mt-8 mb-4">
+            Faculty & Academic Network
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+
+            <QuickActionCard
+              title="Faculty Management"
+              description="Create faculty profiles, manage expertise and modules, and prepare faculty for live and doubt sessions."
+              icon={<FaChalkboardTeacher />}
+              iconBg="from-cyan-500 to-blue-700"
+              cardBg="from-cyan-50 via-white to-blue-100"
+              onClick={() => navigate("/admin/faculty")}
+            />
+
+            <QuickActionCard
+              title="Faculty Assignments"
+              description="Assign faculty to specific batches and select the modules they teach in each batch."
+              icon={<FaChalkboardTeacher />}
+              iconBg="from-violet-500 to-indigo-700"
+              cardBg="from-violet-50 via-white to-indigo-100"
+              onClick={() => navigate("/admin/faculty-assignments")}
+            />
+
           </div>
           <h2 className="text-xl font-bold text-purple-700 mt-8 mb-4">
             Assessments
@@ -404,6 +436,14 @@ export default function Admin() {
               iconBg="from-green-500 to-green-700"
               cardBg="from-green-50 via-white to-green-100"
               onClick={() => navigate("/create-live-session")}
+            />
+            <QuickActionCard
+              title="Manage Live Sessions"
+              description="Start, monitor and end live classes."
+              icon={<FaVideo />}
+              iconBg="from-green-500 to-green-700"
+              cardBg="from-green-50 via-white to-green-100"
+              onClick={() => navigate("/manage-live-sessions")}
             />
 
             <QuickActionCard

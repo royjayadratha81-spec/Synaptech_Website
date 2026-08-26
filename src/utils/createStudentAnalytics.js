@@ -50,11 +50,17 @@ import { db } from "../firebase/firebaseConfig";
       averageScore: 0,
       overallProgress: 0,
 
-      totalModules: 17,
+      totalModules: 16,
       modulesCompleted: 0,
 
       certificateIssued: false,
       certificateUrl: "",
+
+      // Learning engagement / streak fields.
+      // These are independent of assessment analytics.
+      learningStreak: 0,
+      longestLearningStreak: 0,
+      lastLearningActivityDate: null,
 
       modules: {
 

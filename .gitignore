@@ -22,3 +22,37 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Local backup files
+*.bak
+*-backup.*
+*-BACKUP.*
+*backup*.jsx
+*backup*.js
+# Local backup files
+*-backup.*
+*-BACKUP.*
+*-backedup.*
+*.bak
+*.backup
+# Temporary editor / generated files
+*.tmp
+*.temp
+# -------------------------------------------------
+# Local backup / temporary development copies
+# -------------------------------------------------
+
+*backup*
+*BACKUP*
+*backedup*
+*BACKEDUP*
+*-bkp*
+*-BKP*
+*.bak
+*.backup
+*.tmp
+*.temp

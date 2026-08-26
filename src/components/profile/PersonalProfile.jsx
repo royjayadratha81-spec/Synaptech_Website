@@ -2,6 +2,9 @@ import ProfileRow from "./ProfileRow";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import EditableField from "./EditableField";
+import { UserRound } from "lucide-react";
+import SectionHeader from "../ui/SectionHeader";
+import GlassCard from "../ui/GlassCard";
 
 export default function PersonalProfile({
     profile,
@@ -13,11 +16,13 @@ export default function PersonalProfile({
     onSave,
 }) {
   return (
-    <div className="bg-white rounded-3xl shadow-lg p-6">
+    <GlassCard className="p-8">
 
-      <h3 className="text-2xl font-bold text-blue-700 border-b pb-3 mb-6">
-        Personal Profile
-      </h3>
+      <SectionHeader
+    icon={<UserRound />}
+    title="Personal Profile"
+    color="from-violet-500 to-fuchsia-600"
+/>
 
       <div className="space-y-1">
 
@@ -204,6 +209,6 @@ export default function PersonalProfile({
 
 </div>
 
-    </div>
+    </GlassCard>
   );
 }

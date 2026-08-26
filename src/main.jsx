@@ -7,6 +7,7 @@ import AdminProtectedRoute from "./pages/AdminProtectedRoute";
 import CreateAssignment from "./pages/CreateAssignment";
 import ViewSubmissions from "./pages/ViewSubmissions";
 import ViewMcqResults from "./pages/ViewMcqResults";
+import AdminMcqResults from "./pages/AdminMcqResults";
 import Payment from "./pages/Payment";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -19,6 +20,7 @@ import ViewCertificates from "./pages/ViewCertificates";
 import UploadCourseMaterial from "./pages/UploadCourseMaterial";
 import AssignBatch from "./pages/AssignBatch";
 import Attendance from "./pages/Attendance";
+import StudentAttendance from "./pages/StudentAttendance";
 import CreateBatch from "./pages/CreateBatch";
 import Modules from "./pages/Modules";
 import ModuleDetails from "./pages/ModuleDetails";
@@ -28,6 +30,12 @@ import AdminAnalytics from "./pages/AdminAnalytics";
 import InitializeAnalytics from "./pages/InitializeAnalytics";
 import LearningHub from "./pages/LearningHub";
 import Profile from "./pages/Profile";
+import MiniTestQuiz from "./pages/MiniTestQuiz";
+import MiniTestResult from "./pages/MiniTestResult";
+import ManageLiveSessions from "./pages/ManageLiveSessions";
+import FacultyManagement from "./pages/FacultyManagement";
+import FacultyAssignments from "./pages/FacultyAssignments";
+import Faculty from "./pages/Faculty";
 
 
 
@@ -91,7 +99,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   path="/view-mcq-results"
   element={
     <AdminProtectedRoute>
-      <ViewMcqResults />
+      <AdminMcqResults />
     </AdminProtectedRoute>
   }
 />
@@ -119,6 +127,22 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<AdminProtectedRoute> <Admin /> </AdminProtectedRoute>}/>
+        <Route
+  path="/admin/faculty"
+  element={
+    <AdminProtectedRoute>
+      <FacultyManagement />
+    </AdminProtectedRoute>
+  }
+/>
+        <Route
+  path="/admin/faculty-assignments"
+  element={
+    <AdminProtectedRoute>
+      <FacultyAssignments />
+    </AdminProtectedRoute>
+  }
+/>
         <Route
     path="/admin/students"
     element={
@@ -218,6 +242,15 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 />
 
 <Route
+  path="/faculty"
+  element={
+    <ProtectedRoute>
+      <Faculty />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
   path="/courses"
   element={
     <ProtectedRoute>
@@ -234,6 +267,22 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
 <Route
+  path="/student-attendance"
+  element={
+    <ProtectedRoute>
+      <StudentAttendance />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/manage-live-sessions"
+  element={
+    <AdminProtectedRoute>
+      <ManageLiveSessions />
+    </AdminProtectedRoute>
+  }
+/>
+<Route
   path="/modules"
   element={
     <ProtectedRoute>
@@ -246,6 +295,23 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <ProtectedRoute>
       <ModuleDetails />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/mini-test/:testId/take"
+  element={
+    <ProtectedRoute>
+      <MiniTestQuiz />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/mini-test/:testId/result/:resultId"
+  element={
+    <ProtectedRoute>
+      <MiniTestResult />
     </ProtectedRoute>
   }
 />

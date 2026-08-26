@@ -2,7 +2,8 @@ import Card from "../ui/Card";
 
 export default function AssignmentCard({
 
-    assignment
+    assignment,
+    assessmentRow
 
 }) {
     if (!assignment) {
@@ -32,6 +33,24 @@ export default function AssignmentCard({
     );
 
 }
+const isProject =
+    String(
+        assignment.type ||
+        assignment.assignmentType ||
+        ""
+    )
+        .trim()
+        .toLowerCase() === "project";
+
+const itemIcon = isProject ? "📁" : "📝";
+
+const itemLabel = isProject
+    ? "PROJECT"
+    : "ASSIGNMENT";
+
+const isCompleted = isProject
+    ? Boolean(assessmentRow?.projectCompleted)
+    : Boolean(assessmentRow?.assignmentCompleted);
 const dueDate = new Date(assignment.dueDate);
 
 const today = new Date();
@@ -50,11 +69,15 @@ const daysLeft = Math.ceil(
 
         <div className="flex items-center justify-between">
 
-            <span className="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">
-
-                📝 ASSIGNMENT
-
-            </span>
+            <span
+    className={`text-xs font-bold px-3 py-1 rounded-full ${
+        isProject
+            ? "bg-purple-100 text-purple-700"
+            : "bg-orange-100 text-orange-700"
+    }`}
+>
+    {itemIcon} {itemLabel}
+</span>
 
             <span className="text-sm text-gray-500">
 
@@ -86,17 +109,27 @@ const daysLeft = Math.ceil(
 
                 </span>
 
-                <span className="font-semibold text-red-600">
-
-                    Pending
-
-                </span>
+                <span
+    className={`font-semibold ${
+        isCompleted
+            ? "text-green-600"
+            : "text-red-600"
+    }`}
+>
+    {isCompleted ? "Completed" : "Pending"}
+</span>
 
             </div>
 
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
 
-                <div className="h-full w-0 bg-red-500 rounded-full"></div>
+                <div
+    className={`h-full rounded-full transition-all duration-500 ${
+        isCompleted
+            ? "w-full bg-green-500"
+            : "w-0 bg-red-500"
+    }`}
+/>
 
             </div>
 
@@ -104,15 +137,21 @@ const daysLeft = Math.ceil(
 
         <div className="flex items-center justify-between mt-6">
 
-            <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">
-
-                🔥 {daysLeft} Days Left
-
-            </span>
+            <span
+    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+        isCompleted
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-600"
+    }`}
+>
+    {isCompleted
+        ? "✓ Completed"
+        : `🔥 ${Math.max(daysLeft, 0)} Days Left`}
+</span>
 
             <button className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-5 py-2 rounded-xl font-semibold hover:scale-105 transition">
 
-                View Assignment
+                {isProject ? "View Project" : "View Assignment"}
 
             </button>
 
