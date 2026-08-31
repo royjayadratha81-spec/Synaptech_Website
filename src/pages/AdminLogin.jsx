@@ -7,11 +7,13 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebaseConfig";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 export default function AdminLogin() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
@@ -19,14 +21,14 @@ export default function AdminLogin() {
 
     try {
 
+      
       const adminRef = doc(db, "admins", email);
 
       const adminSnap = await getDoc(adminRef);
 
       if (!adminSnap.exists()) {
 
-        alert("Admin not found");
-
+        setError("Admin not found.");
         return;
 
       }
@@ -34,12 +36,21 @@ export default function AdminLogin() {
       const adminData = adminSnap.data();
 
       if (adminData.password !== password) {
+    setError("Invalid password.");
+    return;
+}
 
-        alert("Incorrect Password");
+      const auth = getAuth();
 
-        return;
-
-      }
+try {
+    await signInWithEmailAndPassword(auth, email, password);
+} catch (authError) {
+    console.error("Admin Firebase authentication failed:", authError);
+    setError(
+        "Admin account verification failed in Firebase Authentication."
+    );
+    return;
+}
 
       localStorage.setItem("isAdmin", "true");
       localStorage.setItem("adminEmail", email);
@@ -52,7 +63,7 @@ export default function AdminLogin() {
 
       console.error(error);
 
-      alert("Login Failed");
+      setError("Login Failed");
 
     }
 

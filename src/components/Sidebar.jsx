@@ -13,6 +13,7 @@ import {
   FaMoneyBillWave,
   FaChevronDown,
   FaChalkboardTeacher,
+  FaQuestionCircle,
 } from "react-icons/fa";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
@@ -127,8 +128,73 @@ export default function Sidebar({ student }) {
   />
   Faculty
 </Link>
+{/* Doubt Sessions */}
+<div className="mt-1">
+  <Link
+    to="/doubt-sessions"
+    className={`${menuClass} ${
+      location.pathname.startsWith("/doubt-sessions")
+        ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md"
+        : "text-slate-700 hover:bg-slate-100"
+    }`}
+  >
+    <FaQuestionCircle
+      className={
+        location.pathname.startsWith("/doubt-sessions")
+          ? "text-white"
+          : "text-slate-400"
+      }
+    />
+    Doubt Sessions
+  </Link>
 
-          {/* Real collapsible assessment menu */}
+  {location.pathname.startsWith("/doubt-sessions") && (
+    <div className="ml-4 mt-1 pl-3 border-l border-violet-100 space-y-0.5">
+      <Link
+        to="/doubt-sessions/live"
+        className={`block px-3 py-1.5 rounded-lg text-[12px] leading-5 transition-colors ${
+          location.pathname === "/doubt-sessions/live"
+            ? "bg-violet-50 text-violet-700 font-bold"
+            : "text-slate-500 hover:bg-violet-50 hover:text-violet-700"
+        }`}
+      >
+        Live Sessions
+      </Link>
+
+      <Link
+        to="/doubt-sessions/recorded"
+        className={`block px-3 py-1.5 rounded-lg text-[12px] leading-5 transition-colors ${
+          location.pathname === "/doubt-sessions/recorded"
+            ? "bg-violet-50 text-violet-700 font-bold"
+            : "text-slate-500 hover:bg-violet-50 hover:text-violet-700"
+        }`}
+      >
+        Recorded Sessions
+      </Link>
+    </div>
+    )}
+</div>
+
+{/* Interview Q&A */}
+<Link
+  to="/interview-qna"
+  className={`${menuClass} ${
+    location.pathname.startsWith("/interview-qna")
+      ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md"
+      : "text-slate-700 hover:bg-slate-100"
+  }`}
+>
+  <FaQuestionCircle
+    className={
+      location.pathname.startsWith("/interview-qna")
+        ? "text-white"
+        : "text-slate-400"
+    }
+  />
+  Interview Q&A
+</Link>
+
+{/* Real collapsible assessment menu */}
           <div>
             <button
               type="button"
@@ -168,7 +234,42 @@ export default function Sidebar({ student }) {
               </div>
             )}
           </div>
+          {/* News & Notifications */}
+          <Link
+            to="/notifications"
+            className={`${menuClass} ${
+              location.pathname.startsWith("/notifications")
+                ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md"
+                : "text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            <FaChartLine
+              className={
+                location.pathname.startsWith("/notifications")
+                  ? "text-white"
+                  : "text-slate-400"
+              }
+            />
+            Notifications
+          </Link>
 
+          <Link
+            to="/news"
+            className={`${menuClass} ${
+              location.pathname.startsWith("/news")
+                ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md"
+                : "text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            <FaChartLine
+              className={
+                location.pathname.startsWith("/news")
+                  ? "text-white"
+                  : "text-slate-400"
+              }
+            />
+            Data Science & AI News
+          </Link>
           <p className="px-2 pt-3 pb-1 text-[9px] tracking-[0.22em] font-black text-slate-400">
             PERFORMANCE & ACCOUNT
           </p>

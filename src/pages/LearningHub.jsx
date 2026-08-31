@@ -449,7 +449,7 @@ const dashboardAssessmentCandidates =
                 return null;
             }
 
-            const row = assessmentRows.find(
+            const row = loadedAssessmentRows.find(
                 (item) =>
                     item.moduleId === definition.moduleId
             );

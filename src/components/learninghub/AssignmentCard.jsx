@@ -51,17 +51,29 @@ const itemLabel = isProject
 const isCompleted = isProject
     ? Boolean(assessmentRow?.projectCompleted)
     : Boolean(assessmentRow?.assignmentCompleted);
-const dueDate = new Date(assignment.dueDate);
+const dueDate =
+    assignment.dueDate instanceof Date
+        ? assignment.dueDate
+        : assignment.dueDate
+        ? new Date(assignment.dueDate)
+        : null;
 
 const today = new Date();
 
-const daysLeft = Math.ceil(
+const daysLeft = dueDate
+    ? Math.ceil(
+          (dueDate - today) /
+          (1000 * 60 * 60 * 24)
+      )
+    : null;
 
-    (dueDate - today) /
-
-    (1000 * 60 * 60 * 24)
-
-);
+const displayDueDate = dueDate
+    ? dueDate.toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+      })
+    : "—";
 
     return (
 
@@ -80,10 +92,8 @@ const daysLeft = Math.ceil(
 </span>
 
             <span className="text-sm text-gray-500">
-
-                Due {assignment.dueDate}
-
-            </span>
+    Due {displayDueDate}
+</span>
 
         </div>
 
@@ -145,8 +155,10 @@ const daysLeft = Math.ceil(
     }`}
 >
     {isCompleted
-        ? "✓ Completed"
-        : `🔥 ${Math.max(daysLeft, 0)} Days Left`}
+    ? "✓ Completed"
+    : daysLeft === null
+    ? "No Due Date"
+    : `🔥 ${Math.max(daysLeft, 0)} Days Left`}
 </span>
 
             <button className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-5 py-2 rounded-xl font-semibold hover:scale-105 transition">

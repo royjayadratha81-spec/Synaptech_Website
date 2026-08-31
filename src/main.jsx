@@ -36,6 +36,16 @@ import ManageLiveSessions from "./pages/ManageLiveSessions";
 import FacultyManagement from "./pages/FacultyManagement";
 import FacultyAssignments from "./pages/FacultyAssignments";
 import Faculty from "./pages/Faculty";
+import CreateDoubtSession from "./pages/CreateDoubtSession";
+import ManageDoubtSessions from "./pages/ManageDoubtSessions";
+import DoubtSessions from "./pages/DoubtSessions";
+import DoubtLiveSessions from "./pages/DoubtLiveSessions";
+import DoubtRecordedSessions from "./pages/DoubtRecordedSessions";
+import InterviewQnA from "./pages/InterviewQnA";
+import AdminInterviewQnA from "./pages/AdminInterviewQnA";
+import Notifications from "./pages/Notifications";
+import News from "./pages/News";
+import EducationSolutions from "./pages/EducationSolutions";
 
 
 
@@ -44,6 +54,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import SuperAdmin from "./pages/SuperAdmin";
+import MISReport from "./pages/MISReport";
 import AdminStudents from "./pages/AdminStudents";
 import PaymentMigration from "./pages/PaymentMigration";
 import FinanceDashboard from "./pages/FinanceDashboard";
@@ -122,11 +134,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </AdminProtectedRoute>
   }
 />
+        <Route path="/education-solutions" element={<EducationSolutions />} />
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<AdminProtectedRoute> <Admin /> </AdminProtectedRoute>}/>
+<Route path="/super-admin" element={<AdminProtectedRoute><SuperAdmin /></AdminProtectedRoute>} />
+<Route path="/mis-report" element={<AdminProtectedRoute><MISReport /></AdminProtectedRoute>} />
         <Route
   path="/admin/faculty"
   element={
@@ -140,6 +155,31 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <AdminProtectedRoute>
       <FacultyAssignments />
+    </AdminProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/create-doubt-session"
+  element={
+    <AdminProtectedRoute>
+      <CreateDoubtSession />
+    </AdminProtectedRoute>
+  }
+/>
+
+<Route
+  path="/admin/doubt-sessions"
+  element={
+    <AdminProtectedRoute>
+      <ManageDoubtSessions />
+    </AdminProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/interview-qna"
+  element={
+    <AdminProtectedRoute>
+      <AdminInterviewQnA />
     </AdminProtectedRoute>
   }
 />
@@ -246,6 +286,57 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   element={
     <ProtectedRoute>
       <Faculty />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/doubt-sessions"
+  element={
+    <ProtectedRoute>
+      <DoubtSessions />
+    </ProtectedRoute>
+  }
+/>
+
+
+<Route
+  path="/doubt-sessions/live"
+  element={
+    <ProtectedRoute>
+      <DoubtLiveSessions />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/doubt-sessions/recorded"
+  element={
+    <ProtectedRoute>
+      <DoubtRecordedSessions />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/interview-qna"
+  element={
+    <ProtectedRoute>
+      <InterviewQnA />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/notifications"
+  element={
+    <ProtectedRoute>
+      <Notifications />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/news"
+  element={
+    <ProtectedRoute>
+      <News />
     </ProtectedRoute>
   }
 />

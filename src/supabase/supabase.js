@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { auth } from "../firebase/firebaseConfig";
 
 const supabaseUrl =
   "https://bbypuyqsxchksfkoqmhu.supabase.co";
@@ -8,5 +9,16 @@ const supabaseKey =
 
 export const supabase = createClient(
   supabaseUrl,
-  supabaseKey
+  supabaseKey,
+  {
+    accessToken: async () => {
+      const user = auth.currentUser;
+
+      if (!user) {
+        return null;
+      }
+
+      return await user.getIdToken();
+    },
+  }
 );

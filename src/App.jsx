@@ -281,18 +281,18 @@ export default function App() {
               </div>
 
               <h1 className="max-w-4xl text-[clamp(2.7rem,8vw,5.25rem)] font-black leading-[0.98] tracking-[-0.045em] text-white">
-                Learn what is
-                <span className="block bg-gradient-to-r from-cyan-300 via-sky-300 to-white bg-clip-text text-transparent">
-                  building tomorrow.
-                </span>
-              </h1>
+  Learn Data, AI &
+  <span className="block bg-gradient-to-r from-cyan-300 via-sky-300 to-white bg-clip-text text-transparent">
+    Future Technologies.
+  </span>
+</h1>
 
               <p className="mt-7 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base sm:leading-8 lg:text-lg">
-                Industry-focused education in Data Analytics, Data Science,
-                Artificial Intelligence, Generative AI and Agentic AI —
-                designed around practical capability, projects and career
-                readiness.
-              </p>
+  Synaptech Education offers industry-focused Data Analytics,
+  Data Science, Artificial Intelligence, Generative AI and
+  Agentic AI programs in Ghaziabad, designed around practical
+  projects, assessments and career readiness.
+</p>
 
               <div className="mt-9 flex flex-wrap gap-3">
                 <a
@@ -403,8 +403,8 @@ export default function App() {
           <div className="max-w-3xl">
             <p className="text-lg leading-8 text-slate-600">
               Synaptech Education is a future-focused technical education
-              initiative dedicated to building practical skills across Data,
-              AI and emerging technologies. Our programs combine conceptual
+initiative in Ghaziabad dedicated to building practical skills
+across Data, Artificial Intelligence and emerging technologies. Our programs combine conceptual
               foundations with projects, assessments, guided learning and
               career-oriented outcomes.
             </p>

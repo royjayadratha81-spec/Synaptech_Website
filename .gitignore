@@ -56,3 +56,6 @@ dist-ssr
 *.backup
 *.tmp
 *.temp
+# Firebase Admin SDK private credentials
+firebase-service-account.json
+*firebase-adminsdk*.json
