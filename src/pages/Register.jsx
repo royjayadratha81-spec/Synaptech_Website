@@ -33,7 +33,10 @@ await setDoc(doc(db, "students", user.uid), {
   approved: false,
   createdAt: new Date(),
 });
-
+// Meta Pixel: track a Lead only after successful registration
+if (window.fbq) {
+  window.fbq("track", "Lead");
+}
 
       
 alert(
