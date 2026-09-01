@@ -74,7 +74,7 @@
       </script>
 
   <!-- Meta Pixel Code -->
-  <script>
+<script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
   n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -83,9 +83,15 @@
   t.src=v;s=b.getElementsByTagName(e)[0];
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '2024080274972394');
-  fbq('track', 'PageView');
-  </script>
+
+  const isEducationSolutions =
+    /^\/education-solutions\/?$/.test(window.location.pathname);
+
+  if (!isEducationSolutions) {
+    fbq('init', '2024080274972394');
+    fbq('track', 'PageView');
+  }
+</script>
 
   
 

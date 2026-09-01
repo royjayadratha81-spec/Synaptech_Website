@@ -504,6 +504,11 @@ const [form, setForm] = useState({
   useEffect(() => {
     document.title = "Websites, LMS, HRMS & Business Software | Synaptech";
     window.scrollTo(0, 0);
+        // Meta Pixel for Education Solutions landing page
+    if (window.fbq) {
+      window.fbq("init", "4651638568452914");
+      window.fbq("trackSingle", "4651638568452914", "PageView");
+    }
 
     // Hosted Lottie web component for lightweight motion graphics.
     // It is loaded only once and does not require another npm package.
@@ -551,7 +556,7 @@ const [form, setForm] = useState({
 
 // Meta Pixel: track a Lead only after successful enquiry submission
 if (window.fbq) {
-  window.fbq("track", "Lead");
+  window.fbq("trackSingle", "4651638568452914", "Lead");
 }
 
 setSubmitMessage(
