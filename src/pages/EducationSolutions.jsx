@@ -28,6 +28,7 @@ import synaptechLogo from "../assets/Synaptech_Education_Logo.png";
 import dashboardBanner from "../assets/dashboard-banner.png";
 import lmsStudentDashboard from "../assets/lms-student-dashboard.svg";
 import lmsAdminDashboard from "../assets/lms-admin-dashboard.svg";
+import { supabase } from "../supabase/supabase";
 
 const PHONE = "9560940039";
 const PHONE_DISPLAY = "+91 95609 40039";
@@ -489,7 +490,16 @@ export default function EducationSolutions() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
   const [showContact, setShowContact] = useState(false);
-  const [form, setForm] = useState({ name: "", phone: "", email: "", organization: "", requirement: "" });
+const [submitting, setSubmitting] = useState(false);
+const [submitMessage, setSubmitMessage] = useState("");
+
+const [form, setForm] = useState({
+  name: "",
+  phone: "",
+  email: "",
+  organization: "",
+  requirement: ""
+});
 
   useEffect(() => {
     document.title = "Websites, LMS, HRMS & Business Software | Synaptech";
@@ -513,17 +523,59 @@ export default function EducationSolutions() {
 
   const closeDemo = () => setShowContact(false);
 
-  const submitEnquiry = (e) => {
-    e.preventDefault();
-    const body = [
-      `Name: ${form.name}`,
-      `Phone: ${form.phone}`,
-      `Email: ${form.email}`,
-      `Organization: ${form.organization}`,
-      `Requirement: ${form.requirement}`,
-    ].join("\n");
-    window.location.href = `mailto:${EMAIL}?subject=Digital Solution Enquiry&body=${encodeURIComponent(body)}`;
-  };
+  const submitEnquiry = async (e) => {
+  e.preventDefault();
+
+  if (submitting) return;
+
+  setSubmitting(true);
+  setSubmitMessage("");
+
+  try {
+    const { error } = await supabase
+      .from("synaptech_leads")
+      .insert([
+        {
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim() || null,
+          organization: form.organization.trim() || null,
+          requirement: form.requirement.trim(),
+        },
+      ]);
+
+    if (error) {
+  console.error("Supabase lead submission error:", error);
+  throw error;
+}
+
+// Meta Pixel: track a Lead only after successful enquiry submission
+if (window.fbq) {
+  window.fbq("track", "Lead");
+}
+
+setSubmitMessage(
+  "Your enquiry has been successfully sent. A Synaptech representative will get back to you to discuss your requirements."
+);
+
+    setForm({
+      name: "",
+      phone: "",
+      email: "",
+      organization: "",
+      requirement: "",
+    });
+
+  } catch (error) {
+    console.error("Lead submission failed:", error);
+
+    setSubmitMessage(
+      "We couldn't submit your enquiry right now. Please try again or contact us on WhatsApp."
+    );
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#fffaf7] text-slate-900 selection:bg-orange-200 selection:text-slate-950">
@@ -817,20 +869,50 @@ export default function EducationSolutions() {
               </div>
             </div>
 
-            <form onSubmit={submitEnquiry} className="grid gap-5 p-7 sm:grid-cols-2 sm:p-9">
-              <label className="grid gap-2 text-sm font-black text-slate-800">Name<input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Your name" /></label>
-              <label className="grid gap-2 text-sm font-black text-slate-800">Phone<input required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder={PHONE_DISPLAY} /></label>
-              <label className="grid gap-2 text-sm font-black text-slate-800">Email<input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="you@company.com" /></label>
-              <label className="grid gap-2 text-sm font-black text-slate-800">Organization / Institution<input value={form.organization} onChange={e => setForm({ ...form, organization: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Company, school, institute…" /></label>
-              <label className="grid gap-2 text-sm font-black text-slate-800 sm:col-span-2">What do you need?<textarea required rows={4} value={form.requirement} onChange={e => setForm({ ...form, requirement: e.target.value })} className="resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Website, LMS, HRMS, ERP, CRM, custom software, existing system modernization…" /></label>
-              <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
-                <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-[15px] font-black text-white hover:bg-orange-950">Send Enquiry <ArrowRight className="h-4 w-4"/></button>
-                <a href={`https://wa.me/91${PHONE}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-[15px] font-black text-slate-900 hover:border-orange-300">WhatsApp {PHONE_DISPLAY}</a>
+            {submitMessage ? (
+              <div className="p-7 sm:p-9">
+                <div className="rounded-[28px] border border-orange-200 bg-orange-50/70 p-8 text-center sm:p-10">
+                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-orange-500 text-white shadow-lg">
+                    <CheckCircle2 className="h-8 w-8" />
+                  </div>
+                  <h4 className="mt-6 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    Enquiry Sent Successfully
+                  </h4>
+                  <p className="mx-auto mt-4 max-w-xl text-[16px] leading-7 text-slate-600">
+                    {submitMessage}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={closeDemo}
+                    className="mt-7 inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-black text-white hover:bg-orange-950"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
-              <div className="sm:col-span-2 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                Prefer to call? <a href={`tel:+91${PHONE}`} className="font-black text-slate-950">{PHONE_DISPLAY}</a> &nbsp;•&nbsp; Email: <a href={`mailto:${EMAIL}`} className="font-black text-slate-950">{EMAIL}</a>
-              </div>
-            </form>
+            ) : (
+              <form onSubmit={submitEnquiry} className="grid gap-5 p-7 sm:grid-cols-2 sm:p-9">
+                <label className="grid gap-2 text-sm font-black text-slate-800">Name<input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Your name" /></label>
+                <label className="grid gap-2 text-sm font-black text-slate-800">Phone<input required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder={PHONE_DISPLAY} /></label>
+                <label className="grid gap-2 text-sm font-black text-slate-800">Email<input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="you@company.com" /></label>
+                <label className="grid gap-2 text-sm font-black text-slate-800">Organization / Institution<input value={form.organization} onChange={e => setForm({ ...form, organization: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Company, school, institute…" /></label>
+                <label className="grid gap-2 text-sm font-black text-slate-800 sm:col-span-2">What do you need?<textarea required rows={4} value={form.requirement} onChange={e => setForm({ ...form, requirement: e.target.value })} className="resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Website, LMS, HRMS, ERP, CRM, custom software, existing system modernization…" /></label>
+                <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-4 text-[15px] font-black text-white hover:bg-orange-950 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {submitting ? "Sending…" : "Send Enquiry"}
+                    {!submitting && <ArrowRight className="h-4 w-4" />}
+                  </button>
+                  <a href={`https://wa.me/91${PHONE}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-[15px] font-black text-slate-900 hover:border-orange-300">WhatsApp {PHONE_DISPLAY}</a>
+                </div>
+                <div className="sm:col-span-2 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                  Prefer to call? <a href={`tel:+91${PHONE}`} className="font-black text-slate-950">{PHONE_DISPLAY}</a> &nbsp;•&nbsp; Email: <a href={`mailto:${EMAIL}`} className="font-black text-slate-950">{EMAIL}</a>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
