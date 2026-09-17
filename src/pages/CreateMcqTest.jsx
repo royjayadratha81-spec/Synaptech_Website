@@ -564,8 +564,8 @@ export default function CreateMcqTest() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-lg px-8 py-6">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-[0_20px_60px_rgba(15,23,42,0.10)] px-8 py-7">
           <p className="text-gray-700 font-semibold">
             Loading batches and modules...
           </p>
@@ -575,19 +575,31 @@ export default function CreateMcqTest() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 md:p-10">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-          <div className="bg-blue-800 text-white px-8 py-8">
-            <h1 className="text-3xl md:text-4xl font-bold">
-              Create Mini-Test
-            </h1>
+    <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 lg:px-10">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-slate-950 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950" />
+          <div className="absolute -right-24 -top-28 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="relative px-7 py-8 md:px-9 md:py-9">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-blue-200">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> Assessment Studio
+                </div>
+                <h1 className="mt-4 text-3xl md:text-4xl font-black tracking-tight">Create Mini-Test</h1>
+                <p className="mt-2 max-w-2xl text-sm md:text-base text-slate-300">Build a controlled, batch-aware assessment with timing, attempts, marking and question-level configuration.</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-5 py-4 backdrop-blur-sm">
+                <div className="text-xs uppercase tracking-wider text-slate-400">Current timezone</div>
+                <div className="mt-1 text-sm font-bold text-white">{browserTimezone}</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <p className="text-blue-100 mt-2">
-              Create one Mini-Test definition and
-              automatically provision separate
-              batch-specific test documents.
-            </p>
+        <div className="bg-white rounded-[28px] border border-slate-200 shadow-[0_18px_55px_rgba(15,23,42,0.07)] overflow-hidden">
+          <div className="hidden">
+            <h1>Create Mini-Test</h1>
           </div>
 
           <div className="p-6 md:p-8 space-y-8">
@@ -610,7 +622,7 @@ export default function CreateMcqTest() {
                       setTitle(e.target.value)
                     }
                     placeholder="e.g. NumPy Mini-Test"
-                    className="w-full border border-gray-300 p-3 rounded-xl"
+                    className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                   />
                 </div>
 
@@ -624,7 +636,7 @@ export default function CreateMcqTest() {
                     onChange={(e) =>
                       setModuleId(e.target.value)
                     }
-                    className="w-full border border-gray-300 p-3 rounded-xl"
+                    className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                   >
                     <option value="">
                       Select Module
@@ -658,7 +670,7 @@ export default function CreateMcqTest() {
                         e.target.value
                       )
                     }
-                    className="w-full border border-gray-300 p-3 rounded-xl"
+                    className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                   />
                 </div>
 
@@ -676,7 +688,7 @@ export default function CreateMcqTest() {
                         e.target.value
                       )
                     }
-                    className="w-full border border-gray-300 p-3 rounded-xl"
+                    className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                   />
                 </div>
 
@@ -694,7 +706,7 @@ export default function CreateMcqTest() {
                         e.target.value
                       )
                     }
-                    className="w-full border border-gray-300 p-3 rounded-xl"
+                    className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                   />
                 </div>
 
@@ -711,7 +723,7 @@ export default function CreateMcqTest() {
                         e.target.value
                       )
                     }
-                    className="w-full border border-gray-300 p-3 rounded-xl"
+                    className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                   />
 
                   <p className="text-xs text-gray-500 mt-2">
@@ -869,7 +881,7 @@ export default function CreateMcqTest() {
                 <button
                   type="button"
                   onClick={addQuestion}
-                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-semibold"
+                  className="bg-slate-900 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition shadow-sm"
                 >
                   + Add Question
                 </button>
@@ -880,7 +892,7 @@ export default function CreateMcqTest() {
                   (question, index) => (
                     <div
                       key={index}
-                      className="border border-gray-200 rounded-2xl p-5 bg-gray-50"
+                      className="border border-slate-200 rounded-2xl p-5 bg-slate-50/80 shadow-sm"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold text-gray-800">
@@ -934,7 +946,7 @@ export default function CreateMcqTest() {
                                   )
                                 }
                                 placeholder={`Option ${optionNumber}`}
-                                className="w-full border border-gray-300 p-3 rounded-xl bg-white"
+                                className="w-full border border-slate-200 bg-white p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                               />
                             );
                           }
@@ -955,7 +967,7 @@ export default function CreateMcqTest() {
                             )
                           }
                           placeholder="Correct answer — must exactly match one option"
-                          className="w-full border border-gray-300 p-3 rounded-xl bg-white"
+                          className="w-full border border-slate-200 bg-white p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                         />
 
                         <input
@@ -969,7 +981,7 @@ export default function CreateMcqTest() {
                             )
                           }
                           placeholder="Topic (optional)"
-                          className="w-full border border-gray-300 p-3 rounded-xl bg-white"
+                          className="w-full border border-slate-200 bg-white p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                         />
 
                         <select
@@ -983,7 +995,7 @@ export default function CreateMcqTest() {
                               e.target.value
                             )
                           }
-                          className="w-full border border-gray-300 p-3 rounded-xl bg-white"
+                          className="w-full border border-slate-200 bg-white p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                         >
                           <option value="Easy">
                             Easy
@@ -1012,7 +1024,7 @@ export default function CreateMcqTest() {
                               )
                             }
                             placeholder="Positive marks"
-                            className="w-full border border-gray-300 p-3 rounded-xl bg-white"
+                            className="w-full border border-slate-200 bg-white p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                           />
 
                           <input
@@ -1030,7 +1042,7 @@ export default function CreateMcqTest() {
                               )
                             }
                             placeholder="Negative marks"
-                            className="w-full border border-gray-300 p-3 rounded-xl bg-white"
+                            className="w-full border border-slate-200 bg-white p-3.5 rounded-xl outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                           />
                         </div>
                       </div>
@@ -1057,7 +1069,7 @@ export default function CreateMcqTest() {
             </section>
 
             {/* SUMMARY */}
-            <section className="rounded-2xl bg-gray-900 text-white p-6">
+            <section className="rounded-2xl bg-slate-950 text-white p-6 shadow-lg shadow-slate-200">
               <h2 className="text-lg font-bold mb-4">
                 Creation Summary
               </h2>

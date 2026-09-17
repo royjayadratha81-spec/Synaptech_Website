@@ -46,6 +46,8 @@ import AdminInterviewQnA from "./pages/AdminInterviewQnA";
 import Notifications from "./pages/Notifications";
 import News from "./pages/News";
 import EducationSolutions from "./pages/EducationSolutions";
+import CrmDashboard from "./crm/pages/CrmDashboard";
+import ProgrammeFeeCatalogue from "./pages/ProgrammeFeeCatalogue";
 
 
 
@@ -135,11 +137,20 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   }
 />
         <Route path="/education-solutions" element={<EducationSolutions />} />
+        <Route path="/catalogues/programme-fee-comparison.html" element={<ProgrammeFeeCatalogue />} />
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<AdminProtectedRoute> <Admin /> </AdminProtectedRoute>}/>
+        <Route
+  path="/crm"
+  element={
+    <AdminProtectedRoute>
+      <CrmDashboard />
+    </AdminProtectedRoute>
+  }
+/>
 <Route path="/super-admin" element={<AdminProtectedRoute><SuperAdmin /></AdminProtectedRoute>} />
 <Route path="/mis-report" element={<AdminProtectedRoute><MISReport /></AdminProtectedRoute>} />
         <Route

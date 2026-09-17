@@ -1,0 +1,24 @@
+SYNAPTECH EDUCATION - PROGRAMME CATALOGUE AND IIT LOGO REPAIR
+
+1. Close the running Vercel development server with Ctrl+C.
+2. Extract this ZIP into the root Synaptech_website folder.
+3. Allow Windows to merge folders and replace the listed files.
+4. Open a VS Code Command Prompt terminal in Synaptech_website.
+5. Run:
+
+npm run build
+npx vercel dev
+
+VERIFY
+
+1. Open http://localhost:3000
+2. Confirm the IIT Roorkee logo is bright and directly on the black background.
+3. In Aira, answer the fee-counselling question with Both.
+4. Confirm Aira displays Open complete programme & fee comparison before the next question.
+5. Confirm the catalogue opens and contains Programmes plus Fees & EMI sections.
+
+SCOPE
+
+- No API, database, CRM scoring, LMS, Firebase or Supabase files were changed.
+- Existing qualification sequencing remains controlled by the current API.
+- The new Aira behaviour only adds the requested catalogue resource after the existing fee_counselling answer.

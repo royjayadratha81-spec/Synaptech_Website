@@ -1,0 +1,40 @@
+SYNAPTECH EDUCATION — AIRA + CRM ADMISSIONS REPAIR
+
+Copy the supplied folders into the ROOT of Synaptech_website and allow Windows
+to merge api, src and scripts. Do not paste any file inside the Education
+Solutions page or its business-question folder.
+
+This update is admissions-scoped. It does not replace the Education Solutions
+question set, its calculations, its APIs or its interfaces.
+
+COMMAND PROMPT verification (from the Synaptech_website root):
+
+node scripts\testCrmAdmissionsJourney.mjs
+node scripts\testCrmJourneyTelemetry.mjs
+node scripts\testCrmAbandonmentRecovery.mjs
+node scripts\testCrmOmnichannelContent.mjs
+npm run build
+npx vercel dev
+
+Browser test with a NEW email and phone number:
+
+1. Open http://localhost:3000 in an Incognito window.
+2. Submit the Synaptech Education contact form and continue with Aira.
+3. Select Data Analytics or Data Science and verify Aira offers an objective
+   comparison with Data Science with Gen AI & Agentic AI.
+4. Complete the coding/mathematics concern, career role, project-learning,
+   laptop, fee/payment, decision-authority and callback questions.
+5. Open CRM and select the new lead.
+6. Confirm Business Unit shows Admissions, not Unclassified.
+7. Confirm Website Aira Qualification displays the customer transcript as
+   read-only; the CRM answer box must not appear automatically.
+8. If the journey is incomplete, use Continue qualification during a live call
+   only while speaking to the customer.
+9. Recalculate/refresh the lead and confirm the captured answers contribute to
+   scoring, qualification completeness and the existing Sales-Ready gates.
+
+Important:
+- Test with a new lead. Old incomplete/duplicate Neeraj sessions cannot be
+  assumed to contain answers that were never linked to that exact lead.
+- Opportunity creation and Won/Deal Finalised remain controlled by the existing
+  Sales-Ready, human handoff and human commercial confirmation workflow.

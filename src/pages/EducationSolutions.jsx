@@ -29,6 +29,8 @@ import dashboardBanner from "../assets/dashboard-banner.png";
 import lmsStudentDashboard from "../assets/lms-student-dashboard.svg";
 import lmsAdminDashboard from "../assets/lms-admin-dashboard.svg";
 import { supabase } from "../supabase/supabase";
+import DemoVideoExperience from "../components/business/DemoVideoExperience";
+import { recordQualificationJourney } from "../utils/crmJourneyTelemetry";
 
 const PHONE = "9560940039";
 const PHONE_DISPLAY = "+91 95609 40039";
@@ -262,16 +264,90 @@ function MotionShowcase({ onContact }) {
   );
 }
 
-function Chatbot({ onContact }) {
+function Chatbot({
+  onContact,
+}) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      text: "Hi! Ask me almost anything about LMS, websites, HRMS, ERP, CRM, portals, software architecture, features, implementation, integrations, hosting, security or typical development costs. I can use current web information for general questions. If your question is specifically about Synaptech—pricing, demos, scope or your project—I can take you directly to the enquiry form.",
-    },
-  ]);
+  const [chatRegistered, setChatRegistered] =
+  useState(false);
+
+const [chatRegistering, setChatRegistering] =
+  useState(false);
+
+const [chatSession, setChatSession] =
+  useState(null);
+
+const [chatRegistrationError, setChatRegistrationError] =
+  useState("");
+
+const [chatLead, setChatLead] =
+  useState({
+    name: "",
+    phone: "",
+    email: "",
+    organization: "",
+    requirement: "",
+  });
+  const [messages, setMessages] =
+  useState([]);
+  const [chatDemoOffered, setChatDemoOffered] =
+  useState(false);
+
+const [showChatDemo, setShowChatDemo] =
+  useState(false);
+
+const [chatDemoDeclined, setChatDemoDeclined] =
+  useState(false);
+
+const [chatLiveDemoChoice, setChatLiveDemoChoice] =
+  useState(null);
+  const [chatLiveDemoPrompt, setChatLiveDemoPrompt] =
+  useState(false);
+const recordChatEngagementEvent = async (
+  eventType,
+  eventValue = null,
+  metadata = {}
+) => {
+  try {
+    if (!chatSession?.token) {
+      return;
+    }
+
+    const response = await fetch(
+      "/api/engagement/business/event",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          session_token: chatSession.token,
+          event_type: eventType,
+          event_value: eventValue,
+          metadata,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+
+      console.error(
+        "CRM engagement event failed:",
+        eventType,
+        data?.error || response.status
+      );
+    }
+  } catch (error) {
+    console.error(
+      "CRM engagement event error:",
+      eventType,
+      error
+    );
+  }
+};
 
   const localFallback = (text) => {
     const lower = text.toLowerCase();
@@ -306,56 +382,366 @@ function Chatbot({ onContact }) {
 
     return "I can answer general questions about LMS, website development, HRMS, ERP, CRM and custom management software. Ask about features, architecture, implementation time, typical costs, integrations, hosting, security, roles, workflows or analytics.";
   };
+const registerChatLead =
+  async (e) => {
+    e?.preventDefault();
 
-  const sendMessage = async (preset) => {
-    const value = (preset ?? input).trim();
-    if (!value || typing) return;
+    if (chatRegistering) {
+      return;
+    }
 
-    setMessages((current) => [...current, { role: "user", text: value }]);
-    setInput("");
-    setTyping(true);
+    const name =
+      chatLead.name.trim();
+
+    const phone =
+      chatLead.phone.trim();
+
+    const email =
+      chatLead.email.trim();
+
+    const organization =
+      chatLead.organization.trim();
+
+    const requirement =
+      chatLead.requirement.trim();
+
+    if (
+      !name ||
+      !phone ||
+      !requirement
+    ) {
+      setChatRegistrationError(
+        "Please enter your name, phone number and requirement."
+      );
+      return;
+    }
+
+    setChatRegistering(true);
+    setChatRegistrationError("");
 
     try {
-      // All questions go to the secure server endpoint.
-      // The server decides whether web search is useful and whether the
-      // question is Synaptech-specific. The OpenAI API key never lives here.
-      const response = await fetch("/api/ai-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: value }),
+      // --------------------------------------------------
+      // 1. Preserve existing Synaptech source lead capture
+      // --------------------------------------------------
+
+      const {
+        error: sourceError,
+      } = await supabase
+        .from("synaptech_leads")
+        .insert([
+          {
+            name,
+            phone,
+
+            email:
+              email || null,
+
+            organization:
+              organization || null,
+
+            requirement,
+          },
+        ]);
+
+      if (sourceError) {
+        throw sourceError;
+      }
+
+      // --------------------------------------------------
+      // 2. Link source lead to CRM
+      // --------------------------------------------------
+
+      const startResponse =
+        await fetch(
+          "/api/engagement/business/start",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              name,
+              phone,
+
+              email:
+                email || null,
+
+              organization:
+                organization || null,
+
+              requirement,
+            }),
+          }
+        );
+
+      const startData =
+        await startResponse.json();
+
+      if (
+        !startResponse.ok ||
+        !startData?.session?.token
+      ) {
+        throw new Error(
+          startData?.error ||
+            "Unable to start AI Discovery."
+        );
+      }
+
+      const secureSession = {
+        id:
+          startData.session.id,
+
+        token:
+          startData.session.token,
+
+        expires_in:
+          startData.session.expires_in,
+
+        business_unit:
+          startData.session.business_unit,
+      };
+
+      setChatSession(
+        secureSession
+      );
+
+      // Keep chatbot session separate from
+      // the enquiry-form session.
+      sessionStorage.setItem(
+        "synaptech_business_chat_engagement",
+        JSON.stringify(
+          secureSession
+        )
+      );
+
+      // --------------------------------------------------
+      // 3. Automatically start AI Discovery
+      // --------------------------------------------------
+
+      const discoveryResponse =
+        await fetch(
+          "/api/engagement/business/message",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              session_token:
+                secureSession.token,
+
+              start:
+                true,
+            }),
+          }
+        );
+
+      const discoveryData =
+        await discoveryResponse.json();
+
+      if (
+        !discoveryResponse.ok
+      ) {
+        throw new Error(
+          discoveryData?.error ||
+            "Unable to start AI Discovery."
+        );
+      }
+
+      void recordQualificationJourney({
+        sessionToken:
+          secureSession.token,
+        eventType:
+          "qualification_started",
+        progress:
+          discoveryData?.journey_progress,
       });
 
-      if (!response.ok) throw new Error("AI endpoint unavailable");
+      const firstQuestion =
+        discoveryData
+          ?.assistant_message
+          ?.text;
 
-      const data = await response.json();
-
-      setMessages((current) => [
-        ...current,
+      setMessages([
         {
           role: "assistant",
-          text: data.answer || localFallback(value),
-          action: Boolean(data.isSynaptechQuery),
-          sources: Array.isArray(data.sources) ? data.sources : [],
-        },
-      ]);
-    } catch {
-      // The visitor still gets a useful answer if the AI backend is
-      // temporarily unavailable.
-      const synaptechQuery =
-        /\b(synaptech|your company|your pricing|your price|your cost|your quote|your demo|your lms|your hrms|your software|contact you|call you|whatsapp you|build for me|my project|my requirement)\b/i.test(value);
 
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          text: localFallback(value),
-          action: synaptechQuery,
+          text:
+            firstQuestion ||
+            `Thanks, ${name}. I have recorded your requirement. Let me ask a few questions so we can understand the right solution for you.`,
         },
       ]);
+
+      setChatRegistered(true);
+
+      // Meta lead event because chatbot has
+      // now captured a real enquiry.
+      if (window.fbq) {
+        window.fbq(
+          "trackSingle",
+          "4651638568452914",
+          "Lead"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Business chatbot registration failed:",
+        error
+      );
+
+      setChatRegistrationError(
+        "We couldn't start the AI consultation right now. Please try again."
+      );
     } finally {
-      setTyping(false);
+      setChatRegistering(false);
     }
   };
+  const sendMessage = async (preset) => {
+  const value = (preset ?? input).trim();
+  const normalizedValue =
+  value.toLowerCase();
+
+const isDemoRequest =
+  normalizedValue.includes("request a demo") ||
+  normalizedValue.includes("see a demo") ||
+  normalizedValue.includes("show me a demo") ||
+  normalizedValue.includes("watch a demo");
+
+  if (
+    !value ||
+    typing ||
+    !chatRegistered ||
+    !chatSession?.token
+  ) {
+    return;
+  }
+  if (isDemoRequest) {
+  setMessages((current) => [
+    ...current,
+    {
+      role: "user",
+      text: value,
+    },
+    {
+      role: "assistant",
+      text:
+        "Certainly. I can show you a short Synaptech LMS demonstration first. After watching it, you can decide whether you would like a personalised live demo with our team.",
+    },
+  ]);
+
+  setInput("");
+  setChatDemoOffered(true);
+  setShowChatDemo(false);
+  setChatDemoDeclined(false);
+  setChatLiveDemoChoice(null);
+  setChatLiveDemoPrompt(false);
+recordChatEngagementEvent(
+  "demo_offered",
+  "lms_demo",
+  {
+    source: "ai_assistant",
+    video: "LMS_Demo.mp4",
+  }
+);
+  return;
+}
+
+  setMessages((current) => [
+    ...current,
+    {
+      role: "user",
+      text: value,
+    },
+  ]);
+
+  setInput("");
+  setTyping(true);
+
+  try {
+    const response = await fetch(
+      "/api/engagement/business/message",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          session_token: chatSession.token,
+          message: value,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        sessionStorage.removeItem(
+          "synaptech_business_chat_engagement"
+        );
+      }
+
+      throw new Error(
+        data?.error ||
+          "AI Discovery is temporarily unavailable."
+      );
+    }
+
+    void recordQualificationJourney({
+      sessionToken:
+        chatSession.token,
+      eventType:
+        "question_answered",
+      progress:
+        data?.journey_progress,
+    });
+
+    const answer =
+      data?.assistant_message?.text;
+
+    setMessages((current) => [
+      ...current,
+      {
+        role: "assistant",
+
+        text:
+          answer ||
+          "Thank you. I have recorded that information.",
+
+        action:
+          data?.next_step === "human_handoff" ||
+          data?.intelligence?.human_handoff_required === true,
+
+        crmDiscovery: true,
+      },
+    ]);
+  } catch (error) {
+    console.error(
+      "Business chatbot AI Discovery failed:",
+      error
+    );
+
+    setMessages((current) => [
+      ...current,
+      {
+        role: "assistant",
+        text:
+          "Your enquiry is already safely recorded. I couldn't continue the AI consultation just now, but the Synaptech team can still follow up with you.",
+        action: true,
+      },
+    ]);
+  } finally {
+    setTyping(false);
+  }
+};
 
   return (
     <>
@@ -378,6 +764,134 @@ function Chatbot({ onContact }) {
         </div>
 
         <div className="max-h-[430px] space-y-3 overflow-y-auto bg-orange-50/30 p-4">
+          {!chatRegistered && (
+  <form
+    onSubmit={
+      registerChatLead
+    }
+    className="rounded-2xl border border-orange-200 bg-white p-4 shadow-sm"
+  >
+    <div className="text-xs font-black uppercase tracking-[0.16em] text-orange-700">
+      Start your AI consultation
+    </div>
+
+    <div className="mt-2 text-sm leading-6 text-slate-600">
+      Please share a few details first. Our AI will then understand your requirement and ask relevant questions about your LMS, HRMS, CRM, website or custom software requirement.
+    </div>
+
+    <div className="mt-4 grid gap-3">
+      <input
+        required
+        value={
+          chatLead.name
+        }
+        onChange={(e) =>
+          setChatLead(
+            (current) => ({
+              ...current,
+              name:
+                e.target.value,
+            })
+          )
+        }
+        placeholder="Your name *"
+        className="rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-orange-400"
+      />
+
+      <input
+        required
+        value={
+          chatLead.phone
+        }
+        onChange={(e) =>
+          setChatLead(
+            (current) => ({
+              ...current,
+              phone:
+                e.target.value,
+            })
+          )
+        }
+        placeholder="Phone number *"
+        className="rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-orange-400"
+      />
+
+      <input
+        type="email"
+        value={
+          chatLead.email
+        }
+        onChange={(e) =>
+          setChatLead(
+            (current) => ({
+              ...current,
+              email:
+                e.target.value,
+            })
+          )
+        }
+        placeholder="Email address"
+        className="rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-orange-400"
+      />
+
+      <input
+        value={
+          chatLead.organization
+        }
+        onChange={(e) =>
+          setChatLead(
+            (current) => ({
+              ...current,
+              organization:
+                e.target.value,
+            })
+          )
+        }
+        placeholder="Company / Institute"
+        className="rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-orange-400"
+      />
+
+      <textarea
+        required
+        rows={3}
+        value={
+          chatLead.requirement
+        }
+        onChange={(e) =>
+          setChatLead(
+            (current) => ({
+              ...current,
+              requirement:
+                e.target.value,
+            })
+          )
+        }
+        placeholder="What do you need? e.g. LMS + CRM for 500 students *"
+        className="resize-none rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-orange-400"
+      />
+    </div>
+
+    {chatRegistrationError && (
+      <div className="mt-3 text-xs font-bold text-red-600">
+        {
+          chatRegistrationError
+        }
+      </div>
+    )}
+
+    <button
+      type="submit"
+      disabled={
+        chatRegistering
+      }
+      className="mt-4 w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-black text-white hover:bg-orange-600 disabled:opacity-50"
+    >
+      {chatRegistering
+        ? "Starting AI consultation…"
+        : "Continue with AI"}
+    </button>
+  </form>
+)}
           {messages.map((message, index) => (
             <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === "user" ? "rounded-br-md bg-slate-950 text-white" : "rounded-bl-md border border-slate-200 bg-white text-slate-700 shadow-sm"}`}>
@@ -404,17 +918,165 @@ function Chatbot({ onContact }) {
                 )}
 
                 {message.action && (
-                  <button
-                    onClick={onContact}
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-xs font-black text-white shadow-sm hover:bg-orange-600"
-                  >
-                    Discuss this with Synaptech <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
-                )}
+  <button
+    type="button"
+    onClick={() => {
+      setChatDemoOffered(true);
+      setShowChatDemo(false);
+      setChatDemoDeclined(false);
+      setChatLiveDemoChoice(null);
+      setChatLiveDemoPrompt(false);
+    }}
+    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-xs font-black text-white shadow-sm hover:bg-orange-600"
+  >
+    See a short Synaptech demo
+    <ArrowRight className="h-3.5 w-3.5" />
+  </button>
+)}
               </div>
             </div>
           ))}
+          {chatDemoOffered &&
+  !showChatDemo &&
+  !chatDemoDeclined &&
+  !chatLiveDemoChoice && (
+    <div className="rounded-2xl border border-orange-200 bg-white p-4 shadow-sm">
 
+      <div className="text-xs font-black uppercase tracking-[0.14em] text-orange-700">
+        Synaptech Demo
+      </div>
+
+      <div className="mt-2 text-sm font-black text-slate-950">
+        Would you like to watch our short LMS demo?
+      </div>
+
+      <p className="mt-2 text-xs leading-5 text-slate-600">
+        This short video gives you an example of the type of digital learning platform Synaptech can build and customise.
+      </p>
+
+      <div className="mt-3 grid gap-2">
+
+        <button
+          type="button"
+          onClick={() => {
+  setShowChatDemo(true);
+
+  recordChatEngagementEvent(
+    "demo_accepted",
+    "lms_demo",
+    {
+      source: "ai_assistant",
+      video: "LMS_Demo.mp4",
+    }
+  );
+}}
+          className="rounded-xl bg-orange-500 px-4 py-2.5 text-xs font-black text-white hover:bg-orange-600"
+        >
+          Yes, show me the demo
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            setChatDemoDeclined(true)
+          }
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-black text-slate-700 hover:bg-slate-50"
+        >
+          Not right now
+        </button>
+
+      </div>
+
+    </div>
+)}
+
+
+
+
+
+{chatDemoDeclined && (
+  <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs leading-5 text-slate-600">
+    No problem. Your requirement and AI consultation have already been recorded. You can request the demo whenever you're ready.
+  </div>
+)}
+{chatLiveDemoPrompt &&
+  !chatLiveDemoChoice && (
+    <div className="rounded-2xl border border-green-200 bg-green-50 p-4 shadow-sm">
+
+      <div className="text-[10px] font-black uppercase tracking-[0.16em] text-green-700">
+        Personalised Live Demo
+      </div>
+
+      <div className="mt-2 text-sm font-black leading-6 text-slate-950">
+        Would you like Synaptech officials or developers to contact you for a personalised live demo?
+      </div>
+
+      <p className="mt-2 text-xs leading-5 text-slate-600">
+        Our team can demonstrate the platform according to your organization's actual requirements and answer your technical or commercial questions.
+      </p>
+
+      <div className="mt-4 grid gap-2">
+
+        <button
+          type="button"
+          onClick={() => {
+            setChatLiveDemoChoice("yes");
+            setChatLiveDemoPrompt(false);
+            recordChatEngagementEvent(
+  "live_demo_requested",
+  "yes",
+  {
+    source: "ai_assistant",
+    requested_contact: true,
+  }
+);
+
+            setMessages((current) => [
+              ...current,
+              {
+                role: "assistant",
+                text:
+                  "Thank you. You have requested a personalised live demo. Synaptech can contact you using the details you already provided.",
+              },
+            ]);
+          }}
+          className="rounded-xl bg-green-600 px-4 py-3 text-xs font-black text-white hover:bg-green-700"
+        >
+          Yes, contact me for a live demo
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setChatLiveDemoChoice("no");
+            setChatLiveDemoPrompt(false);
+            recordChatEngagementEvent(
+  "live_demo_declined",
+  "no",
+  {
+    source: "ai_assistant",
+    requested_contact: false,
+  }
+);
+
+            setMessages((current) => [
+              ...current,
+              {
+                role: "assistant",
+                text:
+                  "Thank you for viewing the Synaptech demo. Your requirement and AI consultation have already been recorded. You can request a live demo at any time.",
+              },
+            ]);
+          }}
+          className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-black text-slate-700 hover:bg-slate-50"
+        >
+          Not right now
+        </button>
+
+      </div>
+
+    </div>
+)}
           {typing && (
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
               <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-orange-400" />
@@ -423,15 +1085,20 @@ function Chatbot({ onContact }) {
           )}
         </div>
 
+        {chatRegistered && (
         <div className="border-t border-slate-200 bg-white p-3">
           <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
             {[
-              "How much does an LMS cost?",
-              "How long does an LMS take?",
-              "What should an LMS include?",
-              "What is an HRMS?",
-              "ERP vs CRM",
-            ].map((prompt) => (
+  "How much does an LMS cost?",
+  "How long does an LMS take?",
+  "What should an LMS include?",
+  "Can you customize it for us?",
+  ...(!chatDemoOffered &&
+      !showChatDemo &&
+      !chatLiveDemoChoice
+    ? ["Can I request a demo?"]
+    : []),
+].map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => sendMessage(prompt)}
@@ -447,7 +1114,7 @@ function Chatbot({ onContact }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="Ask a technical question…"
+              placeholder="Type your reply or ask a question…"
               className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm font-medium outline-none"
             />
             <button
@@ -459,19 +1126,164 @@ function Chatbot({ onContact }) {
             </button>
           </div>
 
-          <button
-            onClick={onContact}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-xs font-black text-orange-800 hover:bg-orange-100"
-          >
-            Have a Synaptech-specific question? Contact us <ArrowRight className="h-3.5 w-3.5" />
-          </button>
 
           <div className="mt-2 text-center text-[10px] font-medium text-slate-400">
-            General technical questions are answered by AI using its knowledge and, when useful, current web sources. Company-specific pricing, demos and project requirements go to Synaptech.
-          </div>
+  AI-powered requirement discovery • Your responses help us understand the right solution for your organization.
+</div>
         </div>
+        )}
+      </div>
+{showChatDemo &&
+  !chatLiveDemoChoice && (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+
+      <div className="relative w-[95vw] max-w-[1180px] overflow-hidden rounded-[30px] border border-white/20 bg-white shadow-[0_40px_120px_rgba(0,0,0,.45)]">
+
+        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4 sm:px-7">
+
+          <div>
+            <div className="text-[11px] font-black uppercase tracking-[0.18em] text-orange-700">
+              Synaptech Product Demo
+            </div>
+
+            <div className="mt-1 text-lg font-black text-slate-950 sm:text-2xl">
+              LMS Platform Demonstration
+            </div>
+          </div>
+
+          <button
+  type="button"
+  onClick={() => {
+    setShowChatDemo(false);
+    setChatLiveDemoPrompt(true);
+
+    recordChatEngagementEvent(
+      "demo_video_closed",
+      "manual_close",
+      {
+        source: "ai_assistant",
+        video: "LMS_Demo.mp4",
+      }
+    );
+
+    recordChatEngagementEvent(
+      "live_demo_offered",
+      "after_demo_close",
+      {
+        source: "ai_assistant",
+      }
+    );
+  }}
+  className="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
+  aria-label="Close demo"
+>
+  <X className="h-5 w-5" />
+</button>
+
+        </div>
+
+        <div className="max-h-[82vh] overflow-y-auto bg-slate-50 p-4 sm:p-6">
+
+          <DemoVideoExperience
+            videoSrc="/videos/LMS_Demo.mp4"
+
+            title="Synaptech LMS Demo"
+
+            description="Watch this short demonstration. After the video, you can decide whether you would like a personalised live demo for your organization."
+
+            onStarted={() => {
+  console.log(
+    "Chatbot demo video started"
+  );
+
+  recordChatEngagementEvent(
+    "demo_video_started",
+    "lms_demo",
+    {
+      source: "ai_assistant",
+      video: "LMS_Demo.mp4",
+    }
+  );
+}}
+
+            onProgress={(percentage) => {
+  console.log(
+    `Chatbot demo progress: ${percentage}%`
+  );
+
+  recordChatEngagementEvent(
+    `demo_video_${percentage}`,
+    String(percentage),
+    {
+      source: "ai_assistant",
+      video: "LMS_Demo.mp4",
+      progress: percentage,
+    }
+  );
+}}
+
+            onCompleted={() => {
+  console.log(
+    "Chatbot demo video completed"
+  );
+
+  recordChatEngagementEvent(
+    "demo_video_completed",
+    "100",
+    {
+      source: "ai_assistant",
+      video: "LMS_Demo.mp4",
+      progress: 100,
+    }
+  );
+
+  setShowChatDemo(false);
+  setChatLiveDemoPrompt(true);
+
+  recordChatEngagementEvent(
+    "live_demo_offered",
+    "after_demo",
+    {
+      source: "ai_assistant",
+    }
+  );
+}}
+
+            onLiveDemoYes={() => {
+              setChatLiveDemoChoice("yes");
+              setShowChatDemo(false);
+
+              setMessages((current) => [
+                ...current,
+                {
+                  role: "assistant",
+                  text:
+                    "Thank you. Your request for a personalised live demo has been recorded. The Synaptech team can contact you using the details you already provided.",
+                },
+              ]);
+            }}
+
+            onLiveDemoNo={() => {
+              setChatLiveDemoChoice("no");
+              setShowChatDemo(false);
+
+              setMessages((current) => [
+                ...current,
+                {
+                  role: "assistant",
+                  text:
+                    "Thank you for watching the demo. Your requirement and AI consultation are already recorded, and you can request a live demo later if you wish.",
+                },
+              ]);
+            }}
+          />
+
+        </div>
+
       </div>
 
+    </div>
+)}
       <button
         onClick={() => setOpen(!open)}
         className="fixed bottom-6 right-5 z-[149] flex items-center gap-3 rounded-full bg-orange-500 px-5 py-4 text-sm font-black text-white shadow-[0_18px_50px_rgba(234,88,12,.28)] ring-4 ring-white hover:-translate-y-1 hover:bg-orange-600"
@@ -492,6 +1304,17 @@ export default function EducationSolutions() {
   const [showContact, setShowContact] = useState(false);
 const [submitting, setSubmitting] = useState(false);
 const [submitMessage, setSubmitMessage] = useState("");
+const [engagementSession, setEngagementSession] = useState(() => {
+  try {
+    const saved = sessionStorage.getItem(
+      "synaptech_business_engagement"
+    );
+
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+});
 
 const [form, setForm] = useState({
   name: "",
@@ -500,6 +1323,34 @@ const [form, setForm] = useState({
   organization: "",
   requirement: ""
 });
+const [discoveryActive, setDiscoveryActive] =
+  useState(false);
+
+const [discoveryLoading, setDiscoveryLoading] =
+  useState(false);
+
+const [discoveryInput, setDiscoveryInput] =
+  useState("");
+
+const [discoveryMessages, setDiscoveryMessages] =
+  useState([]);
+
+const [discoveryComplete, setDiscoveryComplete] =
+  useState(false);
+
+const [leadDisplayName, setLeadDisplayName] =
+  useState("");
+  const [showFormDemo, setShowFormDemo] =
+  useState(false);
+
+const [formDemoDeclined, setFormDemoDeclined] =
+  useState(false);
+
+const [formLiveDemoChoice, setFormLiveDemoChoice] =
+  useState(null);
+
+const [formDemoStarted, setFormDemoStarted] =
+  useState(false);
 
   useEffect(() => {
     document.title = "Websites, LMS, HRMS & Business Software | Synaptech";
@@ -527,6 +1378,193 @@ const [form, setForm] = useState({
   };
 
   const closeDemo = () => setShowContact(false);
+  const startBusinessDiscovery = async (
+  secureSession
+) => {
+  if (!secureSession?.token) {
+    throw new Error(
+      "Engagement session is unavailable."
+    );
+  }
+
+  setDiscoveryLoading(true);
+
+  try {
+    const response = await fetch(
+      "/api/engagement/business/message",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          session_token:
+            secureSession.token,
+          start:
+            true,
+        }),
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error ||
+          "Unable to start AI Discovery."
+      );
+    }
+
+    void recordQualificationJourney({
+      sessionToken:
+        secureSession.token,
+      eventType:
+        "qualification_started",
+      progress:
+        data?.journey_progress,
+    });
+
+    const firstQuestion =
+      data?.assistant_message?.text;
+
+    if (!firstQuestion) {
+      throw new Error(
+        "AI Discovery returned no question."
+      );
+    }
+
+    setDiscoveryMessages([
+      {
+        role: "assistant",
+        text: firstQuestion,
+      },
+    ]);
+
+    setDiscoveryActive(true);
+
+    if (
+      data?.next_step ===
+        "human_handoff" ||
+      data?.intelligence
+        ?.human_handoff_required ===
+        true
+    ) {
+      setDiscoveryComplete(true);
+    }
+  } finally {
+    setDiscoveryLoading(false);
+  }
+};
+
+const sendBusinessDiscoveryReply =
+  async () => {
+    const value =
+      discoveryInput.trim();
+
+    if (
+      !value ||
+      discoveryLoading ||
+      !engagementSession?.token
+    ) {
+      return;
+    }
+
+    setDiscoveryMessages(
+      (current) => [
+        ...current,
+        {
+          role: "customer",
+          text: value,
+        },
+      ]
+    );
+
+    setDiscoveryInput("");
+    setDiscoveryLoading(true);
+
+    try {
+      const response = await fetch(
+        "/api/engagement/business/message",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            session_token:
+              engagementSession.token,
+            message:
+              value,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            "Unable to continue AI Discovery."
+        );
+      }
+
+      void recordQualificationJourney({
+        sessionToken:
+          engagementSession.token,
+        eventType:
+          "question_answered",
+        progress:
+          data?.journey_progress,
+      });
+
+      const aiText =
+        data?.assistant_message?.text;
+
+      if (aiText) {
+        setDiscoveryMessages(
+          (current) => [
+            ...current,
+            {
+              role: "assistant",
+              text: aiText,
+            },
+          ]
+        );
+      }
+
+      if (
+        data?.next_step ===
+          "human_handoff" ||
+        data?.intelligence
+          ?.human_handoff_required ===
+          true
+      ) {
+        setDiscoveryComplete(true);
+      }
+    } catch (error) {
+      console.error(
+        "Business AI Discovery reply failed:",
+        error
+      );
+
+      setDiscoveryMessages(
+        (current) => [
+          ...current,
+          {
+            role: "assistant",
+            text:
+              "I couldn't continue the qualification just now. Your enquiry is already safely recorded, and our team can still follow up with you.",
+          },
+        ]
+      );
+    } finally {
+      setDiscoveryLoading(false);
+    }
+  };
 
   const submitEnquiry = async (e) => {
   e.preventDefault();
@@ -535,23 +1573,120 @@ const [form, setForm] = useState({
 
   setSubmitting(true);
   setSubmitMessage("");
+  setShowFormDemo(false);
+setFormDemoDeclined(false);
+setFormLiveDemoChoice(null);
+setFormDemoStarted(false);
 
   try {
     const { error } = await supabase
-      .from("synaptech_leads")
-      .insert([
-        {
-          name: form.name.trim(),
-          phone: form.phone.trim(),
-          email: form.email.trim() || null,
-          organization: form.organization.trim() || null,
-          requirement: form.requirement.trim(),
-        },
-      ]);
+  .from("synaptech_leads")
+  .insert([
+    {
+      name: form.name.trim(),
+      phone: form.phone.trim(),
+      email: form.email.trim() || null,
+      organization: form.organization.trim() || null,
+      requirement: form.requirement.trim(),
+    },
+  ]);
 
     if (error) {
   console.error("Supabase lead submission error:", error);
   throw error;
+}
+// Securely link this exact enquiry to the CRM / AI engagement funnel.
+// This is additive and does not change the existing lead capture.
+try {
+  const engagementResponse = await fetch(
+    "/api/engagement/business/start",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim() || null,
+        organization: form.organization.trim() || null,
+        requirement: form.requirement.trim(),
+      }),
+    }
+  );
+
+  if (!engagementResponse.ok) {
+    console.error(
+      "CRM engagement bridge returned:",
+      engagementResponse.status
+    );
+  } else {
+    const engagementData = await engagementResponse.json();
+
+    if (
+  engagementData.success &&
+  engagementData.session?.token
+) {
+  const secureSession = {
+    id:
+      engagementData.session.id,
+
+    token:
+      engagementData.session.token,
+
+    expires_in:
+      engagementData.session.expires_in,
+
+    business_unit:
+      engagementData.session.business_unit,
+  };
+
+  setEngagementSession(
+    secureSession
+  );
+
+  sessionStorage.setItem(
+    "synaptech_business_engagement",
+    JSON.stringify(
+      secureSession
+    )
+  );
+
+  setLeadDisplayName(
+    form.name.trim()
+  );
+
+  try {
+    await startBusinessDiscovery(
+      secureSession
+    );
+  } catch (discoveryError) {
+    console.error(
+      "Automatic AI Discovery start failed:",
+      discoveryError
+    );
+
+    setSubmitMessage(
+      "Your enquiry has been successfully received. Our team will follow up with you."
+    );
+  }
+}
+
+    console.log("CRM engagement session started:", {
+      success: engagementData.success,
+      linked: engagementData.lead?.linked,
+      newly_created_in_crm:
+        engagementData.lead?.newly_created_in_crm,
+      next_step: engagementData.next_step,
+    });
+  }
+} catch (engagementError) {
+  // CRM engagement must never prevent the original enquiry
+  // from being successfully submitted.
+  console.error(
+    "CRM engagement bridge unavailable:",
+    engagementError
+  );
 }
 
 // Meta Pixel: track a Lead only after successful enquiry submission
@@ -559,9 +1694,6 @@ if (window.fbq) {
   window.fbq("trackSingle", "4651638568452914", "Lead");
 }
 
-setSubmitMessage(
-  "Your enquiry has been successfully sent. A Synaptech representative will get back to you to discuss your requirements."
-);
 
     setForm({
       name: "",
@@ -862,7 +1994,9 @@ setSubmitMessage(
         </div>
       </footer>
 
-      <Chatbot onContact={openDemo} />
+      <Chatbot
+  onContact={openDemo}
+/>
 
       {showContact && (
         <div className="fixed inset-0 z-[200] grid place-items-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-xl" onClick={closeDemo}>
@@ -874,27 +2008,240 @@ setSubmitMessage(
               </div>
             </div>
 
-            {submitMessage ? (
+            {discoveryActive ? (
               <div className="p-7 sm:p-9">
-                <div className="rounded-[28px] border border-orange-200 bg-orange-50/70 p-8 text-center sm:p-10">
-                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-orange-500 text-white shadow-lg">
-                    <CheckCircle2 className="h-8 w-8" />
-                  </div>
-                  <h4 className="mt-6 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-                    Enquiry Sent Successfully
-                  </h4>
-                  <p className="mx-auto mt-4 max-w-xl text-[16px] leading-7 text-slate-600">
-                    {submitMessage}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={closeDemo}
-                    className="mt-7 inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-black text-white hover:bg-orange-950"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
+  <div className="rounded-[28px] border border-orange-200 bg-orange-50/70 p-6 sm:p-8">
+
+    <div className="flex items-start gap-4">
+      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-500 text-white">
+        <Bot className="h-6 w-6" />
+      </div>
+
+      <div>
+        <div className="text-[11px] font-black uppercase tracking-[0.18em] text-orange-700">
+          AI Requirement Discovery
+        </div>
+
+        <h4 className="mt-1 text-2xl font-black text-slate-950">
+          Thanks{leadDisplayName ? `, ${leadDisplayName}` : ""}. Let's understand your requirement.
+        </h4>
+
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          Your enquiry has been recorded. Our AI will ask a few relevant questions so our team can understand your requirement before contacting you.
+        </p>
+      </div>
+    </div>
+
+    <div className="mt-6 max-h-[330px] space-y-3 overflow-y-auto rounded-2xl border border-orange-100 bg-white p-4">
+      {discoveryMessages.map(
+        (message, index) => (
+          <div
+            key={index}
+            className={`flex ${
+              message.role === "customer"
+                ? "justify-end"
+                : "justify-start"
+            }`}
+          >
+            <div
+              className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 ${
+                message.role === "customer"
+                  ? "rounded-br-md bg-slate-950 text-white"
+                  : "rounded-bl-md bg-orange-50 text-slate-700"
+              }`}
+            >
+              {message.text}
+            </div>
+          </div>
+        )
+      )}
+
+      {discoveryLoading && (
+        <div className="text-xs font-bold text-slate-400">
+          AI is reviewing your response…
+        </div>
+      )}
+    </div>
+
+    {!discoveryComplete ? (
+      <div className="mt-4 flex gap-2">
+        <input
+          value={discoveryInput}
+          onChange={(e) =>
+            setDiscoveryInput(
+              e.target.value
+            )
+          }
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter"
+            ) {
+              sendBusinessDiscoveryReply();
+            }
+          }}
+          placeholder="Type your answer…"
+          className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+        />
+
+        <button
+          type="button"
+          disabled={
+            discoveryLoading ||
+            !discoveryInput.trim()
+          }
+          onClick={
+            sendBusinessDiscoveryReply
+          }
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50"
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      </div>
+    ) : (
+  <div className="mt-5">
+
+    {!showFormDemo &&
+      !formDemoDeclined &&
+      !formLiveDemoChoice && (
+        <div className="rounded-2xl border border-orange-200 bg-white p-5">
+
+          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-orange-700">
+            One more thing
+          </div>
+
+          <div className="mt-2 text-lg font-black text-slate-950">
+            Would you like to see a short Synaptech LMS demo?
+          </div>
+
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Your requirement discovery is complete. Before we finish, you can watch a short demonstration of our LMS platform to see the type of digital solution Synaptech can build.
+          </p>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowFormDemo(true);
+                setFormDemoDeclined(false);
+              }}
+              className="rounded-xl bg-orange-500 px-4 py-3 text-sm font-black text-white hover:bg-orange-600"
+            >
+              Yes, show me the demo
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setFormDemoDeclined(true);
+                setShowFormDemo(false);
+              }}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-50"
+            >
+              Not right now
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
+
+    {showFormDemo &&
+      !formLiveDemoChoice && (
+        <DemoVideoExperience
+
+          videoSrc="/videos/LMS_Demo.mp4"
+
+          title="Synaptech LMS Platform Demo"
+
+          description="Watch this short demonstration of the Synaptech LMS. We can later customise the solution around your organization's exact requirements."
+
+          onStarted={() => {
+            setFormDemoStarted(true);
+
+            console.log(
+              "Demo video started from enquiry funnel"
+            );
+          }}
+
+          onProgress={(percentage) => {
+            console.log(
+              `Demo video progress: ${percentage}%`
+            );
+          }}
+
+          onCompleted={() => {
+            console.log(
+              "Demo video completed from enquiry funnel"
+            );
+          }}
+
+
+        />
+      )}
+
+
+    {formLiveDemoChoice === "yes" && (
+      <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
+
+        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-green-700">
+          Live demo requested
+        </div>
+
+        <div className="mt-2 text-lg font-black text-green-950">
+          Thank you. Your interest in a personalised Synaptech demo has been recorded.
+        </div>
+
+        <p className="mt-2 text-sm leading-6 text-green-900">
+          The Synaptech team can contact you using the details you already provided. You do not need to fill in another enquiry form.
+        </p>
+
+      </div>
+    )}
+
+
+    {formLiveDemoChoice === "no" && (
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+
+        <div className="font-black text-slate-950">
+          Thank you for watching the demo.
+        </div>
+
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          Your requirement and AI Discovery responses have already been recorded. You can request a personalised demo later if you wish.
+        </p>
+
+      </div>
+    )}
+
+
+    {formDemoDeclined && (
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+
+        <div className="font-black text-slate-950">
+          Thank you.
+        </div>
+
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          Your requirement and AI Discovery responses have been recorded. The Synaptech team can follow up based on your enquiry.
+        </p>
+
+      </div>
+    )}
+
+  </div>
+)}
+
+    <button
+      type="button"
+      onClick={closeDemo}
+      className="mt-5 w-full rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 hover:bg-slate-50"
+    >
+      Close
+    </button>
+  </div>
+</div>
             ) : (
               <form onSubmit={submitEnquiry} className="grid gap-5 p-7 sm:grid-cols-2 sm:p-9">
                 <label className="grid gap-2 text-sm font-black text-slate-800">Name<input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Your name" /></label>

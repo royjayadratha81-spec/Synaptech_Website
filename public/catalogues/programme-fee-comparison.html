@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070708" />
+  <title>Synaptech Education | Programme & Fee Comparison</title>
+  <style>
+    :root { --red:#ef3340; --red2:#8b0d18; --ink:#070708; --panel:#111114; --line:#2d2225; --muted:#b8b5b6; --gold:#f2c86b; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:#fff; background:radial-gradient(circle at 90% 4%,rgba(239,51,64,.16),transparent 27%),radial-gradient(circle at 8% 38%,rgba(139,13,24,.14),transparent 24%),var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    a { color:inherit; }
+    .shell { width:min(1180px,calc(100% - 32px)); margin:auto; }
+    header { position:sticky; top:0; z-index:10; border-bottom:1px solid rgba(239,51,64,.24); background:rgba(7,7,8,.88); backdrop-filter:blur(18px); }
+    .nav { min-height:78px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
+    .brand { display:flex; align-items:center; gap:13px; font-weight:900; letter-spacing:.08em; }
+    .mark { display:grid; place-items:center; width:42px; height:42px; border-radius:14px; background:linear-gradient(145deg,var(--red),var(--red2)); box-shadow:0 0 28px rgba(239,51,64,.3); font-size:18px; }
+    .brand small { display:block; margin-top:3px; color:#ff9ba2; font-size:9px; letter-spacing:.28em; }
+    .navlinks { display:flex; gap:10px; }
+    .navlinks a,.button { padding:11px 16px; border:1px solid #3b3032; border-radius:999px; text-decoration:none; font-weight:800; font-size:13px; }
+    .button { display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--red),#bd1522); border-color:transparent; box-shadow:0 10px 32px rgba(239,51,64,.24); }
+    .hero { padding:88px 0 66px; }
+    .eyebrow { display:flex; align-items:center; gap:12px; color:#ff9299; font-size:12px; font-weight:900; letter-spacing:.24em; text-transform:uppercase; }
+    .eyebrow:before { content:""; width:38px; height:1px; background:var(--red); }
+    h1 { max-width:900px; margin:20px 0 22px; font-size:clamp(42px,7vw,84px); line-height:.98; letter-spacing:-.055em; }
+    .hero p { max-width:780px; margin:0; color:#d2cecf; font-size:clamp(17px,2vw,21px); line-height:1.7; }
+    .hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
+    section { padding:68px 0; border-top:1px solid #22191b; }
+    h2 { margin:12px 0 12px; font-size:clamp(32px,5vw,54px); letter-spacing:-.04em; }
+    .intro { max-width:760px; margin:0 0 32px; color:var(--muted); line-height:1.7; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    .card { position:relative; overflow:hidden; padding:28px; border:1px solid var(--line); border-radius:25px; background:linear-gradient(145deg,rgba(24,23,25,.95),rgba(12,12,14,.96)); box-shadow:0 20px 55px rgba(0,0,0,.28); }
+    .card.featured { border-color:rgba(239,51,64,.65); box-shadow:0 20px 70px rgba(139,13,24,.22); }
+    .card:after { content:""; position:absolute; width:160px; height:160px; right:-80px; top:-80px; border-radius:50%; background:rgba(239,51,64,.12); filter:blur(3px); }
+    .tag { display:inline-block; padding:7px 10px; border-radius:999px; background:#2b1519; color:#ff9299; font-size:10px; font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+    .card h3 { min-height:64px; margin:18px 0 7px; font-size:25px; line-height:1.15; letter-spacing:-.025em; }
+    .duration { color:var(--gold); font-weight:900; }
+    .card ul { margin:22px 0 0; padding:0; list-style:none; }
+    .card li { position:relative; padding:9px 0 9px 22px; border-bottom:1px solid #261f20; color:#d5d1d2; font-size:14px; line-height:1.45; }
+    .card li:before { content:""; position:absolute; left:0; top:16px; width:7px; height:7px; border-radius:50%; background:var(--red); box-shadow:0 0 10px rgba(239,51,64,.7); }
+    .fee { margin:18px 0 5px; font-size:34px; font-weight:950; letter-spacing:-.04em; }
+    .sub { min-height:44px; color:var(--muted); font-size:13px; line-height:1.5; }
+    .payment { margin-top:21px; padding-top:19px; border-top:1px solid #38282b; }
+    .payment strong { display:block; margin-bottom:8px; color:#fff; }
+    .payment p { margin:6px 0; color:#cbc5c7; font-size:13px; line-height:1.55; }
+    .saving { color:#8ff0b9 !important; font-weight:850; }
+    .policy { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:24px; }
+    .policy div { padding:18px; border:1px solid var(--line); border-radius:18px; background:#100e10; }
+    .policy b { display:block; margin-bottom:7px; color:#ff9299; font-size:12px; text-transform:uppercase; letter-spacing:.12em; }
+    .policy span { color:#d0cbcc; font-size:13px; line-height:1.5; }
+    .note { margin-top:20px; padding:20px 22px; border-left:3px solid var(--red); border-radius:0 16px 16px 0; background:#160f11; color:#d8d2d4; line-height:1.65; }
+    .cta { display:flex; align-items:center; justify-content:space-between; gap:28px; padding:34px; border:1px solid rgba(239,51,64,.44); border-radius:26px; background:linear-gradient(120deg,#1b1012,#0d0c0e 65%); }
+    .cta h2 { margin:0 0 9px; font-size:32px; }
+    .cta p { margin:0; color:#c8c2c4; }
+    footer { padding:34px 0 48px; color:#8f898b; font-size:12px; text-align:center; }
+    @media (max-width:900px) { .grid{grid-template-columns:1fr;} .card h3{min-height:0;} .policy{grid-template-columns:1fr 1fr;} .navlinks{display:none;} }
+    @media (max-width:560px) { .hero{padding-top:60px;} .policy{grid-template-columns:1fr;} .cta{align-items:flex-start;flex-direction:column;} .card{padding:22px;} }
+    @media print { header{position:static;} body{background:#fff;color:#111;} .card,.policy div,.cta,.note{background:#fff;color:#111;box-shadow:none;} .card li,.sub,.payment p,.intro,.hero p,.cta p{color:#333;} }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell nav">
+      <div class="brand"><span class="mark">S</span><span>SYNAPTECH<small>EDUCATION</small></span></div>
+      <nav class="navlinks"><a href="#programmes">Programmes</a><a href="#fees">Fees & EMI</a></nav>
+      <a class="button" href="/?open=admissions">Speak to admissions</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell hero">
+      <div class="eyebrow">Decision guide</div>
+      <h1>Compare programmes. Choose with clarity.</h1>
+      <p>A single, transparent view of Synaptech Education's three data and AI programmes, learning outcomes, duration, fees, discounts and no-cost EMI plans.</p>
+      <div class="hero-actions"><a class="button" href="#programmes">Compare programmes</a><a class="button" href="#fees" style="background:transparent;border-color:#57383d;box-shadow:none">View fees & EMI</a></div>
+    </div>
+
+    <section id="programmes">
+      <div class="shell">
+        <div class="eyebrow">Programme comparison</div>
+        <h2>Three pathways. One career-first foundation.</h2>
+        <p class="intro">The comparison below is distilled from the three detailed Synaptech course-module brochures. Every pathway is practical, project-led and designed to build job-relevant capability.</p>
+        <div class="grid">
+          <article class="card">
+            <span class="tag">Foundation pathway</span>
+            <h3>Data Analytics</h3>
+            <div class="duration">4 months</div>
+            <ul>
+              <li>Python fundamentals, NumPy and Pandas</li>
+              <li>R language essentials and data preprocessing</li>
+              <li>SQL for analytics and data cleaning</li>
+              <li>Advanced Excel and dashboard creation</li>
+              <li>Python visualization, Tableau and Power BI</li>
+              <li>Mini projects and a Data Analytics capstone</li>
+            </ul>
+          </article>
+          <article class="card">
+            <span class="tag">Professional pathway</span>
+            <h3>Data Science</h3>
+            <div class="duration">6 months</div>
+            <ul>
+              <li>Complete Data Analytics foundation</li>
+              <li>Applied mathematics, statistics and probability</li>
+              <li>Regression, classification and model evaluation</li>
+              <li>Clustering, recommendation and time-series systems</li>
+              <li>Deep learning, computer vision and NLP</li>
+              <li>Reinforcement learning, deployment and MLOps</li>
+            </ul>
+          </article>
+          <article class="card featured">
+            <span class="tag">Advanced AI pathway</span>
+            <h3>Data Science with Gen AI & Agentic AI</h3>
+            <div class="duration">10 months regular / 6 months fast-track</div>
+            <ul>
+              <li>Complete Data Science curriculum</li>
+              <li>Generative AI models, evaluation and Responsible AI</li>
+              <li>Prompt engineering and explainable AI</li>
+              <li>LLMs, transformers, fine-tuning and customization</li>
+              <li>LangChain, RAG and production LLM applications</li>
+              <li>Agentic AI, voice, video, document and multimodal AI</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="fees">
+      <div class="shell">
+        <div class="eyebrow">Fee catalogue</div>
+        <h2>Clear fees. Flexible no-cost EMI.</h2>
+        <p class="intro">Online, Offline and Hybrid modes carry the same programme fee. The standard timetable is weekends; weekday classes may be arranged only subject to management approval and student availability.</p>
+        <div class="grid">
+          <article class="card">
+            <span class="tag">Data Analytics</span>
+            <div class="fee">₹28,000</div>
+            <div class="sub">Total fee inclusive of GST<br />No fast-track option</div>
+            <div class="payment"><strong>No-cost EMI plan</strong><p>₹10,000 at admission</p><p>₹9,000 × 2 monthly instalments</p></div>
+          </article>
+          <article class="card">
+            <span class="tag">Data Science</span>
+            <div class="fee">₹45,000</div>
+            <div class="sub">Total fee inclusive of GST<br />No fast-track option</div>
+            <div class="payment"><strong>No-cost EMI plan</strong><p>₹15,000 at admission</p><p>₹10,000 × 3 monthly instalments</p></div>
+          </article>
+          <article class="card featured">
+            <span class="tag">Advanced programme</span>
+            <div class="fee">₹53,000</div>
+            <div class="sub">Regular 10-month programme<br />₹45,000 + GST (rounded total communicated as ₹53,000)</div>
+            <div class="payment"><strong>Payment options</strong><p class="saving">One-shot: ₹48,000 after ₹5,000 discount</p><p>No-cost EMI: ₹25,000 at admission + ₹28,000 in 3 instalments (approximately ₹9,334 each; final instalment adjusted for rounding)</p></div>
+          </article>
+        </div>
+
+        <div class="card featured" style="margin-top:18px">
+          <span class="tag">Fast-track option</span>
+          <div style="display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:18px">
+            <div><h3 style="min-height:0;margin-bottom:8px">Data Science with Gen AI & Agentic AI - 6 months</h3><div class="fee">₹69,800 <span style="font-size:15px;color:#bbb;font-weight:700;letter-spacing:0">inclusive of GST</span></div></div>
+            <div class="payment" style="margin:0;padding:0;border:0;max-width:500px"><p class="saving">One-shot: ₹64,800 after ₹5,000 discount</p><p>No-cost EMI: ₹30,000 at admission + ₹13,267 × 3 monthly instalments (final instalment adjusted by ₹1)</p></div>
+          </div>
+        </div>
+
+        <div class="policy">
+          <div><b>EMI type</b><span>All listed instalment plans are no-cost EMIs.</span></div>
+          <div><b>Due date</b><span>Every EMI must be paid positively by the 5th of the applicable month.</span></div>
+          <div><b>Payment discipline</b><span>Non-payment by the due date may lead to cancellation of admission.</span></div>
+          <div><b>Learning mode</b><span>Online, Offline and Hybrid modes have the same fee.</span></div>
+        </div>
+        <p class="note"><strong>Important:</strong> Fee information is presented for admission counselling and should be confirmed with Synaptech Education before payment. Fast-track is available only for Data Science with Gen AI & Agentic AI.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell cta"><div><h2>Need a recommendation?</h2><p>A Synaptech counsellor can help you compare programme fit, payment options and the right learning pace.</p></div><a class="button" href="/?open=admissions">Request counselling with Aira</a></div>
+    </section>
+  </main>
+  <footer>© 2026 Synaptech Education. Programme and fee information catalogue.</footer>
+</body>
+</html>

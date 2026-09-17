@@ -13,6 +13,7 @@ export default function Register() {
   const [name, setName] = useState("");
 const [phone, setPhone] = useState("");
 const [course, setCourse] = useState("");
+const [place, setPlace] = useState("");
 
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -29,20 +30,26 @@ await setDoc(doc(db, "students", user.uid), {
   name,
   email,
   phone,
+  place,
   course,
   approved: false,
   createdAt: new Date(),
 });
+sessionStorage.setItem("synaptech_pending_admissions_aira", JSON.stringify({
+  name: name.trim(),
+  phone: phone.trim(),
+  email: email.trim(),
+  place: place.trim(),
+  lookingFor: "Myself",
+  question: course ? `I want to enrol in ${course}.` : "I want admission guidance.",
+}));
 // Meta Pixel: track a Lead only after successful registration
 if (window.fbq) {
   window.fbq("track", "Lead");
 }
 
       
-alert(
-  "Enrollment submitted successfully. Our admissions team will review your application."
-);
-      navigate("/thank-you");
+      navigate("/?continueAdmissions=1");
 
     } catch (error) {
 
@@ -85,6 +92,13 @@ alert(
   placeholder="Phone Number"
   className="w-full p-4 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
   onChange={(e) => setPhone(e.target.value)}
+/>
+
+<input
+  type="text"
+  placeholder="City / Place"
+  className="w-full p-4 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+  onChange={(e) => setPlace(e.target.value)}
 />
 
 <select

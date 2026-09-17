@@ -240,12 +240,32 @@ export default function CreateAssignment() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-10">
-      <h1 className="text-4xl font-bold text-orange-700 mb-10">
-        Create Assessment
-      </h1>
+    <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 lg:px-10">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <section className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-slate-950 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-slate-950 to-indigo-950" />
+          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="absolute -bottom-28 -left-10 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl" />
+          <div className="relative p-7 md:p-9">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-blue-200">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> Assessment Studio
+                </div>
+                <h1 className="mt-4 text-3xl md:text-4xl font-black tracking-tight">Create Assessment</h1>
+                <p className="mt-2 max-w-2xl text-sm md:text-base text-slate-300">Create assignments, projects and course-level capstones with a structured delivery workflow.</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-center backdrop-blur-sm"><div className="text-lg font-black">20</div><div className="text-[10px] uppercase tracking-wider text-slate-400">Marks</div></div>
+                <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-center backdrop-blur-sm"><div className="text-lg font-black">14d</div><div className="text-[10px] uppercase tracking-wider text-slate-400">Default</div></div>
+                <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-center backdrop-blur-sm"><div className="text-lg font-black">3</div><div className="text-[10px] uppercase tracking-wider text-slate-400">Types</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <div className="bg-white p-8 rounded-2xl shadow-lg max-w-2xl">
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_280px] gap-6 items-start">
+        <div className="bg-white p-6 md:p-8 rounded-[28px] border border-slate-200 shadow-[0_18px_55px_rgba(15,23,42,0.07)]">
         <input
           type="text"
           placeholder="Assessment Title"
@@ -253,7 +273,7 @@ export default function CreateAssignment() {
           onChange={(e) =>
             setTitle(e.target.value)
           }
-          className="w-full border p-3 rounded-lg mb-4"
+          className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl mb-4 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
         />
 
         <select
@@ -261,7 +281,7 @@ export default function CreateAssignment() {
           onChange={(e) =>
             setBatchId(e.target.value)
           }
-          className="w-full border p-3 rounded-lg mb-4"
+          className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl mb-4 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
         >
           <option value="">
             Select Batch
@@ -291,7 +311,7 @@ export default function CreateAssignment() {
               setModuleId("");
             }
           }}
-          className="w-full border p-3 rounded-lg mb-4"
+          className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl mb-4 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
         >
           <option value="Assignment">
             Assignment
@@ -312,7 +332,7 @@ export default function CreateAssignment() {
             onChange={(e) =>
               setModuleId(e.target.value)
             }
-            className="w-full border p-3 rounded-lg mb-4"
+            className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl mb-4 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
           >
             <option value="">
               Select Module
@@ -352,7 +372,7 @@ export default function CreateAssignment() {
           onChange={(e) =>
             setDescription(e.target.value)
           }
-          className="w-full border p-3 rounded-lg mb-4"
+          className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl mb-4 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
           rows="5"
         />
 
@@ -363,7 +383,7 @@ export default function CreateAssignment() {
           onChange={(e) =>
             setFileUrl(e.target.value)
           }
-          className="w-full border p-3 rounded-lg mb-6"
+          className="w-full border border-slate-200 bg-slate-50/70 p-3.5 rounded-xl mb-6 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
         />
 
         <div className="mb-6">
@@ -386,7 +406,7 @@ export default function CreateAssignment() {
                   null
               )
             }
-            className="w-full border p-3 rounded-lg"
+            className="w-full border border-dashed border-slate-300 bg-slate-50 p-4 rounded-xl"
           />
 
           <p className="text-sm text-gray-500 mt-2">
@@ -398,10 +418,10 @@ export default function CreateAssignment() {
 
         <button
           onClick={handleSubmit}
-          className={`text-white px-6 py-3 rounded-xl ${
+          className={`w-full text-white px-6 py-3.5 rounded-xl font-bold shadow-lg transition ${
             isCapstone
-              ? "bg-orange-600 hover:bg-orange-700"
-              : "bg-blue-600 hover:bg-blue-700"
+              ? "bg-orange-600 hover:bg-orange-700 shadow-orange-100"
+              : "bg-blue-600 hover:bg-blue-700 shadow-blue-100"
           }`}
         >
           {isCapstone
@@ -409,6 +429,23 @@ export default function CreateAssignment() {
             : "Create Assessment"}
         </button>
       </div>
+
+      <aside className="space-y-4">
+        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Workflow</p>
+          <div className="mt-4 space-y-4 text-sm">
+            <div className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700 font-black">1</span><div><b className="text-slate-800">Define</b><p className="text-slate-500 mt-0.5">Title, batch and assessment type.</p></div></div>
+            <div className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-700 font-black">2</span><div><b className="text-slate-800">Configure</b><p className="text-slate-500 mt-0.5">Module, description and resources.</p></div></div>
+            <div className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 font-black">3</span><div><b className="text-slate-800">Publish</b><p className="text-slate-500 mt-0.5">Create and make it available to students.</p></div></div>
+          </div>
+        </div>
+        <div className="rounded-[24px] border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-5">
+          <p className="text-sm font-black text-slate-900">Assessment guardrails</p>
+          <p className="mt-2 text-xs leading-5 text-slate-600">Capstones remain course-level and require ZIP delivery. Regular assessments remain module-linked.</p>
+        </div>
+      </aside>
+      </div>
     </div>
+  </div>
   );
 }
