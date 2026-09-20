@@ -194,7 +194,7 @@ export default function SuperAdmin() {
                 ["Admin Console", "/admin", "Academic and operational control", <FaShieldAlt />, "from-blue-600 to-indigo-600"],
                 ["Finance Dashboard", "/finance", "Revenue and payment verification", <FaWallet />, "from-emerald-600 to-teal-600"],
                 ["Admin Analytics", "/admin-analytics", "Executive analytics, trends and red flags", <FaChartLine />, "from-violet-600 to-fuchsia-600"],
-                ["Student Management", "/admin/students", "Student records, approvals and operations", <FaUserFriends />, "from-cyan-600 to-blue-600"],
+                ["Student Operations", "/admin/students", "Manual intake, LMS activation and lifecycle controls", <FaUserFriends />, "from-cyan-600 to-violet-600"],
                 ["Daily MIS Report", "/mis-report", "Institute-wide management information report", <FaFileAlt />, "from-orange-500 to-rose-600"],
               ].map(([label, path, desc, icon, gradient]) => (
                 <button key={path} onClick={() => navigate(path)} className="group relative overflow-hidden rounded-[22px] border border-slate-200 bg-white p-5 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">

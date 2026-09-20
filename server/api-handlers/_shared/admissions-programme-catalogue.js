@@ -2,7 +2,7 @@
 // It does not score leads, send communications, create opportunities or write
 // to Firebase/Supabase. CRM intelligence may use it as grounded evidence.
 
-export const ADMISSIONS_CATALOGUE_VERSION = "2026-09-16.v2";
+export const ADMISSIONS_CATALOGUE_VERSION = "2026-09-18.v3";
 export const ADMISSIONS_BROCHURE_PATH = "/brochures/Brochure_Synaptech.pdf";
 
 export const ADMISSIONS_PROGRAMMES = Object.freeze([
@@ -57,6 +57,13 @@ export const ADMISSIONS_POLICIES = Object.freeze({
   career_paths: Object.freeze(["Data Analyst", "Data Scientist", "Business Analyst", "AI/ML Engineer", "Data Engineer", "AI Research Analyst", "Generative AI Developer"]),
   credential_context: "The curriculum is structured in academic collaboration with IIT Roorkee. Career and placement outcomes depend on the learner's performance, portfolio, interview results and employer selection.",
   fee_revision_notice: "The displayed fee is a limited-period offer and may be revised for future admissions. A counsellor must confirm the applicable fee before payment.",
+  python_foundation_support: "Synaptech Education provides the first 10 Python programming sessions one-to-one with faculty so that learners can build confidence in programming concepts from the foundation level.",
+
+offline_location: "Offline classes are conducted at Vaishali, Ghaziabad. A learner who cannot attend there should be guided toward Online or, where occasional attendance is possible, Hybrid learning.",
+
+career_pathway_scope: "The Data Science with Gen AI & Agentic AI programme can prepare learners for more than 20 data and AI career pathways, including Data Analyst, Data Scientist, Business Analyst, AI/ML Engineer, Data Engineer, AI Research Analyst and Generative AI Developer. Eligibility and hiring outcomes depend on the learner's skills, portfolio, interview performance and employer requirements.",
+
+delayed_callback_notice: "The displayed course fees and discounts are limited-period offers and may be revised or withdrawn. When a requested counselling call is 48 hours or more away, offer an earlier call while respecting the learner's final preference.",
 });
 
 export function getAdmissionsCatalogueEvidence() {

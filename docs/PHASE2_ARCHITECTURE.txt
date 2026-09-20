@@ -1,0 +1,32 @@
+PHASE 2 SAFETY CONTRACT
+=======================
+
+1. Phase 1 is the locked baseline. CRM, Admissions approval and Finance
+   clearance retain their existing handlers and database functions.
+
+2. Manual intake creates the same Admissions candidate/application shape with
+   intake_route=manual and status=finance_pending. It does not create a student
+   or bypass Admissions approval.
+
+3. Finance clearance remains the only operation that provisions the Firestore
+   student record. The provisioned identity starts disabled with lmsAccess=false.
+
+4. Student lifecycle changes are server-only and organization-scoped. A client
+   cannot activate LMS access with a direct dropdown write.
+
+5. Active, Completed and Alumni require verified Finance clearance. Completed
+   and Alumni retain LMS access so learning history, certificates and payment
+   visibility are not accidentally lost.
+
+6. Awaiting LMS Access, LMS Access Denied and Archived disable Firebase Auth and
+   set lmsAccess=false.
+
+7. "Delete Student" is a safe archive. It never deletes Finance, payment,
+   Admissions or lifecycle audit history.
+
+8. Firestore rules are intentionally unchanged. Rules hardening stays after
+   the Admissions, Finance, student lifecycle, payment and analytics surfaces
+   have all passed regression testing.
+
+9. Phase 3 will add the canonical EMI/payment ledger and real-time student
+   Payment/Learning Hub view without changing this lifecycle contract.

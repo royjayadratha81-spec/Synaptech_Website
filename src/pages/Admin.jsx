@@ -20,8 +20,9 @@ import {
   FaClipboardCheck,
   FaTools,
   FaChalkboardTeacher,
-  FaWallet,
+    FaWallet,
   FaArrowUp,
+  FaShieldAlt,
   FaExternalLinkAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -115,6 +116,7 @@ const quickGroups = [
     eyebrow: "PLATFORM OPERATIONS",
     accent: "slate",
     cards: [
+      ["Student Operations", "Register non-CRM students and control LMS lifecycle access.", <FaUserGraduate />, "/admin/students", "from-violet-500 to-cyan-600"],
       ["Attendance", "Track and manage attendance.", <FaClipboardCheck />, "/attendance", "from-indigo-500 to-blue-700"],
       ["Initialize Analytics", "Repair or create analytics data.", <FaTools />, "/initialize-analytics", "from-red-500 to-rose-700"],
       ["Daily MIS Report", "Generate an institute-wide management information report.", <FaChartBar />, "/mis-report", "from-cyan-500 to-blue-700"],
@@ -320,6 +322,13 @@ export default function Admin() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
+                <button
+  onClick={() => navigate("/platform-console")}
+  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 to-red-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-red-950/20 transition hover:-translate-y-0.5 hover:from-rose-400 hover:to-red-500"
+>
+  <FaShieldAlt />
+  Platform Console
+</button>
                 <button
                   onClick={() => navigate("/super-admin")}
                   className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/15"

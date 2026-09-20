@@ -76,6 +76,10 @@ export default function AdminAnalytics() {
   const approved = students.filter((s) => s.approved === true).length;
   const pending = students.filter((s) => !s.approved).length;
   const active = students.filter((s) => String(s.status || "").toLowerCase() === "active").length;
+  const awaitingLms = students.filter((s) => String(s.status || "").toLowerCase() === "awaiting lms access").length;
+  const deniedLms = students.filter((s) => String(s.status || "").toLowerCase().includes("denied")).length;
+  const completed = students.filter((s) => String(s.status || "").toLowerCase() === "completed").length;
+  const alumni = students.filter((s) => String(s.status || "").toLowerCase() === "alumni").length;
   const approvalRate = students.length ? Math.round((approved / students.length) * 100) : 0;
 
   const studentStatus = useMemo(() => [
@@ -107,6 +111,7 @@ export default function AdminAnalytics() {
   }, [students, submissions, liveSessions]);
 
   const redFlags = [
+    awaitingLms > 0 && { label: `${awaitingLms} finance-cleared student${awaitingLms > 1 ? "s" : ""} awaiting LMS activation`, severity: "Provisioning", action: "Open Student Operations" },
     pending > 0 && { label: `${pending} student${pending > 1 ? "s" : ""} awaiting approval`, severity: "Attention", action: "Review Student Management" },
     assignments.length > 0 && submissions.length === 0 && { label: "No assignment submissions are currently recorded", severity: "Watch", action: "Review Submissions" },
     liveSessions.filter(s => !dateValue(s.startTime || s.scheduledAt)).length > 0 && { label: "Some live-session records have no recognised schedule date", severity: "Data quality", action: "Review Live Sessions" },
@@ -132,6 +137,15 @@ export default function AdminAnalytics() {
         <Kpi label="Pending" value={pending} sub="Requires administrative review" icon={<FaUserClock/>} tone="bg-amber-50 text-amber-700"/>
         <Kpi label="Rejected" value={rejected.length} sub={`${active} currently marked active`} icon={<FaUserTimes/>} tone="bg-rose-50 text-rose-700"/>
       </div>
+
+      <section className="overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 p-6 text-white shadow-[0_24px_70px_rgba(15,23,42,.18)] md:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-[10px] font-black tracking-[.22em] text-violet-300">LMS PROVISIONING</p><h2 className="mt-1 text-2xl font-black">Controlled student lifecycle</h2><p className="mt-2 text-sm text-slate-400">Separate operational signals; existing LMS analytics remain unchanged.</p></div><button onClick={()=>navigate("/admin/students")} className="rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950">Open Student Operations</button></div>
+        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5">{[
+          ["Awaiting access", awaitingLms, "text-amber-300"], ["Active", active, "text-emerald-300"],
+          ["Access denied", deniedLms, "text-rose-300"], ["Completed", completed, "text-cyan-300"],
+          ["Alumni", alumni, "text-violet-300"],
+        ].map(([label,value,color])=><div key={label} className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{label}</p><p className={`mt-2 text-3xl font-black ${color}`}>{value}</p></div>)}</div>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
         <Panel eyebrow="7-DAY OPERATING PULSE" title="Student, submission & session activity">

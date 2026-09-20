@@ -3,6 +3,18 @@
 // facts, scoring rules, consent, sales-readiness gates or opportunity data.
 
 import { authenticateCrmRequest, sendCrmError } from "./_auth.js";
+import {
+  ADMISSIONS_CALL_EVIDENCE_VERSION,
+  validateAdmissionsCallEvidence,
+} from "../_shared/crm-admissions-call-evidence.js";
+
+import {
+  scoreCrmLead,
+} from "../_shared/crm-scoring-engine.js";
+
+import {
+  evaluateAndStoreCrmQualification,
+} from "../_shared/crm-qualification-engine.js";
 
 const OUTCOMES = new Set([
   "positive",
@@ -85,6 +97,76 @@ export default async function handler(req, res) {
 
     if (leadError) throw leadError;
     if (!lead) return res.status(404).json({ error: "CRM lead not found." });
+    const {
+  data: conversationRows,
+  error: conversationError,
+} = await supabase
+  .from("crm_ai_conversations")
+  .select("id,business_unit,updated_at")
+  .eq("organization_id", organization.id)
+  .eq("lead_id", lead.id)
+  .order("updated_at", {
+    ascending: false,
+  })
+  .limit(1);
+
+if (conversationError) {
+  throw conversationError;
+}
+
+const conversation =
+  conversationRows?.[0] || null;
+
+const businessUnit =
+  conversation?.business_unit === "admissions" ||
+  conversation?.business_unit === "business_solutions"
+    ? conversation.business_unit
+    : "unclassified";
+
+const suppliedAdmissionsEvidence =
+  body.admissions_evidence &&
+  typeof body.admissions_evidence === "object" &&
+  !Array.isArray(body.admissions_evidence)
+    ? body.admissions_evidence
+    : {};
+
+const hasAdmissionsEvidence =
+  Object.values(
+    suppliedAdmissionsEvidence
+  ).some(
+    (value) =>
+      clean(value, 200).length > 0
+  );
+
+if (
+  hasAdmissionsEvidence &&
+  businessUnit !== "admissions"
+) {
+  return res.status(400).json({
+    error:
+      "Admissions counselling answers cannot be attached to a non-admissions lead.",
+  });
+}
+
+const evidenceValidation =
+  validateAdmissionsCallEvidence(
+    suppliedAdmissionsEvidence,
+    outcome
+  );
+
+if (!evidenceValidation.valid) {
+  return res.status(400).json({
+    error:
+      evidenceValidation.errors[0] ||
+      "The admissions counselling answers are invalid.",
+
+    errors:
+      evidenceValidation.errors,
+  });
+}
+
+const admissionsEvidence =
+  evidenceValidation.evidence;
 
     const { data: previousEvents, error: previousError } = await supabase
       .from("crm_engagement_events")
@@ -102,24 +184,72 @@ export default async function handler(req, res) {
 
     if (!event) {
       const metadata = {
-        idempotency_key: idempotencyKey,
-        outcome,
-        summary,
-        next_action: nextAction || null,
-        duration_minutes: Math.max(0, Number(body.duration_minutes) || 0),
-        contact_person: clean(body.contact_person, 150) || null,
-        decision_maker_confirmed: body.decision_maker_confirmed === true,
-        sentiment: clean(body.sentiment, 40) || null,
-        recorded_by_user_id: crmUser.id,
-        recorded_by_name: crmUser.full_name || crmUser.email || "CRM user",
-      };
+  idempotency_key:
+    idempotencyKey,
+
+  outcome,
+
+  call_outcome:
+    outcome,
+
+  summary,
+
+  next_action:
+    nextAction || null,
+
+  duration_minutes:
+    Math.max(
+      0,
+      Number(
+        body.duration_minutes
+      ) || 0
+    ),
+
+  contact_person:
+    clean(
+      body.contact_person,
+      150
+    ) || null,
+
+  decision_maker_confirmed:
+    body.decision_maker_confirmed ===
+    true,
+
+  sentiment:
+    clean(
+      body.sentiment,
+      40
+    ) || null,
+
+  recorded_by_user_id:
+    crmUser.id,
+
+  recorded_by_name:
+    crmUser.full_name ||
+    crmUser.email ||
+    "CRM user",
+
+  business_unit:
+    businessUnit,
+
+  ...(hasAdmissionsEvidence
+    ? {
+        admissions_evidence_version:
+          ADMISSIONS_CALL_EVIDENCE_VERSION,
+
+        admissions_evidence:
+          admissionsEvidence,
+      }
+    : {}),
+};
 
       const { data, error } = await supabase
         .from("crm_engagement_events")
         .insert({
           organization_id: organization.id,
           lead_id: lead.id,
-          conversation_id: null,
+          conversation_id:
+  conversation?.id || null,
           event_type: "human_call_logged",
           channel: "human_call",
           event_value: outcome,
@@ -153,7 +283,10 @@ export default async function handler(req, res) {
             organization_id: organization.id,
             lead_id: lead.id,
             conversation_id: null,
-            business_unit: clean(body.business_unit, 60) || "business_solutions",
+            business_unit:
+  businessUnit === "admissions"
+    ? "admissions"
+    : "business_solutions",
             channel: "human_call",
             job_type: outcome === "callback_requested" ? "callback" : "qualification",
             status: "scheduled",
@@ -175,15 +308,82 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(created ? 201 : 200).json({
-      success: true,
-      created,
-      event,
-      follow_up_job: followUpJob,
-      intelligence_recalculated: false,
-      message:
-        "Call evidence saved. Existing scoring and qualification rules were not changed or automatically rerun.",
-    });
+    let scoringResult = null;
+let qualificationResult = null;
+let intelligenceRecalculated = false;
+let intelligenceWarning = null;
+
+if (
+  businessUnit === "admissions" &&
+  hasAdmissionsEvidence
+) {
+  try {
+    scoringResult =
+      await scoreCrmLead({
+        supabase,
+        organizationId:
+          organization.id,
+        leadId:
+          lead.id,
+      });
+
+    qualificationResult =
+      await evaluateAndStoreCrmQualification({
+        supabase,
+        organizationId:
+          organization.id,
+        leadId:
+          lead.id,
+      });
+
+    intelligenceRecalculated =
+      true;
+  } catch (intelligenceError) {
+    console.error(
+      "Admissions call was saved, but CRM intelligence recalculation failed.",
+      intelligenceError
+    );
+
+    intelligenceWarning =
+      "The call was saved, but automatic intelligence recalculation failed. Use the existing Recalculate button; do not enter the call again.";
+  }
+}
+
+        return res
+      .status(
+        created ? 201 : 200
+      )
+      .json({
+        success: true,
+        created,
+        event,
+
+        follow_up_job:
+          followUpJob,
+
+        business_unit:
+          businessUnit,
+
+        intelligence_recalculated:
+          intelligenceRecalculated,
+
+        scoring:
+          scoringResult,
+
+        qualification:
+          qualificationResult,
+
+        warning:
+          intelligenceWarning,
+
+        message:
+          intelligenceWarning ||
+          (
+            intelligenceRecalculated
+              ? "Call evidence saved. Existing CRM scoring and qualification engines were recalculated."
+              : "Call evidence saved. No structured admissions qualification answers were submitted."
+          ),
+      });
   } catch (error) {
     return sendCrmError(res, error);
   }

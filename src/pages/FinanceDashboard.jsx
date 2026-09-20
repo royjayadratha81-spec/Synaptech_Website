@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   collection,
   doc,
+  getDoc,
   updateDoc,
+  setDoc,
   getDocs,
   query,
   where,
@@ -13,6 +15,8 @@ import { supabase } from "../supabase/supabase";
 import Background from "../components/ui/Background";
 import GlassCard from "../components/ui/GlassCard";
 import VerifyPaymentModal from "../components/VerifyPaymentModal";
+import FinanceVerificationPanel from "../platform/components/FinanceVerificationPanel";
+import { getAdmissionsOverview } from "../platform/services/admissionsApi";
 import {
   ResponsiveContainer,
   BarChart,
@@ -25,7 +29,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { FaArrowLeft, FaDownload, FaReceipt, FaShieldAlt, FaWallet, FaChartLine } from "react-icons/fa";
+import { FaArrowLeft, FaDownload, FaReceipt, FaShieldAlt, FaWallet, FaChartLine, FaUserGraduate } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 export default function FinanceDashboard() {
@@ -40,10 +44,31 @@ export default function FinanceDashboard() {
   const [unpaidAdmissions, setUnpaidAdmissions] = useState(0);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [admissionsOverview, setAdmissionsOverview] = useState(null);
+  const [admissionsError, setAdmissionsError] = useState("");
+  const [admissionsLoading, setAdmissionsLoading] = useState(true);
 
   useEffect(() => {
     fetchStudents();
+    fetchAdmissionsQueue();
   }, []);
+
+  const fetchAdmissionsQueue = async () => {
+    setAdmissionsLoading(true);
+    setAdmissionsError("");
+
+    try {
+      const result = await getAdmissionsOverview({ forceRefresh: true });
+      setAdmissionsOverview(result);
+    } catch (error) {
+      console.error("Finance admission queue load failed:", error);
+      setAdmissionsError(
+        error?.message || "The Admissions Finance queue could not be loaded."
+      );
+    } finally {
+      setAdmissionsLoading(false);
+    }
+  };
 
   const fetchStudents = async () => {
     const snapshot = await getDocs(collection(db, "finance"));
@@ -162,17 +187,39 @@ export default function FinanceDashboard() {
         });
       }
 
-      await updateDoc(doc(db, "students", student.id), {
-        status: newBalance <= 0 ? "Active" : "Fee Pending",
-        lmsAccess: newBalance <= 0,
+      const studentRef = doc(db, "students", student.id);
+      const studentSnapshot = await getDoc(studentRef);
+      const currentStudent = studentSnapshot.exists()
+        ? studentSnapshot.data()
+        : {};
+      const alreadyHasLmsAccess = currentStudent.lmsAccess === true;
+
+      await setDoc(studentRef, {
+        name: currentStudent.name || student.studentName || "Student",
+        email: currentStudent.email || student.email || null,
+        phone: currentStudent.phone || student.phone || null,
+        course: currentStudent.course || student.course || null,
+        batch: currentStudent.batch || student.batch || null,
+        organizationId:
+          currentStudent.organizationId || student.organizationId || null,
+        approved: true,
+        status: alreadyHasLmsAccess
+          ? currentStudent.status || "Active"
+          : "Awaiting LMS Access",
+        lmsAccess: alreadyHasLmsAccess,
         paymentStatus: newPaymentStatus,
+        financeClearanceStatus: "verified",
         updatedAt: new Date(),
-      });
+      }, { merge: true });
 
       setShowVerifyModal(false);
       setSelectedStudent(null);
       fetchStudents();
-      alert("Payment verified successfully.");
+      alert(
+        alreadyHasLmsAccess
+          ? "Payment verified. Existing LMS access was preserved."
+          : "Payment verified. Student is now awaiting explicit LMS activation."
+      );
     } catch (error) {
       console.error(error);
       alert("Verification failed.");
@@ -195,6 +242,29 @@ export default function FinanceDashboard() {
         return true;
     }
   });
+
+  const admissionsCandidateById = useMemo(
+    () =>
+      new Map(
+        (admissionsOverview?.candidates || []).map((candidate) => [
+          String(candidate.id),
+          candidate,
+        ])
+      ),
+    [admissionsOverview]
+  );
+
+  const admissionsFinanceQueue = useMemo(
+    () =>
+      (admissionsOverview?.applications || []).filter((application) => {
+        const status = String(application.status || "").toLowerCase();
+        return (
+          status === "finance_pending" &&
+          Boolean(application.admissions_approved_for_finance_at)
+        );
+      }),
+    [admissionsOverview]
+  );
 
   const statusData = useMemo(
     () => [
@@ -261,6 +331,91 @@ export default function FinanceDashboard() {
               </div>
             </div>
           </div>
+
+          <GlassCard className="overflow-hidden">
+            <div className="flex flex-col gap-4 border-b border-slate-100 p-6 md:flex-row md:items-center md:justify-between md:p-7">
+              <div>
+                <p className="text-[10px] font-black tracking-[0.2em] text-emerald-600">ADMISSIONS FINANCE QUEUE</p>
+                <h2 className="mt-1 text-2xl font-black text-slate-900">Admissions approved for Finance</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Finance clearance creates the student as Awaiting LMS Access. It never activates the LMS automatically.
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700">
+                <FaUserGraduate /> {admissionsFinanceQueue.length} pending
+              </div>
+            </div>
+
+            <div className="space-y-4 p-6 md:p-7">
+              {admissionsLoading ? (
+                <p className="text-sm text-slate-500">Loading the secured Admissions queue…</p>
+              ) : null}
+
+              {admissionsError ? (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {admissionsError} The existing Firestore finance ledger below remains available.
+                </div>
+              ) : null}
+
+              {!admissionsLoading && !admissionsError && admissionsFinanceQueue.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
+                  No Admissions-approved applications are waiting for Finance clearance.
+                </div>
+              ) : null}
+
+              {admissionsFinanceQueue.map((application) => {
+                const candidate = admissionsCandidateById.get(
+                  String(application.candidate_id)
+                );
+                const applicantName =
+                  candidate?.full_name ||
+                  candidate?.name ||
+                  application.candidate_name ||
+                  "Candidate";
+                const programmeName =
+                  application.programme_name ||
+                  application.program_name ||
+                  application.course_name ||
+                  "Programme pending";
+
+                return (
+                  <div
+                    key={application.id}
+                    className="rounded-[24px] border border-slate-800 bg-slate-950 p-5 text-white"
+                  >
+                    <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                      <div>
+                        <p className="font-black">{applicantName}</p>
+                        <p className="mt-1 text-sm font-bold text-cyan-200">{programmeName}</p>
+                        <p className="mt-2 text-xs text-slate-400">
+                          {candidate?.email || "Email not recorded"} · {application.intake_route === "crm_won" ? "CRM Won" : "Manual Admission"}
+                        </p>
+                      </div>
+                      <span className="self-start rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300">
+                        Admissions approved
+                      </span>
+                    </div>
+
+                    <FinanceVerificationPanel
+                      application={application}
+                      organizationId={admissionsOverview?.organization?.id || null}
+                      applicantName={String(applicantName)}
+                      programmeName={String(programmeName)}
+                      canVerify={
+                        admissionsOverview?.access?.can_verify_finance === true
+                      }
+                      onVerified={async () => {
+                        await Promise.all([
+                          fetchAdmissionsQueue(),
+                          fetchStudents(),
+                        ]);
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </GlassCard>
 
           <FinanceKPIs
             students={students}

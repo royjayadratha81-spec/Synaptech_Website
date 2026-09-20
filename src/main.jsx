@@ -48,6 +48,10 @@ import News from "./pages/News";
 import EducationSolutions from "./pages/EducationSolutions";
 import CrmDashboard from "./crm/pages/CrmDashboard";
 import ProgrammeFeeCatalogue from "./pages/ProgrammeFeeCatalogue";
+import PlatformSessionCheck from "./platform/pages/PlatformSessionCheck";
+import PlatformProtectedRoute from "./platform/components/PlatformProtectedRoute";
+import PlatformConsole from "./platform/pages/PlatformConsole";
+import AdmissionsWorkspace from "./platform/pages/AdmissionsWorkspace";
 
 
 
@@ -141,6 +145,30 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin-login" element={<AdminLogin />} />
+        <Route
+  path="/platform-session-check"
+  element={
+    <PlatformProtectedRoute requiredModule="administration">
+      <PlatformSessionCheck />
+    </PlatformProtectedRoute>
+  }
+/>
+<Route
+  path="/platform-console"
+  element={
+    <PlatformProtectedRoute requiredModule="administration">
+      <PlatformConsole />
+    </PlatformProtectedRoute>
+  }
+/>
+<Route
+  path="/platform-admissions"
+  element={
+    <PlatformProtectedRoute requiredModule="admissions">
+      <AdmissionsWorkspace />
+    </PlatformProtectedRoute>
+  }
+/>
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<AdminProtectedRoute> <Admin /> </AdminProtectedRoute>}/>
         <Route

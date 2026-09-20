@@ -4,6 +4,14 @@
 import aiChat from "../server/api-handlers/ai-chat.js";
 import chat from "../server/api-handlers/chat.js";
 import lead from "../server/api-handlers/lead.js";
+import platformSession from "../server/api-handlers/platform/session.js";
+import admissionsOverview from "../server/api-handlers/admissions/overview.js";
+import admissionsApproveForFinance from "../server/api-handlers/admissions/approve-for-finance.js";
+import admissionsVerifyFinance from "../server/api-handlers/admissions/verify-finance.js";
+import admissionsApproveApplication from "../server/api-handlers/admissions/approve-application.js";
+import admissionsManualIntake from "../server/api-handlers/admissions/manual-intake.js";
+import admissionsStudents from "../server/api-handlers/admissions/students.js";
+import admissionsStudentLifecycle from "../server/api-handlers/admissions/student-lifecycle.js";
 
 import activities from "../server/api-handlers/crm/activities.js";
 import aiConversationTranscript from "../server/api-handlers/crm/ai-conversation-transcript.js";
@@ -41,9 +49,17 @@ import businessStart from "../server/api-handlers/engagement/business/start.js";
 import engagementJourney from "../server/api-handlers/engagement/journey.js";
 
 const routes = new Map([
-  ["ai-chat", aiChat],
+    ["ai-chat", aiChat],
   ["chat", chat],
   ["lead", lead],
+  ["platform/session", platformSession],
+  ["admissions/overview", admissionsOverview],
+  ["admissions/approve-for-finance", admissionsApproveForFinance],
+  ["admissions/verify-finance", admissionsVerifyFinance],
+  ["admissions/approve-application", admissionsApproveApplication],
+  ["admissions/manual-intake", admissionsManualIntake],
+  ["admissions/students", admissionsStudents],
+  ["admissions/student-lifecycle", admissionsStudentLifecycle],
   ["crm/activities", activities],
   ["crm/ai-conversation-transcript", aiConversationTranscript],
   ["crm/ai-conversation", aiConversation],

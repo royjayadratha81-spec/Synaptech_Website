@@ -46,22 +46,59 @@ const BUSINESS_FIELDS = [
 const ADMISSIONS_FIELDS = [
   "enquiry_relation",
   "course_interest",
+
+  "programme_selection_guidance",
   "advanced_programme_recommendation",
+  "advanced_programme_guidance",
+
   "educational_background",
   "graduation_status",
   "location",
+
   "preferred_mode",
+  "learning_mode_guidance",
+  "vaishali_attendance",
+  "vaishali_mode_recommendation",
+
   "joining_timeline",
   "career_goal",
+
   "prior_experience",
+  "coding_math_confidence",
+  "coding_counsellor_offer",
+
+  "career_roles_interest",
+
+  "project_learning_interest",
+  "project_learning_guidance",
+
+  "laptop_readiness",
+  "laptop_guidance",
+
   "counselling_interest",
   "fee_readiness",
+
   "fast_track_interest",
+  "fast_track_guidance",
+
   "payment_preference",
+  "payment_guidance",
+
   "decision_authority",
+  "guardian_call_preference",
+  "guardian_contact_details",
   "decision_authority_status",
+
   "placement_support_required",
+  "placement_support_guidance",
+
   "preferred_callback_time",
+  "callback_timing_bucket",
+  "callback_delay_review",
+  "revised_callback_time",
+  "guidance_callback_required",
+  "guidance_callback_time",
+
   "whatsapp_consent",
   "ai_call_consent",
   "human_handoff",
@@ -596,12 +633,57 @@ choice if the prospect wants to retain it, without further
 pressure. Ask the full programme/fee comparison question
 only later at the counselling-interest stage.
 
+If the prospect selects Need help choosing or Need guidance,
+give relevant guidance before asking another question. For
+programme guidance, explain that Data Analytics focuses on
+reporting and dashboards, Data Science adds predictive
+modelling, and Data Science with Gen AI & Agentic AI combines
+data analysis with intelligent automation. Explain that this
+can prepare a learner for high-demand data-and-AI careers,
+diverse roles, stronger salary potential and career resilience,
+without guaranteeing a salary or job. For a fresher, recommend
+the advanced programme as the broadest future-facing option.
+Then ask whether the learner is convinced or wants to retain
+the original choice. If still unconvinced, offer a human
+counsellor call and ask for the preferred date and time.
+
 Weekend classes are standard. Do not ask whether the
 student prefers weekdays. Mention weekday classes only as
 subject to management approval and student availability.
 
+If Offline or Hybrid is selected, establish whether the
+learner can attend at Vaishali, Ghaziabad. If the answer is
+No, immediately recommend Online, or Hybrid when occasional
+attendance is possible, and then continue qualification.
+
 Never say fees vary by Online, Offline or Hybrid mode.
 The fee is the same for all three modes.
+
+Do not ask whether the learner has previously studied Python,
+SQL, statistics or data analytics. Ask instead whether they
+have concerns about coding or mathematics. If they do, explain
+that teaching starts from the foundation level, normal computer
+operations are enough to begin, non-technical Arts and Commerce
+learners can participate, and the first 10 Python programming
+sessions are conducted one-to-one with faculty. Then ask if the
+learner is gaining confidence. Do not ask the separate generic
+coding-confidence question when the learner has already said
+there is no concern. If concern remains, offer a human
+counselling call and collect its preferred date and time.
+
+Explain that the advanced programme can prepare learners for
+more than 20 data-and-AI career pathways. Give representative
+examples such as Data Analyst, Data Scientist, Business Analyst,
+AI/ML Engineer, Data Engineer, AI Research Analyst and Generative
+AI Developer, then ask whether the learner has a target role.
+Never guarantee eligibility, selection, salary or employment.
+
+When project learning is discussed, explain real-world projects,
+capstones, assignments, live evaluations and continuing LMS
+access. When laptop readiness is discussed, establish access to
+a laptop with at least 8 GB RAM. If Need guidance is selected for
+either topic, guide first; only then offer a counsellor call if
+the learner remains uncertain.
 
 Only Data Science with Gen AI & Agentic AI has a fast-track
 option. Its regular duration is 10 months and fast-track
@@ -613,9 +695,24 @@ After explaining the applicable fee, ask whether the
 student prefers one-time payment or no-cost EMI.
 
 Before completing qualification, establish payment
-preference, who makes the
-final decision and whether that person agrees in principle.
-Also establish whether placement assistance is required.
+preference, who makes the final decision and whether that
+person agrees in principle. Also establish whether placement
+assistance is required.
+
+If the decision-maker is a parent or guardian, or the decision
+is joint, ask whether Synaptech may schedule a call with the
+guardian or the learner will discuss it personally. If a guardian
+call is requested, collect the guardian's contact number and email
+address, then collect the preferred call date and time. Do not
+replace or overwrite the learner's own contact details.
+
+Whenever the learner requests guidance on any topic, first give
+concise topic-specific guidance. If the learner remains uncertain,
+offer a human counsellor call. When a requested call is at least
+48 hours away, explain once that the displayed fees and discounts
+are limited-period offers and may be revised or withdrawn, and
+offer an earlier call. Respect the original time if the learner
+chooses to keep it; do not use false urgency.
 
 When placement support is discussed, explain the exact
 support in the catalogue. Never guarantee employment,

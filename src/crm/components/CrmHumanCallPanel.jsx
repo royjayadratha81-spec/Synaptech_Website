@@ -10,6 +10,95 @@ const OUTCOMES = [
   ["not_interested", "Not interested"],
   ["wrong_number", "Wrong number"],
 ];
+const CONNECTED_OUTCOMES = new Set([
+  "positive",
+  "neutral",
+  "callback_requested",
+]);
+
+const EMPTY_ADMISSIONS_EVIDENCE = {
+  fee_readiness: "",
+  decision_authority: "",
+  decision_authority_status: "",
+  joining_timeline: "",
+  payment_preference: "",
+  laptop_readiness: "",
+  handoff_intent: "",
+};
+
+const ADMISSIONS_EVIDENCE_FIELDS = [
+  {
+    name: "fee_readiness",
+    label: "Course-fee acceptance",
+    options: [
+      ["Accepted", "Accepted"],
+      ["Needs discussion", "Needs discussion"],
+      ["Not affordable", "Not affordable"],
+      ["Unknown", "Unknown"],
+    ],
+  },
+  {
+    name: "decision_authority",
+    label: "Final decision-maker",
+    options: [
+      ["Student", "Student"],
+      ["Parent or guardian", "Parent or guardian"],
+      ["Student and parent together", "Student and parent together"],
+      ["Another person", "Another person"],
+      ["Unknown", "Unknown"],
+    ],
+  },
+  {
+    name: "decision_authority_status",
+    label: "Decision-maker approval",
+    options: [
+      ["Yes", "Approved / yes"],
+      ["Pending discussion", "Pending discussion"],
+      ["No", "Not approved / no"],
+      ["Unknown", "Unknown"],
+    ],
+  },
+  {
+    name: "joining_timeline",
+    label: "Expected joining timeline",
+    options: [
+      ["Within 30 days", "Within 30 days"],
+      ["Within 60 days", "Within 60 days"],
+      ["Within 90 days", "Within 90 days"],
+      ["Later", "Later"],
+      ["Unknown", "Unknown"],
+    ],
+  },
+  {
+    name: "payment_preference",
+    label: "Payment preference",
+    options: [
+      ["One-time payment", "One-time payment"],
+      ["No-cost EMI", "No-cost EMI"],
+      ["Needs discussion", "Needs discussion"],
+      ["Unknown", "Unknown"],
+    ],
+  },
+  {
+    name: "laptop_readiness",
+    label: "Laptop readiness",
+    options: [
+      ["Yes", "Has a suitable laptop"],
+      ["I can arrange", "Can arrange a laptop"],
+      ["I need advice", "Needs laptop advice"],
+      ["Unknown", "Unknown"],
+    ],
+  },
+  {
+    name: "handoff_intent",
+    label: "Continue with human counsellor",
+    options: [
+      ["accepted", "Yes, continue counselling"],
+      ["declined", "No, declined further counselling"],
+      ["undecided", "Undecided"],
+    ],
+  },
+];
 
 function requestId() {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
@@ -23,6 +112,15 @@ function formatDate(value) {
 }
 
 export default function CrmHumanCallPanel({ lead, onActivitySaved }) {
+  const businessUnit =
+    lead?.qualification_state?.business_unit ||
+    lead?.dynamic_score?.business_unit ||
+    lead?.metadata?.business_unit ||
+    lead?.business_unit ||
+    "unclassified";
+
+  const isAdmissions = businessUnit === "admissions";
+
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,6 +136,9 @@ export default function CrmHumanCallPanel({ lead, onActivitySaved }) {
     decision_maker_confirmed: false,
     next_action: "",
     next_follow_up_at: "",
+  });
+    const [admissionsEvidence, setAdmissionsEvidence] = useState({
+    ...EMPTY_ADMISSIONS_EVIDENCE,
   });
 
   async function loadActivities() {
@@ -56,12 +157,21 @@ export default function CrmHumanCallPanel({ lead, onActivitySaved }) {
   useEffect(() => {
     setError("");
     setNotice("");
-    setIdempotencyKey(requestId());
+        setIdempotencyKey(requestId());
+    setAdmissionsEvidence({
+      ...EMPTY_ADMISSIONS_EVIDENCE,
+    });
     loadActivities();
   }, [lead?.id]);
 
   function change(name, value) {
     setForm((current) => ({ ...current, [name]: value }));
+  }
+    function changeAdmissionsEvidence(name, value) {
+    setAdmissionsEvidence((current) => ({
+      ...current,
+      [name]: value,
+    }));
   }
 
   async function submit(event) {
@@ -70,6 +180,19 @@ export default function CrmHumanCallPanel({ lead, onActivitySaved }) {
       setError("Please enter what was discussed during the call.");
       return;
     }
+        const connectedCall = CONNECTED_OUTCOMES.has(form.outcome);
+
+    const admissionsEvidencePayload =
+      isAdmissions && connectedCall
+        ? Object.fromEntries(
+            Object.entries(admissionsEvidence).filter(([, value]) =>
+              String(value ?? "").trim()
+            )
+          )
+        : {};
+
+    const hasAdmissionsEvidence =
+      Object.keys(admissionsEvidencePayload).length > 0;
 
     try {
       setSaving(true);
@@ -79,11 +202,16 @@ export default function CrmHumanCallPanel({ lead, onActivitySaved }) {
       const result = await createCrmHumanCall(lead.id, {
         ...form,
         idempotency_key: idempotencyKey,
-        business_unit: lead?.qualification_state?.business_unit || "business_solutions",
+                business_unit: businessUnit,
         duration_minutes: Number(form.duration_minutes) || 0,
         next_follow_up_at: form.next_follow_up_at
           ? new Date(form.next_follow_up_at).toISOString()
           : null,
+                  ...(hasAdmissionsEvidence
+          ? {
+              admissions_evidence: admissionsEvidencePayload,
+            }
+          : {}),
       });
 
       setNotice(result?.message || "Call activity saved.");
@@ -94,6 +222,9 @@ export default function CrmHumanCallPanel({ lead, onActivitySaved }) {
         next_action: "",
         next_follow_up_at: "",
       }));
+            setAdmissionsEvidence({
+        ...EMPTY_ADMISSIONS_EVIDENCE,
+      });
       setIdempotencyKey(requestId());
       await loadActivities();
       await onActivitySaved?.(result);
@@ -156,10 +287,73 @@ export default function CrmHumanCallPanel({ lead, onActivitySaved }) {
           </label>
         </div>
 
-        <label className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 text-sm font-semibold text-slate-700">
-          <input type="checkbox" checked={form.decision_maker_confirmed} onChange={(e) => change("decision_maker_confirmed", e.target.checked)} />
-          Decision-maker status was confirmed during this call
-        </label>
+                {isAdmissions && CONNECTED_OUTCOMES.has(form.outcome) && (
+          <fieldset className="rounded-2xl border border-violet-200 bg-violet-50/60 p-4">
+            <legend className="px-2 text-xs font-black uppercase tracking-[0.14em] text-violet-700">
+              Admissions qualification confirmations
+            </legend>
+
+            <p className="mb-4 text-xs leading-5 text-slate-600">
+              Record only facts explicitly confirmed during this call. Leave a
+              field blank to retain the student&apos;s existing Aira answer.
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {ADMISSIONS_EVIDENCE_FIELDS.map((field) => (
+                <label
+                  key={field.name}
+                  className="text-xs font-bold text-slate-700"
+                >
+                  {field.label}
+
+                  <select
+                    value={admissionsEvidence[field.name]}
+                    onChange={(event) =>
+                      changeAdmissionsEvidence(
+                        field.name,
+                        event.target.value
+                      )
+                    }
+                    className="mt-2 w-full rounded-xl border border-violet-200 bg-white px-3 py-3 text-sm"
+                  >
+                    <option value="">
+                      Not discussed — keep existing answer
+                    </option>
+
+                    {field.options.map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        {isAdmissions && !CONNECTED_OUTCOMES.has(form.outcome) && (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold leading-5 text-amber-800">
+            Qualification confirmations are not recorded for an unanswered,
+            wrong-number or not-interested outcome.
+          </p>
+        )}
+
+        {!isAdmissions && (
+          <label className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 text-sm font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={form.decision_maker_confirmed}
+              onChange={(event) =>
+                change(
+                  "decision_maker_confirmed",
+                  event.target.checked
+                )
+              }
+            />
+            Decision-maker status was confirmed during this call
+          </label>
+        )}
 
         <label className="block text-xs font-bold text-slate-700">
           Next action
@@ -193,6 +387,26 @@ export default function CrmHumanCallPanel({ lead, onActivitySaved }) {
                   <span className="flex items-center gap-1 text-[11px] text-slate-400"><FiClock /> {formatDate(activity.occurred_at)}</span>
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-700">{activity.metadata?.summary || "No summary"}</p>
+                                {activity.metadata?.admissions_evidence &&
+                  Object.keys(
+                    activity.metadata.admissions_evidence
+                  ).length > 0 && (
+                    <div className="mt-3 grid gap-2 rounded-xl border border-violet-100 bg-white p-3 sm:grid-cols-2">
+                      {Object.entries(
+                        activity.metadata.admissions_evidence
+                      ).map(([field, value]) => (
+                        <p
+                          key={field}
+                          className="text-xs text-slate-600"
+                        >
+                          <span className="font-black capitalize text-slate-800">
+                            {field.replace(/_/g, " ")}:
+                          </span>{" "}
+                          {String(value)}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 {activity.metadata?.next_action && <p className="mt-2 text-xs font-semibold text-slate-500">Next: {activity.metadata.next_action}</p>}
               </article>
             ))}

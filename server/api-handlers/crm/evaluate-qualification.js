@@ -940,8 +940,16 @@ export default async function handler(
         qualification:
           result.qualification,
         intelligence:
-          result.intelligence,
-        evaluated_by: {
+  result.intelligence,
+
+counsellor_task:
+  result.counsellor_task || null,
+
+counsellor_task_warning:
+  result.counsellor_task_warning ||
+  null,
+
+evaluated_by: {
           crm_user_id:
             crmUser.id,
           qualification_version:

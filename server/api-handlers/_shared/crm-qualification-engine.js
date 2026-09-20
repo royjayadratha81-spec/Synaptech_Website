@@ -16,6 +16,14 @@
 // - Does NOT invent missing customer facts
 // - Uses deterministic gates over stored CRM evidence
 
+import {
+  ensureAdmissionsCounsellorTask,
+} from "./crm-admissions-counsellor-task.js";
+import {
+  admissionsCommercialBlock,
+  applyAdmissionsCallEvidence,
+} from "./crm-admissions-call-evidence.js";
+
 const QUALIFICATION_VERSION = "v1";
 
 // ------------------------------------------------------------
@@ -658,6 +666,9 @@ function evaluateGates({
       : businessUnit ===
           "admissions"
         ? (
+          !admissionsCommercialBlock(
+  profile
+) &&
             hasValue(
               profile.course_interest
             ) &&
@@ -1199,11 +1210,18 @@ const engagementEvents =
       score,
     });
 
-  const profile =
-    safeObject(
-      conversation
-        ?.extracted_profile
-    );
+  const rawProfile =
+  safeObject(
+    conversation
+      ?.extracted_profile
+  );
+
+const profile =
+  applyAdmissionsCallEvidence(
+    businessUnit,
+    rawProfile,
+    engagementEvents
+  );
 
   const {
     critical:
@@ -1239,7 +1257,7 @@ const engagementEvents =
   // HANDOFF INTENT
   // ----------------------------------------------------------
 
-  const handoffIntent =
+  let handoffIntent =
   determineHandoffIntent({
     businessUnit,
     profile,
@@ -1247,6 +1265,36 @@ const engagementEvents =
     conversation,
     engagementEvents,
   });
+
+const humanCallHandoffIntent =
+  normalizeText(
+    profile
+      ?._admissions_call_evidence
+      ?.handoff_intent
+      ?.value
+  );
+
+if (
+  businessUnit === "admissions" &&
+  [
+    "accepted",
+    "declined",
+    "undecided",
+  ].includes(
+    humanCallHandoffIntent
+  )
+) {
+  handoffIntent = {
+    intent:
+      humanCallHandoffIntent,
+
+    channel:
+      "counselling",
+
+    evidence:
+      "Latest structured admissions counsellor-call confirmation.",
+  };
+}
 
   // ----------------------------------------------------------
   // DISQUALIFIERS
@@ -1514,12 +1562,46 @@ const engagementEvents =
     .single();
 
   if (saveError) {
-    throw saveError;
-  }
+  throw saveError;
+}
 
-  return {
-    qualification:
-      savedQualification,
+let counsellorTask = null;
+let counsellorTaskWarning = null;
+
+if (businessUnit === "admissions") {
+  try {
+    counsellorTask =
+      await ensureAdmissionsCounsellorTask({
+        supabase,
+        organizationId,
+        leadId: lead.id,
+        conversation,
+        qualification:
+          savedQualification,
+        profile,
+      });
+  } catch (taskError) {
+    console.error(
+      "Admissions counsellor task could not be saved:",
+      taskError
+    );
+
+    // Qualification remains saved even if task
+    // creation experiences a temporary failure.
+    counsellorTaskWarning =
+      "Qualification was saved, but the counsellor task could not be created. Recalculate to retry.";
+  }
+}
+
+return {
+  counsellor_task:
+    counsellorTask,
+
+  counsellor_task_warning:
+    counsellorTaskWarning,
+
+  qualification:
+    savedQualification,
 
     intelligence: {
       business_unit:

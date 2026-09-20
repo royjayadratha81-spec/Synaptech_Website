@@ -1,3 +1,6 @@
+import {
+  applyAdmissionsCallEvidence,
+} from "./crm-admissions-call-evidence.js";
 // api/_shared/crm-scoring-engine.js
 //
 // Shared deterministic CRM scoring engine.
@@ -2166,10 +2169,17 @@ if (
       rules.weights
     );
 
-  const conversationProfile =
+  const rawConversationProfile =
   safeObject(
     conversation
       ?.extracted_profile
+  );
+
+const conversationProfile =
+  applyAdmissionsCallEvidence(
+    businessUnit,
+    rawConversationProfile,
+    engagementEvents || []
   );
 
 const structuredCommercialFacts =

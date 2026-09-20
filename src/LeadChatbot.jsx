@@ -121,7 +121,7 @@ function scoreLead(lead, interactions = 0) {
 }
 
 export default function LeadChatbot() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [stage, setStage] = useState("profile");
   const [lead, setLead] = useState(initialLead);
   const [messages, setMessages] = useState([]);
@@ -242,6 +242,10 @@ export default function LeadChatbot() {
       }]);
       if (sourceError) throw sourceError;
       guidanceAttempt.current.sourceSaved = true;
+      // Meta Pixel: track one Lead only after successful admission enquiry capture
+if (window.fbq) {
+  window.fbq("trackSingle", "2024080274972394", "Lead");
+}
       }
 
       let secureSession = guidanceAttempt.current.session;

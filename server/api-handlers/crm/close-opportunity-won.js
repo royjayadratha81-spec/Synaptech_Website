@@ -2,6 +2,7 @@
 // A completed follow-up never calls this endpoint automatically.
 
 import { authenticateCrmRequest, sendCrmError } from "./_auth.js";
+import { handoffWonAdmissionToAdmissions } from "../_shared/admissions-crm-handoff.js";
 
 function clean(value, max = 2000) {
   return String(value ?? "").trim().slice(0, max);
@@ -167,13 +168,44 @@ export default async function handler(req, res) {
       .eq("lead_id", opportunity.lead_id)
       .in("status", ["pending", "scheduled", "processing"]);
     if (followUpError) throw followUpError;
+        // Admissions is an additive downstream handoff. A temporary Admissions
+    // failure must never undo or falsely fail a successfully closed CRM deal.
+    let admissionsHandoff;
+
+    try {
+      admissionsHandoff = await handoffWonAdmissionToAdmissions({
+        supabase,
+        organization,
+        opportunity: updatedOpportunity,
+        workOrder,
+        crmUser,
+        now,
+      });
+    } catch (handoffError) {
+      console.error("CRM won-to-Admissions handoff failed:", {
+        organization_id: organization.id,
+        lead_id: opportunity.lead_id,
+        opportunity_id: opportunity.id,
+        code: handoffError?.code || null,
+        message:
+          handoffError?.message ||
+          "Unknown Admissions handoff error.",
+      });
+
+      admissionsHandoff = {
+        status: "retry_required",
+        message:
+          "The CRM deal was closed, but its Admissions handoff must be retried.",
+      };
+    }
 
     return res.status(200).json({
       success: true,
       opportunity: updatedOpportunity,
       stage: wonStage,
-      work_order_event: event,
+            work_order_event: event,
       work_order: workOrder,
+      admissions_handoff: admissionsHandoff,
       message: "Work order recorded and opportunity closed as won.",
     });
   } catch (error) {
