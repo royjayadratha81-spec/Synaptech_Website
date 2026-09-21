@@ -429,6 +429,7 @@ export function updateStudentLifecycle({
   organizationId = null,
   studentId,
   state,
+  batchId = null,
   note = null,
   forceRefresh = false,
 }) {
@@ -439,6 +440,7 @@ export function updateStudentLifecycle({
       student_id: studentId,
       state,
       note,
+      ...(batchId ? { batch_id: batchId } : {}),
       ...(organizationId ? { organization_id: organizationId } : {}),
     },
   });

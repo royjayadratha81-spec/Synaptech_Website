@@ -1,7 +1,7 @@
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import AdminLogin from "./pages/AdminLogin";
 import AdminProtectedRoute from "./pages/AdminProtectedRoute";
 import CreateAssignment from "./pages/CreateAssignment";
@@ -52,12 +52,12 @@ import PlatformSessionCheck from "./platform/pages/PlatformSessionCheck";
 import PlatformProtectedRoute from "./platform/components/PlatformProtectedRoute";
 import PlatformConsole from "./platform/pages/PlatformConsole";
 import AdmissionsWorkspace from "./platform/pages/AdmissionsWorkspace";
+import LmsLanding from "./pages/LmsLanding";
 
 
 
 import App from "./App";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import SuperAdmin from "./pages/SuperAdmin";
@@ -144,6 +144,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/catalogues/programme-fee-comparison.html" element={<ProgrammeFeeCatalogue />} />
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/lms" element={<LmsLanding />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route
   path="/platform-session-check"
@@ -169,18 +170,33 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </PlatformProtectedRoute>
   }
 />
-        <Route path="/register" element={<Register />} />
+        <Route path="/register" element={<Navigate to="/lms" replace />} />
         <Route path="/admin" element={<AdminProtectedRoute> <Admin /> </AdminProtectedRoute>}/>
-        <Route
+<Route
   path="/crm"
   element={
-    <AdminProtectedRoute>
+    <AdminProtectedRoute requiredModule="crm">
       <CrmDashboard />
     </AdminProtectedRoute>
   }
 />
-<Route path="/super-admin" element={<AdminProtectedRoute><SuperAdmin /></AdminProtectedRoute>} />
-<Route path="/mis-report" element={<AdminProtectedRoute><MISReport /></AdminProtectedRoute>} />
+<Route
+  path="/tenant-administration"
+  element={
+    <AdminProtectedRoute requiredModule="administration">
+      <SuperAdmin />
+    </AdminProtectedRoute>
+  }
+/>
+<Route
+  path="/super-admin"
+  element={
+    <AdminProtectedRoute requiredModule="administration">
+      <Navigate to="/tenant-administration" replace />
+    </AdminProtectedRoute>
+  }
+/>
+<Route path="/mis-report" element={<AdminProtectedRoute requiredModule="analytics_mis"><MISReport /></AdminProtectedRoute>} />
         <Route
   path="/admin/faculty"
   element={
@@ -241,7 +257,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 <Route
     path="/finance"
     element={
-        <AdminProtectedRoute>
+        <AdminProtectedRoute requiredModule="finance">
             <FinanceDashboard />
         </AdminProtectedRoute>
     }
@@ -249,7 +265,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 <Route
     path="/finance-migration"
     element={
-        <AdminProtectedRoute>
+        <AdminProtectedRoute requiredModule="finance">
             <FinanceMigration />
         </AdminProtectedRoute>
     }
@@ -257,7 +273,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route
   path="/admin-analytics"
   element={
-    <AdminProtectedRoute>
+    <AdminProtectedRoute requiredModule="analytics_mis">
       <AdminAnalytics />
     </AdminProtectedRoute>
   }

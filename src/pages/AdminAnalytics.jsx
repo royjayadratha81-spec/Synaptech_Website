@@ -2,13 +2,61 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import { getAdmissionsOverview } from "../platform/services/admissionsApi";
 import {
   ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend
 } from "recharts";
-import { FaArrowLeft, FaUsers, FaUserCheck, FaUserClock, FaUserTimes, FaBook, FaSyncAlt, FaExclamationTriangle } from "react-icons/fa";
+import { FaArrowLeft, FaUsers, FaUserCheck, FaUserClock, FaUserTimes, FaSyncAlt, FaExclamationTriangle, FaWallet, FaReceipt, FaChartLine, FaShieldAlt } from "react-icons/fa";
 
-const safeNumber = (v) => Number(v || 0);
+const safeNumber = (v) => {
+  const number = Number(v);
+  return Number.isFinite(number) ? number : 0;
+};
+const money = (v) => `₹${safeNumber(v).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+const normalized = (v) => String(v || "").trim().toLowerCase();
+const hasOwn = (record, key) => Object.prototype.hasOwnProperty.call(record || {}, key);
+const uniqueValues = (values) => [...new Set(values.map(normalized).filter(Boolean))];
+const identityValues = (record) => uniqueValues([
+  record?.id,
+  record?.studentId,
+  record?.student_id,
+  record?.firebaseUid,
+  record?.firebase_uid,
+  record?.firebaseUidReserved,
+  record?.firebase_uid_reserved,
+  record?.lmsStudentReference,
+  record?.lms_student_reference,
+  record?.userId,
+  record?.uid,
+]);
+const emailValues = (record) => uniqueValues([
+  record?.email,
+  record?.studentEmail,
+  record?.student_email,
+  record?.admissionEmail,
+  record?.contactEmail,
+]);
+const hasExplicitStudentFinanceClearance = (record) =>
+  hasOwn(record, "financeClearanceStatus") ||
+  hasOwn(record, "clearanceStatus") ||
+  hasOwn(record, "financeVerified");
+const hasExplicitFinanceAccountClearance = (record) =>
+  hasExplicitStudentFinanceClearance(record) ||
+  hasOwn(record, "verified");
+const hasVerifiedFinanceStatus = (record) => {
+  const status = normalized(
+    record?.financeClearanceStatus ||
+    record?.clearanceStatus
+  );
+
+  return (
+    record?.financeVerified === true ||
+    ["verified", "cleared", "finance_verified"].includes(status)
+  );
+};
+const isFinanceAccountVerified = (record) =>
+  record?.verified === true || hasVerifiedFinanceStatus(record);
 const dateValue = (v) => {
   if (!v) return null;
   if (typeof v?.toDate === "function") return v.toDate();
@@ -44,6 +92,11 @@ export default function AdminAnalytics() {
   const [mcqResults, setMcqResults] = useState([]);
   const [liveSessions, setLiveSessions] = useState([]);
   const [recordings, setRecordings] = useState([]);
+  const [finance, setFinance] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [studentAnalytics, setStudentAnalytics] = useState([]);
+  const [admissions, setAdmissions] = useState(null);
+  const [admissionsError, setAdmissionsError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
@@ -57,16 +110,44 @@ export default function AdminAnalytics() {
         return [];
       }
     };
+    setAdmissionsError(null);
+    const admissionsRequest = (async () => {
+      try {
+        return await getAdmissionsOverview();
+      } catch (firstError) {
+        if (Number(firstError?.statusCode) === 401) {
+          try {
+            return await getAdmissionsOverview({ forceRefresh: true });
+          } catch (retryError) {
+            setAdmissionsError({
+              message: retryError?.message || "Admissions analytics are unavailable for this account.",
+              statusCode: Number(retryError?.statusCode) || 0,
+            });
+            return null;
+          }
+        }
+
+        setAdmissionsError({
+          message: firstError?.message || "Admissions analytics are unavailable for this account.",
+          statusCode: Number(firstError?.statusCode) || 0,
+        });
+        return null;
+      }
+    })();
     const [
-      st, rej, cr, ba, mo, asg, sub, tests, results, sessions, recs
+      st, rej, cr, ba, mo, asg, sub, tests, results, sessions, recs,
+      financeRows, paymentRows, analyticsRows, admissionsOverview
     ] = await Promise.all([
       read("students"), read("rejectedStudents"), read("courses"), read("batches"),
       read("modules"), read("assignments"), read("submissions"), read("mcqTests"),
-      read("mcqResults"), read("liveSessions"), read("recordedSessions")
+      read("mcqResults"), read("liveSessions"), read("recordedSessions"),
+      read("finance"), read("payments"), read("studentAnalytics"), admissionsRequest
     ]);
     setStudents(st); setRejected(rej); setCourses(cr); setBatches(ba); setModules(mo);
     setAssignments(asg); setSubmissions(sub); setMcqTests(tests); setMcqResults(results);
     setLiveSessions(sessions); setRecordings(recs);
+    setFinance(financeRows); setPayments(paymentRows); setStudentAnalytics(analyticsRows);
+    setAdmissions(admissionsOverview);
     setLastUpdated(new Date());
     setLoading(false);
   }, []);
@@ -82,10 +163,172 @@ export default function AdminAnalytics() {
   const alumni = students.filter((s) => String(s.status || "").toLowerCase() === "alumni").length;
   const approvalRate = students.length ? Math.round((approved / students.length) * 100) : 0;
 
+  const financeSummary = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let expected = 0;
+    let collected = 0;
+    let outstanding = 0;
+    let overdueInstallments = 0;
+    let configuredPlans = 0;
+
+    finance.forEach((account) => {
+      const agreedFee = safeNumber(account.agreedFee);
+      const discount = safeNumber(account.discount);
+      const finalFee = account.finalFee === null || account.finalFee === undefined
+        ? Math.max(0, agreedFee - discount)
+        : safeNumber(account.finalFee);
+      const amountPaid = safeNumber(account.amountPaid);
+      const balance = account.balanceAmount === null || account.balanceAmount === undefined
+        ? Math.max(0, finalFee - amountPaid)
+        : Math.max(0, safeNumber(account.balanceAmount));
+
+      expected += finalFee;
+      collected += amountPaid;
+      outstanding += balance;
+
+      const installments = Array.isArray(account.installments) ? account.installments : [];
+      if (installments.length) configuredPlans += 1;
+      installments.forEach((installment) => {
+        const dueDate = dateValue(installment.dueDate);
+        if (dueDate) dueDate.setHours(0, 0, 0, 0);
+        if (dueDate && dueDate < today && normalized(installment.status) !== "paid") {
+          overdueInstallments += 1;
+        }
+      });
+    });
+
+    const verifiedPayments = payments.filter((payment) => payment.verified === true);
+    const pendingReceipts = payments.filter((payment) =>
+      payment.verified !== true && normalized(payment.paymentStatus) !== "verified"
+    ).length;
+
+    return {
+      expected,
+      collected,
+      outstanding,
+      overdueInstallments,
+      configuredPlans,
+      verifiedTransactions: verifiedPayments.length,
+      pendingReceipts,
+      collectionRate: expected ? Math.round((collected / expected) * 100) : 0,
+      paidAccounts: finance.filter((account) => normalized(account.paymentStatus) === "paid").length,
+      partialAccounts: finance.filter((account) => normalized(account.paymentStatus) === "partially paid").length,
+      unpaidAccounts: finance.filter((account) => safeNumber(account.amountPaid) === 0).length,
+    };
+  }, [finance, payments]);
+
+  const admissionsSummary = useMemo(() => {
+    const applications = Array.isArray(admissions?.applications) ? admissions.applications : [];
+    const countStatus = (value) => applications.filter((application) => normalized(application.status) === value).length;
+    return {
+      candidates: safeNumber(admissions?.summary?.candidate_count),
+      applications: safeNumber(admissions?.summary?.application_count),
+      crmWon: applications.filter((application) => normalized(application.intake_route) === "crm_won").length,
+      manual: applications.filter((application) => normalized(application.intake_route) === "manual").length,
+      financePending: countStatus("finance_pending"),
+      admitted: countStatus("admitted"),
+    };
+  }, [admissions]);
+
+  const analyticsEmails = useMemo(() => new Set(studentAnalytics.flatMap((row) => [
+    normalized(row.id), normalized(row.email), normalized(row.studentEmail)
+  ]).filter(Boolean)), [studentAnalytics]);
+
+  const financeIntegrity = useMemo(() => {
+    const studentRecords = students.map((student) => ({
+      student,
+      ids: new Set(identityValues(student)),
+      emails: new Set(emailValues(student)),
+      accounts: [],
+    }));
+
+    let unmatchedFinanceAccounts = 0;
+
+    finance.forEach((account) => {
+      const accountIds = identityValues(account);
+      const accountEmails = emailValues(account);
+      const matches = studentRecords.filter((entry) =>
+        accountIds.some((value) => entry.ids.has(value)) ||
+        accountEmails.some((value) => entry.emails.has(value))
+      );
+
+      if (!matches.length) {
+        unmatchedFinanceAccounts += 1;
+        return;
+      }
+
+      matches.forEach((entry) => entry.accounts.push(account));
+    });
+
+    let explicitLmsAccessViolations = 0;
+    let legacyFinanceUnclassified = 0;
+
+    studentRecords.forEach(({ student, accounts }) => {
+      if (student.lmsAccess !== true) return;
+
+      const verified =
+        hasVerifiedFinanceStatus(student) ||
+        accounts.some(isFinanceAccountVerified);
+
+      if (verified) return;
+
+      const hasExplicitStatus =
+        hasExplicitStudentFinanceClearance(student) ||
+        accounts.some(hasExplicitFinanceAccountClearance);
+
+      if (hasExplicitStatus) {
+        explicitLmsAccessViolations += 1;
+      } else {
+        legacyFinanceUnclassified += 1;
+      }
+    });
+
+    return {
+      explicitLmsAccessViolations,
+      legacyFinanceUnclassified,
+      unmatchedFinanceAccounts,
+    };
+  }, [students, finance]);
+
+  const activeStudents = students.filter((student) => normalized(student.status) === "active");
+  const activeWithoutBatch = activeStudents.filter((student) => !student.batchId).length;
+  const activeWithoutAnalytics = activeStudents.filter((student) => {
+    const email = normalized(student.email);
+    return email && !analyticsEmails.has(email);
+  }).length;
+  const financeClearedAccounts = finance.filter(isFinanceAccountVerified).length;
+
+  const financeMix = useMemo(() => [
+    { name: "Collected", value: financeSummary.collected },
+    { name: "Outstanding", value: financeSummary.outstanding },
+  ].filter((item) => item.value > 0), [financeSummary.collected, financeSummary.outstanding]);
+
+  const admissionsFunnel = useMemo(() => {
+    const liveStages = [];
+
+    if (admissions) {
+      liveStages.push(
+        { name: "Candidates", value: admissionsSummary.candidates },
+        { name: "Applications", value: admissionsSummary.applications }
+      );
+    }
+
+    liveStages.push(
+      { name: "Finance cleared", value: financeClearedAccounts },
+      { name: "Active LMS", value: active }
+    );
+
+    return liveStages;
+  }, [admissions, admissionsSummary, financeClearedAccounts, active]);
+
+  // `rejectedStudents` is a separate historical/archive collection. It must
+  // not be added to the live `students` population or the approval chart would
+  // report a denominator larger than Total students.
   const studentStatus = useMemo(() => [
-    { name: "Approved", value: approved }, { name: "Pending", value: pending },
-    { name: "Rejected", value: rejected.length }
-  ].filter(x => x.value > 0), [approved, pending, rejected.length]);
+    { name: "Approved", value: approved },
+    { name: "Pending", value: pending },
+  ].filter(x => x.value > 0), [approved, pending]);
 
   const operational = [
     { name: "Students", value: students.length },
@@ -96,7 +339,9 @@ export default function AdminAnalytics() {
     { name: "Submissions", value: submissions.length },
     { name: "Mini Tests", value: mcqTests.length },
     { name: "Live Sessions", value: liveSessions.length },
-    { name: "Recordings", value: recordings.length }
+    { name: "Recordings", value: recordings.length },
+    { name: "Finance Accounts", value: finance.length },
+    { name: "Payment Ledger", value: payments.length }
   ];
 
   const activity = useMemo(() => {
@@ -113,6 +358,13 @@ export default function AdminAnalytics() {
   const redFlags = [
     awaitingLms > 0 && { label: `${awaitingLms} finance-cleared student${awaitingLms > 1 ? "s" : ""} awaiting LMS activation`, severity: "Provisioning", action: "Open Student Operations" },
     pending > 0 && { label: `${pending} student${pending > 1 ? "s" : ""} awaiting approval`, severity: "Attention", action: "Review Student Management" },
+    financeSummary.pendingReceipts > 0 && { label: `${financeSummary.pendingReceipts} payment receipt${financeSummary.pendingReceipts > 1 ? "s" : ""} awaiting Finance verification`, severity: "Finance", action: "Open Finance Dashboard" },
+    financeSummary.overdueInstallments > 0 && { label: `${financeSummary.overdueInstallments} overdue EMI milestone${financeSummary.overdueInstallments > 1 ? "s" : ""}`, severity: "Collections", action: "Review Finance schedules" },
+    activeWithoutBatch > 0 && { label: `${activeWithoutBatch} active student${activeWithoutBatch > 1 ? "s have" : " has"} no batch assignment`, severity: "Data quality", action: "Open Student Operations" },
+    activeWithoutAnalytics > 0 && { label: `${activeWithoutAnalytics} active student${activeWithoutAnalytics > 1 ? "s are" : " is"} missing an analytics profile`, severity: "Analytics", action: "Review analytics initialization" },
+    financeIntegrity.explicitLmsAccessViolations > 0 && { label: `${financeIntegrity.explicitLmsAccessViolations} LMS-enabled student${financeIntegrity.explicitLmsAccessViolations > 1 ? "s have" : " has"} an explicit non-verified Finance state`, severity: "Critical control", action: "Review immediately" },
+    financeIntegrity.legacyFinanceUnclassified > 0 && { label: `${financeIntegrity.legacyFinanceUnclassified} LMS-enabled legacy student${financeIntegrity.legacyFinanceUnclassified > 1 ? "s have" : " has"} no canonical Finance-clearance marker`, severity: "Compatibility review", action: "Classify before treating as a violation" },
+    financeIntegrity.unmatchedFinanceAccounts > 0 && { label: `${financeIntegrity.unmatchedFinanceAccounts} Finance account${financeIntegrity.unmatchedFinanceAccounts > 1 ? "s do" : " does"} not match a student by UID, student reference, or email`, severity: "Data integrity", action: "Review Finance records" },
     assignments.length > 0 && submissions.length === 0 && { label: "No assignment submissions are currently recorded", severity: "Watch", action: "Review Submissions" },
     liveSessions.filter(s => !dateValue(s.startTime || s.scheduledAt)).length > 0 && { label: "Some live-session records have no recognised schedule date", severity: "Data quality", action: "Review Live Sessions" },
   ].filter(Boolean);
@@ -125,7 +377,7 @@ export default function AdminAnalytics() {
           <div><button onClick={()=>navigate("/admin")} className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-bold text-slate-300"><FaArrowLeft/> Admin Console</button>
             <p className="text-[10px] font-black tracking-[.25em] text-blue-300">EXECUTIVE ANALYTICS</p>
             <h1 className="mt-2 text-3xl font-black tracking-tight md:text-5xl">Admin Analytics Command Centre</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Serious operational analytics built from the existing Firestore collections. Read-only: no existing records are modified.</p>
+            <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300">Read-only institutional intelligence from the existing LMS, Finance and payment collections, with the secured tenant Admissions overview. No operational record is modified.</p>
           </div>
           <button onClick={load} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-900"><FaSyncAlt className={loading?"animate-spin":""}/> Refresh data</button>
         </div>
@@ -135,25 +387,53 @@ export default function AdminAnalytics() {
         <Kpi label="Total students" value={students.length} sub="Registered student records" icon={<FaUsers/>} tone="bg-blue-50 text-blue-700"/>
         <Kpi label="Approved" value={approved} sub={`${approvalRate}% approval rate`} icon={<FaUserCheck/>} tone="bg-emerald-50 text-emerald-700"/>
         <Kpi label="Pending" value={pending} sub="Requires administrative review" icon={<FaUserClock/>} tone="bg-amber-50 text-amber-700"/>
-        <Kpi label="Rejected" value={rejected.length} sub={`${active} currently marked active`} icon={<FaUserTimes/>} tone="bg-rose-50 text-rose-700"/>
+        <Kpi label="Rejected archive" value={rejected.length} sub="Separate historical records" icon={<FaUserTimes/>} tone="bg-rose-50 text-rose-700"/>
       </div>
 
-      <section className="overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 p-6 text-white shadow-[0_24px_70px_rgba(15,23,42,.18)] md:p-7">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-[10px] font-black tracking-[.22em] text-violet-300">LMS PROVISIONING</p><h2 className="mt-1 text-2xl font-black">Controlled student lifecycle</h2><p className="mt-2 text-sm text-slate-400">Separate operational signals; existing LMS analytics remain unchanged.</p></div><button onClick={()=>navigate("/admin/students")} className="rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950">Open Student Operations</button></div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Kpi label="Final fee value" value={money(financeSummary.expected)} sub={`${finance.length} canonical Finance accounts`} icon={<FaWallet/>} tone="bg-emerald-50 text-emerald-700"/>
+        <Kpi label="Revenue collected" value={money(financeSummary.collected)} sub={`${financeSummary.collectionRate}% of final payable fees`} icon={<FaChartLine/>} tone="bg-cyan-50 text-cyan-700"/>
+        <Kpi label="Outstanding balance" value={money(financeSummary.outstanding)} sub={`${financeSummary.partialAccounts} partial • ${financeSummary.unpaidAccounts} unpaid`} icon={<FaReceipt/>} tone="bg-amber-50 text-amber-700"/>
+        <Kpi label="Receipts awaiting review" value={financeSummary.pendingReceipts} sub={`${financeSummary.verifiedTransactions} verified ledger transactions`} icon={<FaShieldAlt/>} tone="bg-violet-50 text-violet-700"/>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.15fr_.85fr]">
+        <Panel eyebrow="ADMISSIONS TO LMS" title="Controlled conversion funnel">
+          {admissionsError ? <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-base leading-6 text-amber-900">
+            <strong>Admissions view unavailable:</strong> {admissionsError.message} Existing LMS and Finance analytics remain available; unavailable Admissions stages are omitted rather than shown as zero.
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button onClick={() => navigate("/admin-login", { state: { from: "/admin-analytics" } })} className="rounded-xl bg-amber-900 px-4 py-2.5 text-sm font-black text-white">Re-authenticate Admin</button>
+              <button onClick={() => navigate("/platform-session-check")} className="rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-sm font-black text-amber-900">Verify platform access</button>
+            </div>
+          </div> : null}
+          <div className="mt-6 h-[300px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={admissionsFunnel}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="name"/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="value" fill="#059669" radius={[9,9,0,0]}/></BarChart></ResponsiveContainer></div>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"><div className="rounded-2xl bg-blue-50 p-4"><p className="text-xs font-bold text-blue-700">CRM Won intake</p><p className="mt-1 text-2xl font-black">{admissions ? admissionsSummary.crmWon : "—"}</p></div><div className="rounded-2xl bg-violet-50 p-4"><p className="text-xs font-bold text-violet-700">Manual intake</p><p className="mt-1 text-2xl font-black">{admissions ? admissionsSummary.manual : "—"}</p></div><div className="rounded-2xl bg-amber-50 p-4"><p className="text-xs font-bold text-amber-700">Finance pending</p><p className="mt-1 text-2xl font-black">{admissions ? admissionsSummary.financePending : "—"}</p></div><div className="rounded-2xl bg-emerald-50 p-4"><p className="text-xs font-bold text-emerald-700">Admitted</p><p className="mt-1 text-2xl font-black">{admissions ? admissionsSummary.admitted : "—"}</p></div></div>
+        </Panel>
+        <Panel eyebrow="FINANCIAL POSITION" title="Collected versus outstanding">
+          <div className="mt-4 h-[250px]"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={financeMix} dataKey="value" nameKey="name" innerRadius={62} outerRadius={92} paddingAngle={4}>{financeMix.map((_,i)=><Cell key={i} fill={["#10b981","#f59e0b"][i%2]}/>)}</Pie><Tooltip formatter={(value)=>money(value)}/><Legend/></PieChart></ResponsiveContainer></div>
+          <div className="grid grid-cols-2 gap-3"><div className="rounded-2xl bg-emerald-50 p-4"><p className="text-xs font-bold text-emerald-700">Paid accounts</p><p className="mt-1 text-2xl font-black">{financeSummary.paidAccounts}</p></div><div className="rounded-2xl bg-amber-50 p-4"><p className="text-xs font-bold text-amber-700">Payment plans</p><p className="mt-1 text-2xl font-black">{financeSummary.configuredPlans}</p></div><div className="rounded-2xl bg-rose-50 p-4"><p className="text-xs font-bold text-rose-700">Overdue milestones</p><p className="mt-1 text-2xl font-black">{financeSummary.overdueInstallments}</p></div><div className="rounded-2xl bg-cyan-50 p-4"><p className="text-xs font-bold text-cyan-700">Analytics profiles</p><p className="mt-1 text-2xl font-black">{studentAnalytics.length}</p></div></div>
+        </Panel>
+      </div>
+
+      <section className="overflow-hidden rounded-[28px] border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/60 to-amber-50/50 p-6 text-slate-900 shadow-[0_24px_70px_rgba(15,23,42,.08)] md:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-xs font-black tracking-[.20em] text-emerald-700">LMS PROVISIONING</p><h2 className="mt-1 text-3xl font-black">Controlled student lifecycle</h2><p className="mt-2 text-base text-slate-600">Separate operational signals; existing LMS analytics and lifecycle rules remain unchanged.</p></div><button onClick={()=>navigate("/admin/students")} className="rounded-2xl bg-emerald-700 px-5 py-3 text-base font-black text-white shadow-lg shadow-emerald-700/15">Open Student Operations</button></div>
         <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5">{[
-          ["Awaiting access", awaitingLms, "text-amber-300"], ["Active", active, "text-emerald-300"],
-          ["Access denied", deniedLms, "text-rose-300"], ["Completed", completed, "text-cyan-300"],
-          ["Alumni", alumni, "text-violet-300"],
-        ].map(([label,value,color])=><div key={label} className="rounded-2xl border border-white/10 bg-white/5 p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{label}</p><p className={`mt-2 text-3xl font-black ${color}`}>{value}</p></div>)}</div>
+          ["Awaiting access", awaitingLms, "text-amber-700"], ["Active", active, "text-emerald-700"],
+          ["Access denied", deniedLms, "text-rose-700"], ["Completed", completed, "text-cyan-700"],
+          ["Alumni", alumni, "text-violet-700"],
+        ].map(([label,value,color])=><div key={label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-xs font-black uppercase tracking-[.14em] text-slate-500">{label}</p><p className={`mt-2 text-3xl font-black ${color}`}>{value}</p></div>)}</div>
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
         <Panel eyebrow="7-DAY OPERATING PULSE" title="Student, submission & session activity">
           <div className="mt-6 h-[320px]"><ResponsiveContainer width="100%" height="100%"><LineChart data={activity}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="name"/><YAxis allowDecimals={false}/><Tooltip/><Legend/><Line type="monotone" dataKey="Students" stroke="#2563eb" strokeWidth={3}/><Line type="monotone" dataKey="Submissions" stroke="#10b981" strokeWidth={3}/><Line type="monotone" dataKey="Sessions" stroke="#8b5cf6" strokeWidth={3}/></LineChart></ResponsiveContainer></div>
         </Panel>
-        <Panel eyebrow="STUDENT HEALTH" title="Approval distribution">
-          <div className="mt-4 h-[260px]"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={studentStatus} dataKey="value" nameKey="name" innerRadius={62} outerRadius={92} paddingAngle={4}>{studentStatus.map((_,i)=><Cell key={i} fill={["#2563eb","#f59e0b","#f43f5e"][i%3]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer></div>
-          <div className="grid grid-cols-3 gap-2">{studentStatus.map((x)=><div key={x.name} className="rounded-2xl bg-slate-50 p-3 text-center"><p className="text-lg font-black text-slate-900">{x.value}</p><p className="text-[10px] font-bold text-slate-500">{x.name}</p></div>)}</div>
+        <Panel eyebrow="STUDENT HEALTH" title="Current approval distribution">
+          <div className="mt-4 h-[260px]"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={studentStatus} dataKey="value" nameKey="name" innerRadius={62} outerRadius={92} paddingAngle={4}>{studentStatus.map((_,i)=><Cell key={i} fill={["#2563eb","#f59e0b"][i%2]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer></div>
+          <div className="grid grid-cols-3 gap-2">
+            {studentStatus.map((x)=><div key={x.name} className="rounded-2xl bg-slate-50 p-3 text-center"><p className="text-lg font-black text-slate-900">{x.value}</p><p className="text-[10px] font-bold text-slate-500">{x.name}</p></div>)}
+            <div className="rounded-2xl bg-rose-50 p-3 text-center"><p className="text-lg font-black text-rose-700">{rejected.length}</p><p className="text-[10px] font-bold text-rose-600">Rejected archive</p></div>
+          </div>
         </Panel>
       </div>
 

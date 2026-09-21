@@ -1,7 +1,7 @@
 import DashboardStats from "../components/learninghub/DashboardStats";
 import Sidebar from "../components/Sidebar";
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 import { db, auth } from "../firebase/firebaseConfig";
@@ -107,6 +107,7 @@ const [moduleProgress, setModuleProgress] = useState(0);
 const [learningGoalModules, setLearningGoalModules] = useState([]);
 const [latestAchievement, setLatestAchievement] = useState(null);
 const [assessmentRows, setAssessmentRows] = useState([]);
+const [financeSummary, setFinanceSummary] = useState(null);
 
 const [dashboardStats, setDashboardStats] = useState({
     totalModules: 0,
@@ -123,6 +124,18 @@ const [dashboardStats, setDashboardStats] = useState({
     attendance: 0,
     overallProgress: 0,
 });
+
+useEffect(() => {
+    let stopFinance = null;
+    const stopAuth = onAuthStateChanged(auth, (user) => {
+        if (stopFinance) stopFinance();
+        if (!user) { setFinanceSummary(null); return; }
+        stopFinance = onSnapshot(doc(db, "finance", user.uid), (snapshot) => {
+            setFinanceSummary(snapshot.exists() ? snapshot.data() : null);
+        });
+    });
+    return () => { stopAuth(); if (stopFinance) stopFinance(); };
+}, []);
 
 
     useEffect(() => {
@@ -868,6 +881,19 @@ return () => unsubscribe();
     completedMiniTests={dashboardStats.completedMiniTests}
     attendance={dashboardStats.attendance}
 />
+
+{financeSummary && (
+    <div className="mt-8 rounded-[24px] border border-emerald-100 bg-gradient-to-r from-white via-emerald-50 to-amber-50 p-6 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p className="text-sm font-black uppercase tracking-[0.14em] text-emerald-700">Payment account</p>
+                <h2 className="mt-1 text-2xl font-black text-slate-900">{financeSummary.paymentStatus || "Payment pending"}</h2>
+                <p className="mt-2 text-base text-slate-600">Paid ₹{Number(financeSummary.amountPaid || 0).toLocaleString("en-IN")} · Balance ₹{Number(financeSummary.balanceAmount || 0).toLocaleString("en-IN")}</p>
+            </div>
+            <a href="/payment" className="rounded-xl bg-emerald-600 px-5 py-3 text-base font-black text-white shadow-sm hover:bg-emerald-700">View payments & EMIs</a>
+        </div>
+    </div>
+)}
 
         <div className="grid lg:grid-cols-3 gap-8 mt-10">
 

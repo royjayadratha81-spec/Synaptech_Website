@@ -1,502 +1,93 @@
-import { auth } from "../firebase/firebaseConfig";
+import { useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
+import { addDoc, collection, doc, onSnapshot, query, where } from "firebase/firestore";
+import { auth, db } from "../firebase/firebaseConfig";
 import { supabase } from "../supabase/supabase";
 
-import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+const money = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
+const showDate = (value) => {
+  const date = value?.toDate?.() || (value ? new Date(value) : null);
+  return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("en-IN") : "—";
+};
 
-import { db } from "../firebase/firebaseConfig";
-import { useState, useEffect } from "react";
 export default function Payment() {
-    const [paymentFile, setPaymentFile] = useState(null);
-    const [paymentStatus, setPaymentStatus] =
-  useState("Not Submitted");
+  const [user, setUser] = useState(null);
+  const [student, setStudent] = useState(null);
   const [finance, setFinance] = useState(null);
-  const [studentData, setStudentData] = useState(null);
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ amount: "", mode: "UPI", reference: "", remarks: "", file: null });
 
-const [loadingFinance, setLoadingFinance] =
-  useState(true);
-  const [paymentAmount, setPaymentAmount] = useState("");
-
-const [paymentMode, setPaymentMode] = useState("UPI");
-
-const [transactionId, setTransactionId] = useState("");
-
-const [remarks, setRemarks] = useState("");
-
-useEffect(() => {
-
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-
-        if (!user) return;
-
-        const studentRef = doc(db, "students", user.uid);
-
-        const studentSnap = await getDoc(studentRef);
-
-
-        if (studentSnap.exists()) {
-
-    const data = studentSnap.data();
-
-    console.log("Firebase UID:", user.uid);
-    console.log("Student Data:", data);
-
-    setStudentData({
-        ...data,
-      uid: user.uid,
-    studentId: user.uid,
-    });
-
-}
-
-    });
-
-    return () => unsubscribe();
-
-}, []);
-
+  useEffect(() => onAuthStateChanged(auth, setUser), []);
   useEffect(() => {
+    if (!user) return undefined;
+    const stopStudent = onSnapshot(doc(db, "students", user.uid), (snap) => setStudent(snap.exists() ? { id: snap.id, ...snap.data() } : null));
+    const stopFinance = onSnapshot(doc(db, "finance", user.uid), (snap) => { setFinance(snap.exists() ? { id: snap.id, ...snap.data() } : null); setLoading(false); });
+    const stopPayments = onSnapshot(query(collection(db, "payments"), where("studentId", "==", user.uid)), (snap) => {
+      setPayments(snap.docs.map((item) => ({ id: item.id, ...item.data() })).sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0)));
+    });
+    return () => { stopStudent(); stopFinance(); stopPayments(); };
+  }, [user]);
 
-    if (!studentData) return;
+  const finalFee = Number(finance?.finalFee ?? (Number(finance?.agreedFee || 0) - Number(finance?.discount || 0)));
+  const installments = Array.isArray(finance?.installments) ? finance.installments : [];
+  const nextDue = useMemo(() => installments.find((item) => item.status !== "Paid"), [installments]);
 
-    fetchPaymentStatus();
-    fetchFinance();
-
-}, [studentData]);
-
-const fetchPaymentStatus = async () => {
-  if (!studentData) return;
-
-
-  const querySnapshot = await getDocs(
-    collection(db, "payments")
-  );
-
-  const payment = querySnapshot.docs
-    .map((doc) => doc.data())
-    .find(
-      (item) =>
-        item.studentEmail ===
-        studentData?.email
-    );
-
-  if (payment) {
-    setPaymentStatus(
-      payment.paymentStatus
-    );
-  }
-
-};
-const fetchFinance = async () => {
-  try {
-
-
-
-    if (!studentData?.studentId) {
-      setLoadingFinance(false);
-      return;
-    }
-console.log("studentData =", studentData);
-console.log("studentData.studentId =", studentData?.studentId);
-console.log("studentData.uid =", studentData?.uid);
-    const financeRef = doc(
-      db,
-      "finance",
-      studentData.studentId
-    );
-
-    const financeSnap = await getDoc(financeRef);
-    console.log("Finance Exists =", financeSnap.exists());
-    console.log("Finance Exists =", financeSnap.exists());
-
-    if (financeSnap.exists()) {
-      setFinance(financeSnap.data());
-    } 
-
-    setLoadingFinance(false);
-
-  } catch (error) {
-
-    console.error(error);
-
-    setLoadingFinance(false);
-
-  }
-};
-    const handlePaymentSubmit = async () => {
-      if (!studentData) {
-        alert("Student information not loaded.");
-        return;
-      }
-
-  if (!paymentFile) {
-    alert("Please upload payment screenshot");
-    return;
-  }
-  // Validate Amount
-  if (!paymentAmount) {
-    alert("Please enter the payment amount.");
-    return;
-  }
-
-  if (Number(paymentAmount) <= 0) {
-    alert("Payment amount must be greater than zero.");
-    return;
-  }
-
-  if (Number(paymentAmount) > finance.balanceAmount) {
-    alert("Payment amount cannot exceed the outstanding balance.");
-    return;
-  }
-
-  // Validate Transaction ID
-  if (!transactionId.trim()) {
-    alert("Please enter the transaction ID.");
-    return;
-  }
-
-  try {
-
-    const fileName =
-      `${Date.now()}-${paymentFile.name}`;
-
-    const { error } =
-      await supabase.storage
-        .from("payments")
-        .upload(fileName, paymentFile);
-
-    if (error) {
+  const submit = async () => {
+    const amount = Number(form.amount);
+    if (!student || !finance) return alert("Finance information is unavailable.");
+    if (!form.file) return alert("Please upload the payment receipt.");
+    if (!Number.isFinite(amount) || amount <= 0) return alert("Enter a valid amount.");
+    if (amount > Number(finance.balanceAmount || 0)) return alert("Payment cannot exceed the outstanding balance.");
+    if (!form.reference.trim() && form.mode !== "Cash") return alert("Enter the transaction/reference ID.");
+    try {
+      setSubmitting(true);
+      const fileName = `${user.uid}/${Date.now()}-${form.file.name}`;
+      const { error } = await supabase.storage.from("payments").upload(fileName, form.file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("payments").getPublicUrl(fileName);
+      await addDoc(collection(db, "payments"), {
+        studentId: user.uid,
+        studentName: student.name || null,
+        studentEmail: student.email || user.email,
+        organizationId: student.organizationId || finance.organizationId || null,
+        paymentAmount: amount,
+        paymentMode: form.mode,
+        transactionId: form.reference.trim() || null,
+        remarks: form.remarks.trim() || null,
+        paymentScreenshot: data.publicUrl,
+        installmentId: nextDue?.id || null,
+        paymentStatus: "Pending",
+        verified: false,
+        submittedAt: new Date(),
+      });
+      setForm({ amount: "", mode: "UPI", reference: "", remarks: "", file: null });
+      alert("Payment proof submitted. Finance verification is pending.");
+    } catch (error) {
       console.error(error);
-      alert("Upload Failed");
-      return;
-    }
+      alert(error.message || "Payment submission failed.");
+    } finally { setSubmitting(false); }
+  };
 
-    const { data: publicUrlData } =
-      supabase.storage
-        .from("payments")
-        .getPublicUrl(fileName);
-
-    const paymentScreenshot =
-      publicUrlData.publicUrl;
-
-    await addDoc(
-      collection(db, "payments"),
-  {
-    studentId: studentData.studentId,
-
-    studentName: studentData.name,
-
-    studentEmail: studentData.email,
-
-    paymentAmount: Number(paymentAmount),
-
-    paymentMode: paymentMode,
-
-    transactionId: transactionId,
-
-    paymentScreenshot: paymentScreenshot,
-
-    remarks: remarks,
-
-    paymentStatus: "Pending",
-
-    verified: false,
-
-    verifiedBy: "",
-
-    verifiedAt: null,
-
-    verificationRemarks: "",
-
-    submittedAt: new Date(),
-
-}
-    );
-
-    alert(
-      "Payment proof submitted successfully"
-    );
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Payment submission failed"
-    );
-
-  }
-
-};
+  if (loading) return <div className="min-h-screen bg-[#f7faf4] p-10 text-lg text-slate-700">Loading payment account…</div>;
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
-
-        <h1 className="text-4xl font-bold text-center text-blue-700 mb-8">
-          Course Payment
-        </h1>
-        <div className="mb-8 bg-blue-50 border border-blue-200 p-6 rounded-xl">
-
-  <h2 className="font-bold text-2xl text-blue-700 mb-5">
-    Finance Summary
-  </h2>
-
-  {loadingFinance ? (
-
-    <p>Loading finance details...</p>
-
-  ) : finance ? (
-
-    <div className="grid grid-cols-2 gap-5">
-
-  <div>
-    <p className="text-gray-500">Course Fee</p>
-    <p className="font-bold text-lg">
-      ₹{finance.agreedFee?.toLocaleString()}
-    </p>
-  </div>
-
-  <div>
-    <p className="text-gray-500">Scholarship / Discount</p>
-    <p className="font-bold text-lg text-green-700">
-      ₹{finance.discount?.toLocaleString()}
-    </p>
-  </div>
-
-  <div>
-    <p className="text-gray-500">Final Payable</p>
-    <p className="font-bold text-lg">
-      ₹{finance.finalFee?.toLocaleString()}
-    </p>
-  </div>
-
-  <div>
-    <p className="text-gray-500">Payment Plan</p>
-    <p className="font-bold text-lg">
-      {finance.paymentPlan}
-    </p>
-  </div>
-
-  <div>
-    <p className="text-gray-500">Amount Paid</p>
-    <p className="font-bold text-lg text-green-700">
-      ₹{finance.amountPaid?.toLocaleString()}
-    </p>
-  </div>
-
-  <div>
-    <p className="text-gray-500">Balance Due</p>
-    <p className="font-bold text-lg text-red-600">
-      ₹{finance.balanceAmount?.toLocaleString()}
-    </p>
-  </div>
-
-  <div>
-    <p className="text-gray-500">Payment Status</p>
-    <p className="font-bold text-blue-700">
-      {finance.paymentStatus}
-    </p>
-  </div>
-
-</div>
-
-  ) : (
-
-    <p className="text-red-600">
-      Finance record not found.
-    </p>
-
-  )}
-
-</div>
-
-        {finance?.balanceAmount > 0 && (
-<div className="mb-10">
-          <h2 className="text-2xl font-bold mb-4">
-            Pay via UPI
-          </h2>
-
-          <div className="bg-gray-100 p-4 rounded-xl">
-
-            <p className="text-lg">
-              UPI ID:
-            </p>
-
-            <p className="font-bold text-green-700">
-              8800531115@ptsbi
-            </p>
-
-          </div>
-
-        </div>
-)}
-
-{finance?.balanceAmount > 0 && (
-<div>
-
-          <h2 className="text-2xl font-bold mb-4">
-            Pay via Razorpay
-          </h2>
-
-          <a
-            href="https://razorpay.me/@synaptecheducation"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-block bg-blue-700 text-white px-6 py-3 rounded-xl"
-          >
-            Pay Now
-          </a>
-
-        </div>
-)}
-        {finance?.balanceAmount > 0 && (
-<div className="mt-10 border-t pt-8">
-
-  <h2 className="text-2xl font-bold mb-6">
-  Submit Payment
-</h2>
-
-{/* Amount */}
-<div className="mb-4">
-  <label className="block mb-2 font-semibold">
-    Amount Paying Today
-  </label>
-
-  <input
-    type="number"
-    value={paymentAmount}
-    onChange={(e) => setPaymentAmount(e.target.value)}
-    className="w-full border rounded-xl p-3"
-    placeholder="Enter amount"
-  />
-</div>
-
-{/* Payment Mode */}
-<div className="mb-4">
-  <label className="block mb-2 font-semibold">
-    Payment Mode
-  </label>
-
-  <select
-    value={paymentMode}
-    onChange={(e) => setPaymentMode(e.target.value)}
-    className="w-full border rounded-xl p-3"
-  >
-    <option>UPI</option>
-    <option>Razorpay</option>
-    <option>Bank Transfer</option>
-    <option>Cash</option>
-  </select>
-</div>
-
-{/* Transaction ID */}
-<div className="mb-4">
-  <label className="block mb-2 font-semibold">
-    Transaction ID
-  </label>
-
-  <input
-    type="text"
-    value={transactionId}
-    onChange={(e) => setTransactionId(e.target.value)}
-    className="w-full border rounded-xl p-3"
-    placeholder="Enter transaction/reference ID"
-  />
-</div>
-
-{/* Remarks */}
-<div className="mb-4">
-  <label className="block mb-2 font-semibold">
-    Remarks (Optional)
-  </label>
-
-  <textarea
-    value={remarks}
-    onChange={(e) => setRemarks(e.target.value)}
-    className="w-full border rounded-xl p-3"
-    rows={3}
-    placeholder="First EMI, Balance Payment, etc."
-  />
-</div>
-
-{/* Upload Receipt */}
-<div className="mb-4">
-  <label className="block mb-2 font-semibold">
-    Upload Payment Receipt
-  </label>
-
-  <input
-    type="file"
-    accept=".jpg,.jpeg,.png,.pdf"
-    onChange={(e) => setPaymentFile(e.target.files[0])}
-    className="w-full border rounded-xl p-3"
-  />
-</div>
-
-{paymentFile && (
-  <p className="text-green-700 mb-4">
-    Selected File: {paymentFile.name}
-  </p>
-)}
-
-<button
-  onClick={handlePaymentSubmit}
-  className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
->
-  Submit Payment
-</button>
-
-  <input
-    type="file"
-    accept=".jpg,.jpeg,.png,.pdf"
-    onChange={(e) =>
-      setPaymentFile(e.target.files[0])
-    }
-    className="w-full border p-3 rounded-xl"
-  />
-
-  {paymentFile && (
-    <>
-      <p className="mt-3 text-green-700">
-        Selected File: {paymentFile.name}
-      </p>
-      <button
-        onClick={handlePaymentSubmit}
-        className="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl"
-      >
-        Submit Payment Proof
-      </button>
-    </>
-  )}
-
-</div>
-)}
-{finance?.balanceAmount === 0 && (
-  <div className="mt-8 bg-green-50 border border-green-300 rounded-xl p-6">
-    <h2 className="text-2xl font-bold text-green-700 mb-3">
-      ✅ Payment Completed
-    </h2>
-
-    <p className="text-lg text-green-700">
-      Your course fee has been paid in full.
-    </p>
-
-    <p className="text-gray-600 mt-2">
-      No further payment is required.
-    </p>
-  </div>
-)}
-
-
+    <div className="min-h-screen bg-gradient-to-br from-[#fbfcf7] via-[#f3faef] to-[#fff9dc] px-4 py-8 text-slate-800 sm:px-8">
+      <div className="mx-auto max-w-6xl space-y-7">
+        <section className="rounded-[30px] border border-emerald-100 bg-white/90 p-7 shadow-[0_24px_70px_rgba(65,90,50,0.12)] md:p-10">
+          <p className="text-sm font-black uppercase tracking-[0.16em] text-emerald-700">Student finance account</p>
+          <h1 className="mt-2 text-4xl font-black text-slate-900 md:text-5xl">Payments & EMI status</h1>
+          <p className="mt-3 text-lg leading-7 text-slate-600">Live Finance information for {student?.name || user?.email}. Submitted payments appear immediately and remain pending until Finance verifies them.</p>
+        </section>
+        {!finance ? <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-lg text-amber-900">Finance account not found.</div> : <>
+          <section className="grid gap-4 md:grid-cols-4">
+            {[['Final payable', money(finalFee), 'text-slate-900'], ['Amount paid', money(finance.amountPaid), 'text-emerald-700'], ['Balance due', money(finance.balanceAmount), 'text-red-600'], ['Status', finance.paymentStatus || 'Unpaid', 'text-blue-700']].map(([label, value, colour]) => <div key={label} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm font-bold uppercase tracking-wide text-slate-500">{label}</p><p className={`mt-2 text-2xl font-black ${colour}`}>{value}</p></div>)}
+          </section>
+          <section className="rounded-[26px] border border-emerald-100 bg-white p-6 shadow-sm md:p-8"><h2 className="text-2xl font-black">Payment schedule</h2><p className="mt-1 text-base text-slate-600">{finance.paymentPlanType || finance.paymentPlan || "Schedule not configured"}</p><div className="mt-5 overflow-x-auto"><table className="w-full min-w-[700px] text-left text-base"><thead><tr className="border-b bg-emerald-50 text-emerald-900"><th className="p-4">Milestone</th><th className="p-4">Due date</th><th className="p-4">Amount</th><th className="p-4">Paid</th><th className="p-4">Status</th></tr></thead><tbody>{installments.length ? installments.map((item) => <tr key={item.id} className="border-b border-slate-100"><td className="p-4 font-bold">{item.label}</td><td className="p-4">{showDate(item.dueDate)}</td><td className="p-4">{money(item.amount)}</td><td className="p-4 text-emerald-700">{money(item.amountPaid)}</td><td className="p-4"><span className={`rounded-full px-3 py-1.5 text-sm font-bold ${item.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' : item.status === 'Partially Paid' ? 'bg-amber-100 text-amber-800' : 'bg-red-50 text-red-700'}`}>{item.status}</span></td></tr>) : <tr><td colSpan="5" className="p-6 text-slate-500">Finance has not configured the instalment schedule yet.</td></tr>}</tbody></table></div></section>
+          {Number(finance.balanceAmount || 0) > 0 && <section className="rounded-[26px] border border-amber-200 bg-[#fffdf4] p-6 shadow-sm md:p-8"><h2 className="text-2xl font-black">Submit a payment receipt</h2><div className="mt-6 grid gap-4 md:grid-cols-2"><label className="text-base font-bold">Amount<input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3.5 text-base" /></label><label className="text-base font-bold">Payment mode<select value={form.mode} onChange={(e) => setForm({ ...form, mode: e.target.value })} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3.5 text-base"><option>UPI</option><option>Razorpay</option><option>Bank Transfer</option><option>Cash</option><option>Card</option></select></label><label className="text-base font-bold">Transaction/reference ID<input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3.5 text-base" /></label><label className="text-base font-bold">Receipt<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(e) => setForm({ ...form, file: e.target.files?.[0] || null })} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3 text-base" /></label></div><label className="mt-4 block text-base font-bold">Remarks<textarea rows="3" value={form.remarks} onChange={(e) => setForm({ ...form, remarks: e.target.value })} className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3.5 text-base" /></label><button disabled={submitting} onClick={submit} className="mt-5 rounded-xl bg-emerald-600 px-6 py-3.5 text-base font-black text-white disabled:opacity-50">{submitting ? "Submitting…" : "Submit payment proof"}</button></section>}
+          <section className="rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm md:p-8"><h2 className="text-2xl font-black">Payment history</h2><div className="mt-5 space-y-3">{payments.length ? payments.map((payment) => <div key={payment.id} className="grid gap-2 rounded-2xl border border-slate-200 p-4 text-base md:grid-cols-4"><strong>{money(payment.paymentAmount)}</strong><span>{payment.paymentMode || "—"}</span><span>{showDate(payment.verifiedAt || payment.submittedAt)}</span><span className={payment.verified ? "font-bold text-emerald-700" : "font-bold text-amber-700"}>{payment.verified ? "Verified" : "Pending verification"}</span></div>) : <p className="text-base text-slate-500">No payment submissions yet.</p>}</div></section>
+        </>}
       </div>
-
     </div>
   );
 }

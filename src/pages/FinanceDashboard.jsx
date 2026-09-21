@@ -3,9 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   collection,
   doc,
-  getDoc,
   updateDoc,
-  setDoc,
   getDocs,
   query,
   where,
@@ -15,8 +13,8 @@ import { supabase } from "../supabase/supabase";
 import Background from "../components/ui/Background";
 import GlassCard from "../components/ui/GlassCard";
 import VerifyPaymentModal from "../components/VerifyPaymentModal";
-import FinanceVerificationPanel from "../platform/components/FinanceVerificationPanel";
-import { getAdmissionsOverview } from "../platform/services/admissionsApi";
+import PaymentPlanModal from "../components/PaymentPlanModal";
+import { recordFinancePayment, saveFinancePaymentPlan } from "../platform/services/paymentsApi";
 import {
   ResponsiveContainer,
   BarChart,
@@ -29,7 +27,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { FaArrowLeft, FaDownload, FaReceipt, FaShieldAlt, FaWallet, FaChartLine, FaUserGraduate } from "react-icons/fa";
+import { FaArrowLeft, FaDownload, FaReceipt, FaShieldAlt, FaWallet, FaChartLine } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 export default function FinanceDashboard() {
@@ -44,34 +42,19 @@ export default function FinanceDashboard() {
   const [unpaidAdmissions, setUnpaidAdmissions] = useState(0);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [admissionsOverview, setAdmissionsOverview] = useState(null);
-  const [admissionsError, setAdmissionsError] = useState("");
-  const [admissionsLoading, setAdmissionsLoading] = useState(true);
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [pendingPayments, setPendingPayments] = useState({});
 
   useEffect(() => {
     fetchStudents();
-    fetchAdmissionsQueue();
   }, []);
 
-  const fetchAdmissionsQueue = async () => {
-    setAdmissionsLoading(true);
-    setAdmissionsError("");
-
-    try {
-      const result = await getAdmissionsOverview({ forceRefresh: true });
-      setAdmissionsOverview(result);
-    } catch (error) {
-      console.error("Finance admission queue load failed:", error);
-      setAdmissionsError(
-        error?.message || "The Admissions Finance queue could not be loaded."
-      );
-    } finally {
-      setAdmissionsLoading(false);
-    }
-  };
-
   const fetchStudents = async () => {
-    const snapshot = await getDocs(collection(db, "finance"));
+    const [snapshot, paymentSnapshot] = await Promise.all([
+      getDocs(collection(db, "finance")),
+      getDocs(collection(db, "payments")),
+    ]);
     const financeStudents = snapshot.docs.map((docItem) => ({
       id: docItem.id,
       ...docItem.data(),
@@ -109,6 +92,14 @@ export default function FinanceDashboard() {
     setReceiptsUploaded(totalReceiptsUploaded);
     setPendingReceipts(totalPendingReceipts);
     setUnpaidAdmissions(totalUnpaidAdmissions);
+    const pendingByStudent = {};
+    paymentSnapshot.docs.forEach((paymentDoc) => {
+      const payment = paymentDoc.data();
+      if (payment.studentId && payment.verified !== true && payment.paymentStatus === "Pending") {
+        pendingByStudent[payment.studentId] = { id: paymentDoc.id, ...payment };
+      }
+    });
+    setPendingPayments(pendingByStudent);
     setStudents(financeStudents);
   };
 
@@ -148,81 +139,40 @@ export default function FinanceDashboard() {
 
   const handleVerifyPayment = async (student, data) => {
     try {
-      const newAmount = Number(data.amountReceived);
-      const totalPaid = Number(student.amountPaid || 0) + newAmount;
-      const payableAmount = Number(
-        student.finalFee ?? (
-          Number(student.agreedFee) - Number(student.discount || 0)
-        )
-      );
-      const newBalance = Math.max(0, payableAmount - totalPaid);
-      const newPaymentStatus =
-        newBalance <= 0 ? "Paid" : "Partially Paid";
-
-      await updateDoc(doc(db, "finance", student.id), {
-        amountPaid: totalPaid,
-        balanceAmount: newBalance,
-        paymentStatus: newPaymentStatus,
-        verified: true,
-        verifiedAt: new Date(),
-        verifiedBy: "Finance Admin",
-        verificationRemarks: data.remarks || "",
+      setSaving(true);
+      await recordFinancePayment({
+        organizationId: student.organizationId,
+        studentId: student.id,
+        amount: data.amountReceived,
+        paymentMode: data.paymentMode,
+        transactionId: data.transactionId,
+        remarks: data.remarks,
+        paymentId: pendingPayments[student.id]?.id || null,
       });
-
-      const paymentQuery = query(
-        collection(db, "payments"),
-        where("studentId", "==", student.id)
-      );
-      const paymentSnapshot = await getDocs(paymentQuery);
-
-      for (const paymentDoc of paymentSnapshot.docs) {
-        await updateDoc(doc(db, "payments", paymentDoc.id), {
-          paymentStatus: "Verified",
-          verified: true,
-          verifiedAt: new Date(),
-          verifiedBy: "Finance Admin",
-          verificationRemarks: data.remarks || "",
-          paymentMode: data.paymentMode,
-          transactionId: data.transactionId,
-        });
-      }
-
-      const studentRef = doc(db, "students", student.id);
-      const studentSnapshot = await getDoc(studentRef);
-      const currentStudent = studentSnapshot.exists()
-        ? studentSnapshot.data()
-        : {};
-      const alreadyHasLmsAccess = currentStudent.lmsAccess === true;
-
-      await setDoc(studentRef, {
-        name: currentStudent.name || student.studentName || "Student",
-        email: currentStudent.email || student.email || null,
-        phone: currentStudent.phone || student.phone || null,
-        course: currentStudent.course || student.course || null,
-        batch: currentStudent.batch || student.batch || null,
-        organizationId:
-          currentStudent.organizationId || student.organizationId || null,
-        approved: true,
-        status: alreadyHasLmsAccess
-          ? currentStudent.status || "Active"
-          : "Awaiting LMS Access",
-        lmsAccess: alreadyHasLmsAccess,
-        paymentStatus: newPaymentStatus,
-        financeClearanceStatus: "verified",
-        updatedAt: new Date(),
-      }, { merge: true });
-
       setShowVerifyModal(false);
       setSelectedStudent(null);
       fetchStudents();
-      alert(
-        alreadyHasLmsAccess
-          ? "Payment verified. Existing LMS access was preserved."
-          : "Payment verified. Student is now awaiting explicit LMS activation."
-      );
+      alert("Verified payment recorded in the ledger. LMS access was not changed.");
     } catch (error) {
       console.error(error);
-      alert("Verification failed.");
+      alert(error.message || "Verification failed.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSavePlan = async ({ planType, installments }) => {
+    try {
+      setSaving(true);
+      await saveFinancePaymentPlan({ organizationId: selectedStudent.organizationId, studentId: selectedStudent.id, planType, installments });
+      setShowPlanModal(false);
+      setSelectedStudent(null);
+      await fetchStudents();
+      alert("Payment plan saved successfully.");
+    } catch (error) {
+      alert(error.message || "Payment plan could not be saved.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -242,29 +192,6 @@ export default function FinanceDashboard() {
         return true;
     }
   });
-
-  const admissionsCandidateById = useMemo(
-    () =>
-      new Map(
-        (admissionsOverview?.candidates || []).map((candidate) => [
-          String(candidate.id),
-          candidate,
-        ])
-      ),
-    [admissionsOverview]
-  );
-
-  const admissionsFinanceQueue = useMemo(
-    () =>
-      (admissionsOverview?.applications || []).filter((application) => {
-        const status = String(application.status || "").toLowerCase();
-        return (
-          status === "finance_pending" &&
-          Boolean(application.admissions_approved_for_finance_at)
-        );
-      }),
-    [admissionsOverview]
-  );
 
   const statusData = useMemo(
     () => [
@@ -331,91 +258,6 @@ export default function FinanceDashboard() {
               </div>
             </div>
           </div>
-
-          <GlassCard className="overflow-hidden">
-            <div className="flex flex-col gap-4 border-b border-slate-100 p-6 md:flex-row md:items-center md:justify-between md:p-7">
-              <div>
-                <p className="text-[10px] font-black tracking-[0.2em] text-emerald-600">ADMISSIONS FINANCE QUEUE</p>
-                <h2 className="mt-1 text-2xl font-black text-slate-900">Admissions approved for Finance</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Finance clearance creates the student as Awaiting LMS Access. It never activates the LMS automatically.
-                </p>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700">
-                <FaUserGraduate /> {admissionsFinanceQueue.length} pending
-              </div>
-            </div>
-
-            <div className="space-y-4 p-6 md:p-7">
-              {admissionsLoading ? (
-                <p className="text-sm text-slate-500">Loading the secured Admissions queue…</p>
-              ) : null}
-
-              {admissionsError ? (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  {admissionsError} The existing Firestore finance ledger below remains available.
-                </div>
-              ) : null}
-
-              {!admissionsLoading && !admissionsError && admissionsFinanceQueue.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
-                  No Admissions-approved applications are waiting for Finance clearance.
-                </div>
-              ) : null}
-
-              {admissionsFinanceQueue.map((application) => {
-                const candidate = admissionsCandidateById.get(
-                  String(application.candidate_id)
-                );
-                const applicantName =
-                  candidate?.full_name ||
-                  candidate?.name ||
-                  application.candidate_name ||
-                  "Candidate";
-                const programmeName =
-                  application.programme_name ||
-                  application.program_name ||
-                  application.course_name ||
-                  "Programme pending";
-
-                return (
-                  <div
-                    key={application.id}
-                    className="rounded-[24px] border border-slate-800 bg-slate-950 p-5 text-white"
-                  >
-                    <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
-                      <div>
-                        <p className="font-black">{applicantName}</p>
-                        <p className="mt-1 text-sm font-bold text-cyan-200">{programmeName}</p>
-                        <p className="mt-2 text-xs text-slate-400">
-                          {candidate?.email || "Email not recorded"} · {application.intake_route === "crm_won" ? "CRM Won" : "Manual Admission"}
-                        </p>
-                      </div>
-                      <span className="self-start rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-300">
-                        Admissions approved
-                      </span>
-                    </div>
-
-                    <FinanceVerificationPanel
-                      application={application}
-                      organizationId={admissionsOverview?.organization?.id || null}
-                      applicantName={String(applicantName)}
-                      programmeName={String(programmeName)}
-                      canVerify={
-                        admissionsOverview?.access?.can_verify_finance === true
-                      }
-                      onVerified={async () => {
-                        await Promise.all([
-                          fetchAdmissionsQueue(),
-                          fetchStudents(),
-                        ]);
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </GlassCard>
 
           <FinanceKPIs
             students={students}
@@ -553,12 +395,11 @@ export default function FinanceDashboard() {
                         {student.paymentProofUploaded ? (
                           <div className="flex justify-center gap-2">
                             <button onClick={() => window.open(student.paymentProofUrl, "_blank")} className="rounded-xl bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100"><FaReceipt className="inline mr-1" /> View</button>
-                            {!student.verified && (
-                              <button onClick={() => { setSelectedStudent(student); setShowVerifyModal(true); }} className="rounded-xl bg-slate-950 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700">Verify</button>
-                            )}
+                            <button onClick={() => { setSelectedStudent({ ...student, pendingPaymentAmount: pendingPayments[student.id]?.paymentAmount }); setShowVerifyModal(true); }} className="rounded-xl bg-slate-950 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700">{pendingPayments[student.id] ? "Verify submission" : "Record payment"}</button>
+                            <button onClick={() => { setSelectedStudent(student); setShowPlanModal(true); }} className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100">Plan</button>
                           </div>
                         ) : (
-                          <button onClick={() => handleUploadReceipt(student)} className="rounded-xl bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 hover:bg-orange-100"><FaDownload className="inline mr-1" /> Upload</button>
+                          <div className="flex justify-center gap-2"><button onClick={() => { setSelectedStudent({ ...student, pendingPaymentAmount: pendingPayments[student.id]?.paymentAmount }); setShowVerifyModal(true); }} className="rounded-xl bg-slate-950 px-3 py-2 text-xs font-bold text-white">{pendingPayments[student.id] ? "Verify submission" : "Record payment"}</button><button onClick={() => { setSelectedStudent(student); setShowPlanModal(true); }} className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800">Plan</button><button onClick={() => handleUploadReceipt(student)} className="rounded-xl bg-orange-50 px-3 py-2 text-xs font-bold text-orange-700 hover:bg-orange-100"><FaDownload className="inline mr-1" /> Upload</button></div>
                         )}
                       </td>
                     </tr>
@@ -583,6 +424,7 @@ export default function FinanceDashboard() {
           onConfirm={(remarks) => handleVerifyPayment(selectedStudent, remarks)}
         />
       )}
+      {showPlanModal && selectedStudent && <PaymentPlanModal student={selectedStudent} saving={saving} onClose={() => { setShowPlanModal(false); setSelectedStudent(null); }} onSave={handleSavePlan} />}
     </Background>
   );
 }

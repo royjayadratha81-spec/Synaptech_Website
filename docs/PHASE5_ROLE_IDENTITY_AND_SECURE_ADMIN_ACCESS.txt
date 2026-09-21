@@ -1,0 +1,61 @@
+SYNAPTECH PHASE 5
+ROLE IDENTITY AND SECURE ADMIN ACCESS
+=====================================
+
+Purpose
+-------
+Make the existing administration surfaces accurately identify their scope and
+replace the legacy localStorage-only route gate with the secure identity and
+membership foundation already present in the project.
+
+Authoritative role model
+------------------------
+1. Platform Super Administrator
+   - Global platform authority.
+   - Verified by Firebase Authentication and the server-side platform session.
+   - Opens the existing Platform Console.
+
+2. Tenant Administrator
+   - Organisation-scoped authority for Synaptech Education.
+   - Verified through the active platform membership and module entitlements.
+   - Opens the Admin Console and Tenant Administration workspace.
+
+3. Functional staff roles
+   - Admissions, CRM, Finance, Faculty and MIS access remains controlled by the
+     role/module entitlements returned by the existing platform session API.
+
+What changed
+------------
+- Admin sign-in now authenticates with Firebase first and then verifies the
+  existing server-side platform user, active membership and module access.
+- The Firestore admins/{email}.password field is no longer read or compared.
+- localStorage values are retained only for compatibility with older screens;
+  they no longer authorize a protected Admin route.
+- Admin logout signs out of Firebase and clears compatibility values.
+- The former Super Admin page is explicitly named Tenant Administration.
+- /tenant-administration is the canonical tenant-scoped route.
+- /super-admin remains as a compatibility redirect.
+- Admin pages display platform role, tenant role and organisation separately.
+- CRM, Finance and Analytics routes declare their required module explicitly.
+- The analytics approval chart now uses only the live students collection.
+  rejectedStudents is displayed as a separate historical archive count, so the
+  chart denominator cannot exceed Total students.
+
+Deliberately unchanged
+----------------------
+- No Supabase SQL or table migration.
+- No Firestore document migration or collection write.
+- No Firebase or Firestore rules change.
+- No CRM scoring, opportunity, handoff or Admissions workflow change.
+- No Finance fee, payment, receipt or balance calculation change.
+- No LMS lifecycle, course, batch, analytics or assessment logic change.
+- No environment variable, Vercel project or deployment topology change.
+
+Compatibility note
+------------------
+Every staff account that uses /admin-login must already have the active
+platform user/membership records established by the platform foundation. The
+current primary Synaptech account was seeded as platform_super_admin with a
+tenant_admin membership, so its two scopes are now shown separately instead of
+being presented as one ambiguous Super Admin identity.
+

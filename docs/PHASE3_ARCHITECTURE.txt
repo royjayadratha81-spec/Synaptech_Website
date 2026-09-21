@@ -1,0 +1,37 @@
+PHASE 3 — CANONICAL PAYMENTS AND EMI LEDGER
+============================================
+
+LOCKED FLOW
+CRM Won or Manual Intake -> Admissions approval -> Finance -> Awaiting LMS
+Access -> explicit activation from Student Operations.
+
+Finance remains the sole authority for payment verification. Phase 3 never
+activates LMS access and never changes Firebase Authentication state.
+
+FINANCIAL MODEL
+- finance/{firebaseUid} is the current account summary.
+- payments/{paymentId} is the auditable transaction ledger.
+- finance.installments is the canonical milestone/EMI schedule.
+- students/{firebaseUid} receives payment status only for safe display.
+- agreedFee, discount, finalFee, amountPaid and balanceAmount are preserved.
+- finalFee is always agreedFee minus discount when an explicit finalFee is not
+  already stored.
+
+REAL-TIME BEHAVIOUR
+- Student Payment listens to finance and payments using Firestore snapshots.
+- Learning Hub listens to the same finance account and links to full details.
+- A student receipt is Pending until Finance verifies it.
+- Finance can also record cash/offline/manual payments for non-CRM students.
+- Each verified receipt updates the aggregate and applicable EMI atomically.
+
+SAFETY
+- Server verifies Firebase identity, tenant membership and authorization.
+- Amount cannot exceed the outstanding balance.
+- A verified student submission cannot be verified twice.
+- Existing analytics, LMS access, learning records and payment evidence remain.
+- No SQL migration and no Firestore data rewrite are required.
+
+DESIGN
+Phase 3 begins the agreed light-premium accessibility direction on the student
+Payment screen and new modals. A coordinated application-wide visual pass will
+follow all functional phases without changing business logic.

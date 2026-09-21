@@ -237,20 +237,20 @@ export default function App() {
 
           <div className="hidden items-center gap-3 lg:flex">
             <a
-              href="/login"
+              href="/lms"
               className={`rounded-full border border-white/15 px-5 py-3 text-[15px] font-bold transition ${
                 scrolled
                   ? "text-slate-100 hover:bg-red-950/70"
                   : "text-white hover:bg-white/10"
               }`}
             >
-              Student Portal
+              Student LMS
             </a>
             <a
-              href="/register"
+              href="/brochures/Brochure_Synaptech.pdf"
               className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-500 px-6 py-3 text-[15px] font-black text-white shadow-[0_14px_35px_rgba(220,38,38,0.3)] transition hover:-translate-y-0.5 hover:from-red-500 hover:to-red-400"
             >
-              Enroll Now
+              Programme Brochure
               <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
             </a>
           </div>
@@ -275,8 +275,8 @@ export default function App() {
               <a href="#careers" onClick={() => setMobileOpen(false)}>Careers</a>
               <button className="text-left" onClick={openContact}>Contact</button>
               <div className="mt-2 flex gap-3">
-                <a href="/login" className="rounded-full border border-slate-200 px-5 py-3">Student Portal</a>
-                <a href="/register" className="rounded-full bg-slate-950 px-5 py-3 text-white">Enroll Now</a>
+                <a href="/lms" className="rounded-full border border-slate-200 px-5 py-3">Student LMS</a>
+                <a href="/brochures/Brochure_Synaptech.pdf" className="rounded-full bg-red-600 px-5 py-3 text-white">Programme Brochure</a>
               </div>
             </div>
           </div>
@@ -335,11 +335,11 @@ export default function App() {
                   <ArrowRight size={17} className="transition group-hover:translate-x-1" />
                 </a>
                 <a
-                  href="/register"
+                  href="/lms"
                   className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-8 py-4 text-base font-extrabold text-white backdrop-blur-md transition hover:border-red-400/60 hover:bg-white/15"
                 >
                   <Play size={16} fill="currentColor" />
-                  Start Learning
+                  Explore Student LMS
                 </a>
               </div>
 
@@ -498,8 +498,8 @@ across Data, Artificial Intelligence and emerging technologies. Our programs com
                 Learn the technologies behind the next wave.
               </h2>
             </div>
-            <a href="/register" className="group inline-flex w-fit items-center gap-2 text-sm font-bold text-red-300">
-              View enrolment options
+            <a href="/brochures/Brochure_Synaptech.pdf" target="_blank" rel="noreferrer" className="group inline-flex w-fit items-center gap-2 text-sm font-bold text-red-300">
+              View programme brochure
               <ArrowRight size={17} className="transition group-hover:translate-x-1" />
             </a>
           </div>

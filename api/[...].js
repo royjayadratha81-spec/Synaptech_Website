@@ -12,6 +12,10 @@ import admissionsApproveApplication from "../server/api-handlers/admissions/appr
 import admissionsManualIntake from "../server/api-handlers/admissions/manual-intake.js";
 import admissionsStudents from "../server/api-handlers/admissions/students.js";
 import admissionsStudentLifecycle from "../server/api-handlers/admissions/student-lifecycle.js";
+import paymentsRecord from "../server/api-handlers/payments/record.js";
+import paymentsPlan from "../server/api-handlers/payments/plan.js";
+import lmsAccountEligibility from "../server/api-handlers/lms/account-eligibility.js";
+import metaLeadsWebhook from "../server/api-handlers/meta/leads-webhook.js";
 
 import activities from "../server/api-handlers/crm/activities.js";
 import aiConversationTranscript from "../server/api-handlers/crm/ai-conversation-transcript.js";
@@ -60,6 +64,10 @@ const routes = new Map([
   ["admissions/manual-intake", admissionsManualIntake],
   ["admissions/students", admissionsStudents],
   ["admissions/student-lifecycle", admissionsStudentLifecycle],
+  ["payments/record", paymentsRecord],
+  ["payments/plan", paymentsPlan],
+  ["lms/account-eligibility", lmsAccountEligibility],
+  ["meta-leads-webhook", metaLeadsWebhook],
   ["crm/activities", activities],
   ["crm/ai-conversation-transcript", aiConversationTranscript],
   ["crm/ai-conversation", aiConversation],

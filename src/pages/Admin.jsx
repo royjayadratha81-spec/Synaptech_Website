@@ -35,7 +35,9 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../firebase/firebaseConfig";
+import { signOut } from "firebase/auth";
+import { auth, db } from "../firebase/firebaseConfig";
+import { usePlatformSession } from "../platform/context/PlatformSessionContext";
 import {
   ResponsiveContainer,
   BarChart,
@@ -164,13 +166,32 @@ function MiniMetric({ label, value, icon, tone = "blue" }) {
   );
 }
 
+function formatRole(value) {
+  if (!value) return "Not assigned";
+  return String(value)
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export default function Admin() {
   const navigate = useNavigate();
+  const {
+    platformUser,
+    organization,
+    platformRole,
+    tenantRole,
+    isPlatformSuperAdmin,
+  } = usePlatformSession();
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAdmin");
-    localStorage.removeItem("adminEmail");
-    navigate("/admin-login");
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } finally {
+      localStorage.removeItem("isAdmin");
+      localStorage.removeItem("adminEmail");
+      navigate("/admin-login", { replace: true });
+    }
   };
 
   const [courseName, setCourseName] = useState("");
@@ -312,14 +333,25 @@ export default function Admin() {
               <div>
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-black tracking-[0.22em] text-cyan-200">
                   <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                  SYNAPTECH • ADMIN CONSOLE
+                  SYNAPTECH • TENANT ADMIN CONSOLE
                 </div>
                 <h1 className="text-3xl font-black tracking-[-0.03em] md:text-5xl">
-                  {greeting}, Admin <span className="text-cyan-300">👋</span>
+                  {greeting}, {platformUser?.display_name || "Admin"} <span className="text-cyan-300">👋</span>
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
                   One command centre for students, academics, assessments, content delivery and revenue operations.
                 </p>
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
+                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-cyan-100">
+                    Tenant: {organization?.name || "No tenant assigned"}
+                  </span>
+                  <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-emerald-100">
+                    Tenant role: {formatRole(tenantRole)}
+                  </span>
+                  <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-violet-100">
+                    Platform role: {isPlatformSuperAdmin ? "Platform Super Administrator" : formatRole(platformRole)}
+                  </span>
+                </div>
               </div>
               <div className="flex flex-wrap gap-3">
                 <button
@@ -330,10 +362,10 @@ export default function Admin() {
   Platform Console
 </button>
                 <button
-                  onClick={() => navigate("/super-admin")}
+                  onClick={() => navigate("/tenant-administration")}
                   className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/15"
                 >
-                  Super Admin <FaExternalLinkAlt size={12} />
+                  Tenant Administration <FaExternalLinkAlt size={12} />
                 </button>
                 <button
                   onClick={() => navigate("/finance")}

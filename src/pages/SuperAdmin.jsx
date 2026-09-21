@@ -24,6 +24,15 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
+import { usePlatformSession } from "../platform/context/PlatformSessionContext";
+
+function formatRole(value) {
+  if (!value) return "Not assigned";
+  return String(value)
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 function Metric({ label, value, icon, tone }) {
   return (
@@ -37,6 +46,13 @@ function Metric({ label, value, icon, tone }) {
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
+  const {
+    platformUser,
+    organization,
+    platformRole,
+    tenantRole,
+    isPlatformSuperAdmin,
+  } = usePlatformSession();
   const [data, setData] = useState({
     admins: 0,
     students: 0,
@@ -88,7 +104,7 @@ export default function SuperAdmin() {
         }))
       );
     } catch (error) {
-      console.error("Super Admin platform load error:", error);
+      console.error("Tenant Administration load error:", error);
     } finally {
       setLoading(false);
     }
@@ -110,12 +126,25 @@ export default function SuperAdmin() {
           <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] font-black tracking-[0.22em] text-violet-200">
-                <FaShieldAlt /> SYNAPTECH • SUPER ADMIN
+                <FaShieldAlt /> SYNAPTECH • TENANT ADMINISTRATION
               </div>
-              <h1 className="text-3xl font-black tracking-[-0.04em] md:text-5xl">Platform command centre</h1>
+              <h1 className="text-3xl font-black tracking-[-0.04em] md:text-5xl">
+                {organization?.name || "Synaptech Education"} control centre
+              </h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-                SaaS-level overview of the existing Synaptech LMS tenant. This page is read-only and aggregates the existing Firestore collections without changing their contracts.
+                Tenant-scoped overview of the existing LMS, academic and Finance collections. This is not the cross-tenant Platform Super Administrator console, and no operational record or data contract is changed.
               </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
+                <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-cyan-100">
+                  Signed in: {platformUser?.display_name || "Administrator"}
+                </span>
+                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-emerald-100">
+                  Tenant role: {formatRole(tenantRole)}
+                </span>
+                <span className="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1.5 text-violet-100">
+                  Platform role: {isPlatformSuperAdmin ? "Platform Super Administrator" : formatRole(platformRole)}
+                </span>
+              </div>
             </div>
             <div className="flex flex-wrap gap-3">
               <button onClick={() => navigate("/admin")} className="rounded-full border border-white/10 bg-white/10 px-5 py-3 text-sm font-bold hover:bg-white/15">Admin Console</button>
@@ -137,7 +166,7 @@ export default function SuperAdmin() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-[10px] font-black tracking-[0.2em] text-blue-600">TENANT FOOTPRINT</p>
-                <h2 className="mt-1 text-2xl font-black text-slate-900">Platform scale</h2>
+                <h2 className="mt-1 text-2xl font-black text-slate-900">Tenant operating scale</h2>
               </div>
               <FaDatabase className="text-2xl text-blue-600" />
             </div>
@@ -171,8 +200,8 @@ export default function SuperAdmin() {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
           <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_55px_rgba(15,23,42,0.07)]">
-            <p className="text-[10px] font-black tracking-[0.2em] text-violet-600">ADMIN DIRECTORY</p>
-            <h2 className="mt-1 text-2xl font-black text-slate-900">Platform administrators</h2>
+            <p className="text-[10px] font-black tracking-[0.2em] text-violet-600">TENANT DIRECTORY</p>
+            <h2 className="mt-1 text-2xl font-black text-slate-900">Tenant administrators</h2>
             <p className="mt-1 text-sm text-slate-500">Only account identifiers and role labels are displayed; credentials are never rendered.</p>
             <div className="mt-5 space-y-3">
               {loading ? <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Loading administrators…</div> :
@@ -187,7 +216,7 @@ export default function SuperAdmin() {
           </section>
 
           <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_55px_rgba(15,23,42,0.07)]">
-            <p className="text-[10px] font-black tracking-[0.2em] text-cyan-600">SAAS OPERATIONS</p>
+            <p className="text-[10px] font-black tracking-[0.2em] text-cyan-600">TENANT OPERATIONS</p>
             <h2 className="mt-1 text-2xl font-black text-slate-900">Management surfaces</h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {[

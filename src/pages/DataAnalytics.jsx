@@ -114,10 +114,10 @@ export default function DataAnalytics() {
 
             <div className="mt-9 flex flex-wrap gap-3">
               <a
-                href="/register"
+                href="/lms"
                 className="group inline-flex items-center gap-2 rounded-full bg-cyan-400 px-6 py-3.5 text-sm font-extrabold text-slate-950 transition hover:bg-cyan-300"
               >
-                Enroll Now
+                Explore Student LMS
                 <ArrowRight
                   size={17}
                   className="transition group-hover:translate-x-1"
@@ -293,10 +293,10 @@ export default function DataAnalytics() {
           </div>
 
           <a
-            href="/register"
+            href="/lms"
             className="group inline-flex w-fit shrink-0 items-center gap-3 rounded-full bg-slate-950 px-7 py-4 text-sm font-extrabold text-white transition hover:-translate-y-0.5"
           >
-            Enroll in Data Analytics
+            Visit Student LMS
             <ArrowRight
               size={18}
               className="transition group-hover:translate-x-1"

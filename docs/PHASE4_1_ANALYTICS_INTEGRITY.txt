@@ -1,0 +1,44 @@
+PHASE 4.1 — ADMIN ANALYTICS INTEGRITY
+=======================================
+
+PURPOSE
+-------
+Correct read-only interpretation on Admin Analytics before the next functional
+phase. This patch does not write to Firestore, Supabase, Firebase Authentication
+or any operational record.
+
+CORRECTIONS
+-----------
+1. Admissions stages are omitted when the secured Admissions source is not
+   available. Missing secured data is no longer displayed as a real zero.
+2. A 401 Admissions response is retried once with a refreshed Firebase token.
+3. The unavailable-state panel provides explicit Admin re-authentication and
+   platform-session verification actions.
+4. Finance accounts are matched to students using compatible UID, student
+   reference and email fields instead of document ID alone.
+5. LMS access is reported as a critical Finance violation only when an explicit
+   non-verified Finance state exists.
+6. Legacy LMS-enabled students without a canonical Finance-clearance marker are
+   shown separately as compatibility-review records, not proven violations.
+
+LOCKED BUSINESS BOUNDARIES
+--------------------------
+- CRM remains the lead and opportunity authority.
+- Admissions remains the approval gate.
+- Finance remains the payment and clearance authority.
+- Student Operations remains the explicit LMS-activation gate.
+- Existing fee, payment, EMI, assessment and analytics calculations are not
+  changed.
+
+RECORDED NEXT PHASES
+--------------------
+1. Identity and tenant-role clarification:
+   - Admin becomes explicitly Tenant Admin for Synaptech Education.
+   - The legacy page labelled Super Admin is renamed Tenant Administration.
+   - Platform Super Admin remains a distinct cross-tenant platform role.
+   - Route authorization must use verified identity and membership, not labels.
+2. Firestore and route-security hardening after the role map is regression
+   tested against the existing direct Firestore workflows.
+3. Coordinated application-wide design pass: light premium palette, larger
+   typography and improved accessibility without business-logic changes.
+

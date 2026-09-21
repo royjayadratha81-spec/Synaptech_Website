@@ -10,7 +10,7 @@ import {
 
 let firebaseAdminApp = null;
 
-function getFirebaseAdminApp() {
+export function getFirebaseAdminApp() {
   if (firebaseAdminApp) {
     return firebaseAdminApp;
   }

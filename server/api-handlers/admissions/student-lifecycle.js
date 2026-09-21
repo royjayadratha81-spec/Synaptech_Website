@@ -60,6 +60,7 @@ export default async function handler(req, res) {
     const organizationId = clean(body.organization_id, 36) || null;
     const studentId = clean(body.student_id, 128);
     const stateKey = clean(body.state, 60).toLowerCase();
+    const requestedBatchId = clean(body.batch_id, 160) || null;
     const note = clean(body.note, 2000) || null;
     const next = STATES[stateKey];
 
@@ -90,6 +91,35 @@ export default async function handler(req, res) {
       throw workflowError("Student does not belong to this organization.", 403);
     }
 
+    let batchAssignment = null;
+    const effectiveBatchId = requestedBatchId || student.batchId || null;
+    if (effectiveBatchId) {
+      const batchSnapshot = await firestore
+        .collection("batches")
+        .doc(effectiveBatchId)
+        .get();
+      if (!batchSnapshot.exists) {
+        throw workflowError("The selected Firebase batch was not found.", 409);
+      }
+      const selectedBatch = batchSnapshot.data();
+      if (selectedBatch.active === false) {
+        throw workflowError("The selected batch is inactive.", 409);
+      }
+      batchAssignment = {
+        batchId: batchSnapshot.id,
+        batchName: selectedBatch.batchName || batchSnapshot.id,
+        startDate: selectedBatch.startDate || null,
+        endDate: selectedBatch.endDate || null,
+      };
+    }
+
+    if (["active", "completed", "alumni"].includes(stateKey) && !batchAssignment) {
+      throw workflowError(
+        "Assign an active Firebase batch before enabling LMS access.",
+        409
+      );
+    }
+
     if (
       ["active", "completed", "alumni"].includes(stateKey) &&
       finance.financeClearanceStatus !== "verified"
@@ -99,6 +129,14 @@ export default async function handler(req, res) {
         409
       );
     }
+
+    const analyticsEmail = clean(student.email, 320).toLowerCase();
+    const analyticsRef = analyticsEmail
+      ? firestore.collection("studentAnalytics").doc(analyticsEmail)
+      : null;
+    const analyticsSnapshot = next.lmsAccess && analyticsRef
+      ? await analyticsRef.get()
+      : null;
 
     await auth.updateUser(studentId, { disabled: next.disabled });
 
@@ -115,6 +153,7 @@ export default async function handler(req, res) {
         lifecycleUpdatedAt: now,
         lifecycleUpdatedBy: session.firebase_user.uid,
         updatedAt: now,
+        ...(batchAssignment || {}),
       },
       { merge: true }
     );
@@ -127,6 +166,42 @@ export default async function handler(req, res) {
       },
       { merge: true }
     );
+    if (next.lmsAccess && analyticsRef && !analyticsSnapshot?.exists) {
+      batch.set(analyticsRef, {
+        studentEmail: analyticsEmail,
+        studentName: student.name || "Student",
+        batchId: batchAssignment?.batchId || student.batchId || null,
+        batchName: batchAssignment?.batchName || student.batchName || null,
+        analyticsBatchId: batchAssignment?.batchId || student.batchId || null,
+        assignmentAverage: 0,
+        assignmentCount: 0,
+        averageScore: 0,
+        capstoneAverage: 0,
+        capstoneCount: 0,
+        highestAssignmentScore: 0,
+        highestCapstoneScore: 0,
+        highestMiniTestScore: 0,
+        highestProjectScore: 0,
+        lastLearningActivityDate: null,
+        latestEvaluation: null,
+        learningStreak: 0,
+        longestLearningStreak: 0,
+        materialProgress: {},
+        miniTestAverage: 0,
+        miniTestCount: 0,
+        modules: {},
+        modulesCompleted: 0,
+        overallProgress: 0,
+        performanceGrade: "Not graded",
+        projectAverage: 0,
+        projectCount: 0,
+        totalModules: 0,
+        organizationId: organization.id,
+        studentId,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
     batch.set(firestore.collection("studentLifecycleEvents").doc(), {
       organizationId: organization.id,
       studentId,
@@ -150,6 +225,8 @@ export default async function handler(req, res) {
         lifecycleState: stateKey,
         lmsAccess: next.lmsAccess,
         archived: stateKey === "archive",
+        batchId: batchAssignment?.batchId || student.batchId || null,
+        batchName: batchAssignment?.batchName || student.batchName || null,
       },
       message:
         stateKey === "archive"
