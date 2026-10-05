@@ -800,6 +800,7 @@ async function runConversationAi({
   conversation,
   recentMessages,
   customerMessage,
+  businessConversationGuidance = "",
 }) {
   const apiKey =
     process.env.OPENAI_API_KEY;
@@ -904,6 +905,11 @@ async function runConversationAi({
       getAdmissionsCatalogueEvidence();
   }
 
+  const baseInstructions = buildInstructions({
+    organization,
+    businessUnit,
+  });
+
   const payload = {
     model: DEFAULT_MODEL,
 
@@ -912,10 +918,9 @@ async function runConversationAi({
     },
 
     instructions:
-      buildInstructions({
-        organization,
-        businessUnit,
-      }),
+      businessUnit === "business_solutions" && businessConversationGuidance
+        ? `${baseInstructions}\n\n${businessConversationGuidance}`
+        : baseInstructions,
 
     input: [
       {
@@ -926,7 +931,9 @@ async function runConversationAi({
             type: "input_text",
 
             text:
-              "Continue this CRM qualification conversation using only the supplied evidence.\n\n" +
+              (businessUnit === "business_solutions" && businessConversationGuidance
+                ? "Continue Ask Avni's conversation. Use the supplied evidence for customer facts and safe general domain knowledge to answer the visitor's question. Do not invent Synaptech commitments.\n\n"
+                : "Continue this CRM qualification conversation using only the supplied evidence.\n\n") +
               JSON.stringify(
                 evidence,
                 null,

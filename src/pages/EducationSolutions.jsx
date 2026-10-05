@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   ArrowRight,
   BarChart3,
-  Bot,
   Building2,
   CheckCircle2,
   ChevronDown,
@@ -12,6 +11,9 @@ import {
   GraduationCap,
   Headphones,
   Layers3,
+  PackageCheck,
+  ClipboardList,
+  Wrench,
   Menu,
   MessageCircle,
   Network,
@@ -28,6 +30,13 @@ import synaptechLogo from "../assets/Synaptech_Education_Logo.png";
 import dashboardBanner from "../assets/dashboard-banner.png";
 import lmsStudentDashboard from "../assets/lms-student-dashboard.svg";
 import lmsAdminDashboard from "../assets/lms-admin-dashboard.svg";
+import heroBusiness from "../assets/solutions/hero-business.webp";
+import learningStudio from "../assets/solutions/learning-studio.webp";
+import inventoryOperations from "../assets/solutions/inventory-operations.webp";
+import avniPortrait from "../assets/solutions/avni-portrait.webp";
+import marketingStrategy from "../assets/solutions/marketing-strategy.webp";
+import marketingAnalytics from "../assets/solutions/marketing-analytics.webp";
+import "./education-solutions.css";
 import { supabase } from "../supabase/supabase";
 import DemoVideoExperience from "../components/business/DemoVideoExperience";
 import { recordQualificationJourney } from "../utils/crmJourneyTelemetry";
@@ -35,6 +44,45 @@ import { recordQualificationJourney } from "../utils/crmJourneyTelemetry";
 const PHONE = "9560940039";
 const PHONE_DISPLAY = "+91 95609 40039";
 const EMAIL = "admission@synaptecheducation.in";
+
+const requirementOptions = [
+  "Professional website",
+  "Learning Management System (LMS)",
+  "Customer Relationship Management (CRM)",
+  "CRM with AI lead qualification",
+  "LMS + CRM + AI",
+  "HRMS & workforce management",
+  "Inventory & stock management",
+  "ERP & operations management",
+  "Finance, procurement & approvals",
+  "Project or service management",
+  "Institution management software",
+  "Digital marketing & lead generation",
+  "Other custom software",
+];
+
+// The CRM and the existing lead table both accept one requirement string.
+// Keep their payload unchanged while making the visitor's choice explicit.
+const describeRequirement = (category, detail) =>
+  [category.trim(), detail.trim()].filter(Boolean).join(" — ");
+const includesLms = (category) => /\blms\b|learning management/i.test(category);
+const isLmsCategory = (categoryKey) => ["lms", "lms_crm_ai"].includes(categoryKey);
+
+const suggestedPromptsByCategory = {
+  website: ["Which pages should my website include?", "Can the enquiry form connect to CRM?", "How do you plan SEO for a new website?"],
+  lms: ["Which LMS features should we start with?", "Can we run live and recorded classes?", "How are learner results tracked?"],
+  crm: ["How would you organize our sales pipeline?", "Can it capture leads from our website?", "Can our team track follow-ups?"],
+  crm_ai: ["How does AI qualify a lead?", "When does a person take over?", "Can we tailor the qualification questions?"],
+  lms_crm_ai: ["How do CRM leads become LMS learners?", "Can AI help with admissions enquiries?", "Which modules should launch first?"],
+  hrms: ["Can attendance and leave approvals connect?", "How are employee roles handled?", "Can payroll inputs be tracked?"],
+  inventory: ["Can we track stock across locations?", "How do low-stock alerts work?", "Can purchasing connect to inventory?"],
+  erp: ["Which ERP modules should launch first?", "Can we migrate our spreadsheets?", "How do departments share data?"],
+  finance: ["Can purchase approvals be digitized?", "How are expenses tracked?", "Can it connect to accounting software?"],
+  project_service: ["Can we manage work orders?", "How will teams track task status?", "Can customers see service updates?"],
+  institution: ["Can admissions and fees connect?", "How are batches and faculty managed?", "Can this connect with an LMS?"],
+  digital_marketing: ["How would you target qualified leads?", "Can campaigns connect to the CRM?", "Which channels fit my business?"],
+  custom: ["How do we scope custom software?", "Can it connect to existing tools?", "How do you phase a project?"],
+};
 
 const solutionGroups = [
   {
@@ -101,20 +149,23 @@ const solutionGroups = [
 
 const websiteFeatures = [
   "Premium, responsive design",
-  "Programs, services & product pages",
-  "Admissions / enquiry forms",
-  "Faculty, team & organization profiles",
-  "Events, notices, blogs & announcements",
-  "SEO-ready structure and fast performance",
+  "Service, product & program pages",
+  "Qualified enquiry & consultation flows",
+  "Customer, team & organization profiles",
+  "Content, case studies & announcements",
+  "Search-friendly structure and fast performance",
 ];
 
 const customSoftware = [
-  { icon: WalletCards, title: "Finance & Accounts", text: "Expense, reimbursement, payment and approval workflows tailored to your organization." },
-  { icon: BarChart3, title: "Analytics & MIS", text: "Decision-ready dashboards, KPIs, reports and drill-down views for management." },
-  { icon: FileText, title: "Workflow & Approvals", text: "Digitize requests, approvals, sanctions, disbursements and internal processes." },
-  { icon: Database, title: "Data & Records", text: "Structured, searchable records with role-based access and audit-friendly history." },
-  { icon: Headphones, title: "Customer / Support Portals", text: "Portals that let customers, members or employees access the services they need." },
-  { icon: Layers3, title: "Custom Applications", text: "If your process is unique, we design the software around your process—not the other way around." },
+  { icon: PackageCheck, title: "Inventory & Stock", text: "Track receipts, issues, stock levels, warehouses and reorder points so teams know what is available." },
+  { icon: ClipboardList, title: "Procurement & Vendors", text: "Bring purchase requests, supplier records, purchase orders and approvals into a clear workflow." },
+  { icon: WalletCards, title: "Finance & Expense", text: "Organize expense claims, payments, budgets and approvals with a traceable record." },
+  { icon: Wrench, title: "Projects & Service", text: "Assign tasks, track work orders, milestones, service requests and the team responsible." },
+  { icon: Headphones, title: "Customer Support", text: "Give your team a shared view of tickets, conversations, resolution status and customer history." },
+  { icon: BarChart3, title: "Analytics & MIS", text: "Turn operational data into dashboards and useful reports for quicker decisions." },
+  { icon: FileText, title: "Workflow & Approvals", text: "Replace scattered email approvals with structured requests, routing and accountability." },
+  { icon: Database, title: "Records & Asset Tracking", text: "Keep documents, equipment, ownership and history organized with role-based access." },
+  { icon: Layers3, title: "ERP & Custom Applications", text: "Connect departments in one tailored system, or build the specialist tools your process needs." },
 ];
 
 const audiences = [
@@ -129,6 +180,9 @@ const faqs = [
   ["Can you build both the website and the software?", "Yes. Synaptech can provide the public-facing website as well as the secure application used by your students, employees, faculty, customers or administrators."],
   ["Can the software be customized for our organization?", "Yes. Modules, roles, workflows, dashboards, forms and reports can be designed around your organization's requirements."],
   ["Can you work with an existing system?", "Yes. We can discuss modernization, new modules, integrations or a phased replacement depending on the system you already use."],
+  ["Can you connect a CRM with AI?", "Yes. We can scope lead capture, qualification, routing, follow-ups and reporting around your sales process. AI features are planned with your team and approved data access."],
+  ["Can we start with inventory and add other modules later?", "Yes. A focused stock and purchasing workflow can be the first phase, with HR, CRM, finance, service or reporting added as your operations evolve."],
+  ["Can Synaptech help with digital marketing?", "Yes. We can discuss audience research, landing pages, paid campaigns, search visibility, conversion tracking and CRM follow-up. The channel plan and investment should match your market and objectives."],
   ["Do you provide support after development?", "Yes. We can discuss deployment, maintenance, improvements, training and ongoing technical support based on the project."],
 ];
 
@@ -188,76 +242,29 @@ function MiniDashboard() {
 
 
 function MotionShowcase({ onContact }) {
+  const connectedSystems = [
+    { icon: Code2, kicker: "01 / FIRST IMPRESSION", title: "Website & portals", text: "A clear experience that earns trust and captures the right enquiry." },
+    { icon: GraduationCap, kicker: "02 / LEARNING", title: "LMS & education", text: "One place for courses, students, assessments and progress." },
+    { icon: Network, kicker: "03 / RELATIONSHIPS", title: "CRM & AI", text: "Give every lead a path from first conversation to follow-up." },
+    { icon: PackageCheck, kicker: "04 / OPERATIONS", title: "People & inventory", text: "Make daily work more visible, accountable and connected." },
+  ];
+
   return (
-    <section className="border-y border-slate-200 bg-slate-950 text-white">
-      <div className="mx-auto max-w-[1480px] px-5 py-16 lg:px-10 lg:py-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[.72fr_1.28fr]">
-          <div>
-            <SectionLabel light>Motion • Digital experience</SectionLabel>
-            <h2 className="text-[38px] font-black leading-[1.04] tracking-[-0.045em] sm:text-5xl">
-              Don't just show software. <span className="text-orange-300">Show it in motion.</span>
-            </h2>
-            <p className="mt-5 max-w-2xl text-[17px] leading-8 text-slate-300">
-              We use lightweight motion graphics to make digital learning, websites and
-              software feel more alive—without turning the landing page into a heavy video wall.
-            </p>
-            <button
-              onClick={onContact}
-              className="mt-7 inline-flex items-center gap-3 rounded-full bg-orange-500 px-6 py-3.5 text-sm font-black text-white hover:bg-orange-600"
-            >
-              Want a similar experience? <ArrowRight className="h-4 w-4" />
-            </button>
-            <div className="mt-5 text-[11px] leading-5 text-slate-500">
-              Motion assets are hosted externally and are used according to their respective
-              licenses. LottieFiles provides free animations under its Lottie Simple License.
-            </div>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.06] p-3 shadow-2xl">
-              <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-orange-950 via-slate-900 to-slate-950">
-                <div className="absolute left-4 top-4 z-10 rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-orange-200 backdrop-blur">
-                  LMS / E-learning
-                </div>
-                <dotlottie-wc
-                  src="https://lottie.host/f315768c-a29b-41fd-b5a8-a1c1dfb36cd2/CRiiNg8fqQ.lottie"
-                  speed="1"
-                  mode="forward"
-                  loop
-                  autoplay
-                  style={{ width: "100%", height: "320px" }}
-                />
-              </div>
-              <div className="px-2 pb-2 pt-4">
-                <div className="text-lg font-black">Learning in motion</div>
-                <div className="mt-1 text-sm leading-6 text-slate-400">
-                  Courses, learning journeys and digital experiences can be presented visually.
-                </div>
-              </div>
-            </div>
-
-            <div className="overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.06] p-3 shadow-2xl">
-              <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-amber-950 via-slate-900 to-slate-950">
-                <div className="absolute left-4 top-4 z-10 rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-amber-200 backdrop-blur">
-                  Web / Software
-                </div>
-                <dotlottie-wc
-                  src="https://lottie.host/647eb023-6040-4b60-a275-e2546994dd7f/zDCfp5lhLe.json"
-                  speed="1"
-                  mode="forward"
-                  loop
-                  autoplay
-                  style={{ width: "100%", height: "320px" }}
-                />
-              </div>
-              <div className="px-2 pb-2 pt-4">
-                <div className="text-lg font-black">Digital product motion</div>
-                <div className="mt-1 text-sm leading-6 text-slate-400">
-                  Motion can make a website or management platform feel like a real product.
-                </div>
-              </div>
-            </div>
-          </div>
+    <section className="solutions-ecosystem text-white">
+      <div className="mx-auto grid max-w-[1480px] items-center gap-14 px-5 py-20 lg:grid-cols-[.83fr_1.17fr] lg:px-10 lg:py-24">
+        <div>
+          <SectionLabel light>Designed to work together</SectionLabel>
+          <h2 className="text-[38px] font-black leading-[1.05] tracking-[-0.045em] sm:text-5xl">A digital foundation, <span className="text-[#e9bf81]">made for real work.</span></h2>
+          <p className="mt-6 max-w-xl text-[17px] leading-8 text-white/75">Your public website, team tools and customer data should support the same journey. We plan each piece around your process, then connect what needs to work together.</p>
+          <button onClick={onContact} className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#d79a52] px-7 py-4 text-sm font-black text-[#193b36] shadow-xl transition hover:-translate-y-1 hover:bg-[#e8b474]">Discuss your workflow <ArrowRight className="h-4 w-4" /></button>
+        </div>
+        <div className="solutions-ecosystem-grid">
+          {connectedSystems.map((system) => <div key={system.title} className="solutions-ecosystem-card">
+            <div className="solutions-ecosystem-icon"><system.icon className="h-5 w-5" /></div>
+            <small>{system.kicker}</small>
+            <h3>{system.title}</h3>
+            <p>{system.text}</p>
+          </div>)}
         </div>
       </div>
     </section>
@@ -267,7 +274,7 @@ function MotionShowcase({ onContact }) {
 function Chatbot({
   onContact,
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [chatRegistered, setChatRegistered] =
@@ -276,8 +283,9 @@ function Chatbot({
 const [chatRegistering, setChatRegistering] =
   useState(false);
 
-const [chatSession, setChatSession] =
+  const [chatSession, setChatSession] =
   useState(null);
+  const [activeCategory, setActiveCategory] = useState(null);
 
 const [chatRegistrationError, setChatRegistrationError] =
   useState("");
@@ -288,6 +296,7 @@ const [chatLead, setChatLead] =
     phone: "",
     email: "",
     organization: "",
+    requirementType: "",
     requirement: "",
   });
   const [messages, setMessages] =
@@ -402,8 +411,10 @@ const registerChatLead =
     const organization =
       chatLead.organization.trim();
 
-    const requirement =
-      chatLead.requirement.trim();
+    const requirement = describeRequirement(
+      chatLead.requirementType,
+      chatLead.requirement
+    );
 
     if (
       !name ||
@@ -411,7 +422,7 @@ const registerChatLead =
       !requirement
     ) {
       setChatRegistrationError(
-        "Please enter your name, phone number and requirement."
+        "Please enter your name, phone number and select what you need."
       );
       return;
     }
@@ -575,8 +586,10 @@ const registerChatLead =
           text:
             firstQuestion ||
             `Thanks, ${name}. I have recorded your requirement. Let me ask a few questions so we can understand the right solution for you.`,
+          links: discoveryData?.assistant_message?.links || [],
         },
       ]);
+      setActiveCategory(discoveryData?.assistant_message?.category_key || null);
 
       setChatRegistered(true);
 
@@ -621,7 +634,7 @@ const isDemoRequest =
   ) {
     return;
   }
-  if (isDemoRequest) {
+  if (isDemoRequest && (activeCategory ? isLmsCategory(activeCategory) : includesLms(chatLead.requirementType))) {
   setMessages((current) => [
     ...current,
     {
@@ -706,6 +719,9 @@ recordChatEngagementEvent(
 
     const answer =
       data?.assistant_message?.text;
+    if (data?.assistant_message?.category_key) {
+      setActiveCategory(data.assistant_message.category_key);
+    }
 
     setMessages((current) => [
       ...current,
@@ -715,6 +731,7 @@ recordChatEngagementEvent(
         text:
           answer ||
           "Thank you. I have recorded that information.",
+        links: data?.assistant_message?.links || [],
 
         action:
           data?.next_step === "human_handoff" ||
@@ -746,15 +763,15 @@ recordChatEngagementEvent(
   return (
     <>
       <div className={`fixed bottom-6 right-5 z-[150] w-[min(420px,calc(100vw-32px))] overflow-hidden rounded-[28px] border border-white/70 bg-white/95 shadow-[0_30px_90px_rgba(15,23,42,.22)] backdrop-blur-2xl transition-all duration-300 ${open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"}`}>
-        <div className="bg-gradient-to-r from-slate-950 via-orange-950 to-orange-800 p-5 text-white">
+        <div className="bg-gradient-to-r from-[#103c3a] via-[#14665b] to-[#218477] p-5 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/20">
-                <Bot className="h-5 w-5 text-orange-200" />
+              <div className="h-11 w-11 overflow-hidden rounded-full border-2 border-white/80 shadow-lg">
+                <img src={avniPortrait} alt="Ask Avni assistant" className="h-full w-full object-cover" />
               </div>
               <div>
-                <div className="text-base font-black">Synaptech AI Assistant</div>
-                <div className="text-xs text-orange-100/80">General software knowledge + Synaptech enquiries</div>
+                <div className="text-base font-black">Ask Avni</div>
+                <div className="text-xs text-white/80">AI assistant for digital solutions</div>
               </div>
             </div>
             <button onClick={() => setOpen(false)} className="rounded-full p-2 hover:bg-white/10" aria-label="Close chatbot">
@@ -763,7 +780,7 @@ recordChatEngagementEvent(
           </div>
         </div>
 
-        <div className="max-h-[430px] space-y-3 overflow-y-auto bg-orange-50/30 p-4">
+      <div className="max-h-[430px] space-y-3 overflow-y-auto bg-orange-50/30 p-4">
           {!chatRegistered && (
   <form
     onSubmit={
@@ -776,7 +793,7 @@ recordChatEngagementEvent(
     </div>
 
     <div className="mt-2 text-sm leading-6 text-slate-600">
-      Please share a few details first. Our AI will then understand your requirement and ask relevant questions about your LMS, HRMS, CRM, website or custom software requirement.
+      Tell Avni what your organization needs. She can discuss websites, LMS, CRM, HRMS, inventory, marketing and custom software before our team follows up.
     </div>
 
     <div className="mt-4 grid gap-3">
@@ -851,8 +868,18 @@ recordChatEngagementEvent(
         className="rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-orange-400"
       />
 
-      <textarea
+      <select
         required
+        value={chatLead.requirementType}
+        onChange={(e) => setChatLead((current) => ({ ...current, requirementType: e.target.value }))}
+        className="rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-700 outline-none focus:border-teal-500"
+        aria-label="What solution do you need?"
+      >
+        <option value="">What solution do you need? *</option>
+        {requirementOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+      </select>
+
+      <textarea
         rows={3}
         value={
           chatLead.requirement
@@ -866,7 +893,7 @@ recordChatEngagementEvent(
             })
           )
         }
-        placeholder="What do you need? e.g. LMS + CRM for 500 students *"
+        placeholder="A few details about your team, goals or current process (optional)"
         className="resize-none rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-orange-400"
       />
     </div>
@@ -917,7 +944,7 @@ recordChatEngagementEvent(
                   </div>
                 )}
 
-                {message.action && (
+                {message.action && (activeCategory ? isLmsCategory(activeCategory) : includesLms(chatLead.requirementType)) && (
   <button
     type="button"
     onClick={() => {
@@ -1089,13 +1116,11 @@ recordChatEngagementEvent(
         <div className="border-t border-slate-200 bg-white p-3">
           <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
             {[
-  "How much does an LMS cost?",
-  "How long does an LMS take?",
-  "What should an LMS include?",
-  "Can you customize it for us?",
+  ...(suggestedPromptsByCategory[activeCategory] || suggestedPromptsByCategory.custom),
   ...(!chatDemoOffered &&
       !showChatDemo &&
-      !chatLiveDemoChoice
+      !chatLiveDemoChoice &&
+      (activeCategory ? isLmsCategory(activeCategory) : includesLms(chatLead.requirementType))
     ? ["Can I request a demo?"]
     : []),
 ].map((prompt) => (
@@ -1286,13 +1311,13 @@ recordChatEngagementEvent(
 )}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-5 z-[149] flex items-center gap-3 rounded-full bg-orange-500 px-5 py-4 text-sm font-black text-white shadow-[0_18px_50px_rgba(234,88,12,.28)] ring-4 ring-white hover:-translate-y-1 hover:bg-orange-600"
-        aria-label="Open Synaptech AI Assistant"
+        className="fixed bottom-6 right-5 z-[149] flex items-center gap-3 rounded-full bg-[#11685d] px-4 py-3 text-sm font-black text-white shadow-[0_18px_50px_rgba(17,104,93,.3)] ring-4 ring-white hover:-translate-y-1 hover:bg-[#0c4f49]"
+        aria-label="Open Ask Avni AI assistant"
       >
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-orange-600">
-          <Bot className="h-4 w-4" />
+        <span className="h-9 w-9 overflow-hidden rounded-full border-2 border-white">
+          <img src={avniPortrait} alt="" className="h-full w-full object-cover" />
         </span>
-        Ask our AI Assistant
+        Ask Avni <span className="hidden text-white/70 sm:inline">• AI assistant</span>
       </button>
     </>
   );
@@ -1321,8 +1346,11 @@ const [form, setForm] = useState({
   phone: "",
   email: "",
   organization: "",
+  requirementType: "",
   requirement: ""
 });
+const [submittedCategory, setSubmittedCategory] = useState("");
+const [discoveryCategory, setDiscoveryCategory] = useState(null);
 const [discoveryActive, setDiscoveryActive] =
   useState(false);
 
@@ -1353,7 +1381,7 @@ const [formDemoStarted, setFormDemoStarted] =
   useState(false);
 
   useEffect(() => {
-    document.title = "Websites, LMS, HRMS & Business Software | Synaptech";
+    document.title = "Websites, LMS, CRM & AI, Business Software and Digital Marketing | Synaptech";
     window.scrollTo(0, 0);
         // Meta Pixel for Education Solutions landing page
     if (window.fbq) {
@@ -1361,15 +1389,6 @@ const [formDemoStarted, setFormDemoStarted] =
       window.fbq("trackSingle", "4651638568452914", "PageView");
     }
 
-    // Hosted Lottie web component for lightweight motion graphics.
-    // It is loaded only once and does not require another npm package.
-    if (!document.querySelector('script[data-synaptech-lottie]')) {
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js";
-      script.type = "module";
-      script.dataset.synaptechLottie = "true";
-      document.head.appendChild(script);
-    }
   }, []);
 
   const openDemo = () => {
@@ -1441,6 +1460,7 @@ const [formDemoStarted, setFormDemoStarted] =
         text: firstQuestion,
       },
     ]);
+    setDiscoveryCategory(data?.assistant_message?.category_key || null);
 
     setDiscoveryActive(true);
 
@@ -1523,6 +1543,9 @@ const sendBusinessDiscoveryReply =
 
       const aiText =
         data?.assistant_message?.text;
+      if (data?.assistant_message?.category_key) {
+        setDiscoveryCategory(data.assistant_message.category_key);
+      }
 
       if (aiText) {
         setDiscoveryMessages(
@@ -1571,8 +1594,15 @@ const sendBusinessDiscoveryReply =
 
   if (submitting) return;
 
+  if (!form.requirementType) {
+    setSubmitMessage("Please choose the solution you are interested in.");
+    return;
+  }
+
   setSubmitting(true);
   setSubmitMessage("");
+  setSubmittedCategory(form.requirementType);
+  setDiscoveryCategory(null);
   setShowFormDemo(false);
 setFormDemoDeclined(false);
 setFormLiveDemoChoice(null);
@@ -1587,7 +1617,7 @@ setFormDemoStarted(false);
       phone: form.phone.trim(),
       email: form.email.trim() || null,
       organization: form.organization.trim() || null,
-      requirement: form.requirement.trim(),
+      requirement: describeRequirement(form.requirementType, form.requirement),
     },
   ]);
 
@@ -1610,7 +1640,7 @@ try {
         phone: form.phone.trim(),
         email: form.email.trim() || null,
         organization: form.organization.trim() || null,
-        requirement: form.requirement.trim(),
+        requirement: describeRequirement(form.requirementType, form.requirement),
       }),
     }
   );
@@ -1700,6 +1730,7 @@ if (window.fbq) {
       phone: "",
       email: "",
       organization: "",
+      requirementType: "",
       requirement: "",
     });
 
@@ -1715,8 +1746,8 @@ if (window.fbq) {
 };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#fffaf7] text-slate-900 selection:bg-orange-200 selection:text-slate-950">
-      <header className="sticky top-0 z-[100] border-b border-slate-200/70 bg-white/90 backdrop-blur-2xl">
+    <div className="solutions-page min-h-screen overflow-x-hidden bg-[#f8f6ef] text-slate-900 selection:bg-teal-200 selection:text-slate-950">
+      <header className="solutions-header sticky top-0 z-[100] border-b border-slate-200/70 bg-white/90 backdrop-blur-2xl">
         <div className="mx-auto flex h-[82px] max-w-[1480px] items-center justify-between px-5 lg:px-10">
           <a href="#top" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
             <img src={synaptechLogo} alt="Synaptech Education & Digital Solutions" className="h-11 w-auto object-contain" />
@@ -1726,13 +1757,14 @@ if (window.fbq) {
             </div>
           </a>
 
-          <nav className="hidden items-center gap-7 text-[15px] font-bold text-slate-700 xl:flex">
+          <nav className="hidden items-center gap-6 text-[14px] font-bold text-slate-700 xl:flex">
             <a href="#solutions" className="transition hover:text-orange-600">Solutions</a>
             <a href="#websites" className="transition hover:text-orange-600">Websites</a>
             <a href="#lms" className="transition hover:text-orange-600">LMS</a>
-            <a href="#hrms" className="transition hover:text-orange-600">HRMS</a>
-            <a href="#business" className="transition hover:text-orange-600">Business Software</a>
-            <a href="#process" className="transition hover:text-orange-600">How We Work</a>
+            <a href="#crm-ai" className="transition hover:text-orange-600">CRM & AI</a>
+            <a href="#business" className="transition hover:text-orange-600">Business Apps</a>
+            <a href="#digital-marketing" className="transition hover:text-orange-600">Marketing</a>
+            <a href="#process" className="transition hover:text-orange-600">Our Process</a>
           </nav>
 
           <button onClick={openDemo} className="hidden rounded-full bg-slate-950 px-6 py-3.5 text-[15px] font-black text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-orange-950 lg:block">
@@ -1748,8 +1780,11 @@ if (window.fbq) {
                 ["#solutions", "Solutions"],
                 ["#websites", "Websites"],
                 ["#lms", "LMS"],
+                ["#crm-ai", "CRM & AI"],
                 ["#hrms", "HRMS"],
+                ["#inventory", "Inventory"],
                 ["#business", "Business Software"],
+                ["#digital-marketing", "Digital Marketing"],
                 ["#process", "How We Work"],
               ].map(([href, label]) => <a key={href} href={href} onClick={() => setMobileOpen(false)}>{label}</a>)}
               <button onClick={openDemo} className="rounded-2xl bg-slate-950 px-5 py-4 text-left text-white">Request a Free Consultation →</button>
@@ -1759,52 +1794,47 @@ if (window.fbq) {
       </header>
 
       <main id="top">
-        <section className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_78%_20%,rgba(249,115,22,.20),transparent_28%),radial-gradient(circle_at_12%_20%,rgba(245,158,11,.12),transparent_30%),linear-gradient(135deg,#ffffff_0%,#fff7ed_48%,#fffaf0_100%)]">
-          <div className="pointer-events-none absolute -right-40 top-20 h-[520px] w-[520px] rounded-full bg-orange-200/30 blur-3xl" />
-          <div className="pointer-events-none absolute -left-40 bottom-0 h-[440px] w-[440px] rounded-full bg-amber-200/25 blur-3xl" />
+        <section className="solutions-hero relative overflow-hidden border-b border-slate-200">
+          <div className="solutions-hero-orb pointer-events-none absolute -right-40 top-20 h-[520px] w-[520px] rounded-full blur-3xl" />
 
-          <div className="relative mx-auto grid max-w-[1480px] items-center gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[1.02fr_.98fr] lg:px-10 lg:py-24 xl:gap-20">
+          <div className="solutions-hero-grid relative mx-auto grid max-w-[1480px] items-center gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[1.02fr_.98fr] lg:px-10 lg:py-24 xl:gap-16">
             <div>
-              <SectionLabel>Websites • LMS • HRMS • Business Software</SectionLabel>
+              <SectionLabel>For business & education</SectionLabel>
               <h1 className="max-w-5xl text-[48px] font-black leading-[1.01] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-[78px]">
-                Premium digital systems for organizations ready to <span className="bg-gradient-to-r from-orange-700 via-orange-500 to-amber-400 bg-clip-text text-transparent">grow.</span>
+                Your next stage deserves <span className="solutions-gradient-text">better systems.</span>
               </h1>
               <p className="mt-8 max-w-3xl text-[18px] font-medium leading-8 text-slate-600 sm:text-[20px]">
-                From a high-converting professional website to a complete LMS, HRMS, ERP, CRM or custom management platform, Synaptech designs and builds technology around the way your organization actually works.
+                Beautiful websites. Connected LMS, CRM and HRMS platforms. Inventory software and digital marketing that help the right people discover you and move forward. One thoughtful partner for business and education.
               </p>
               <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-                <button onClick={openDemo} className="group inline-flex items-center justify-center gap-3 rounded-full bg-slate-950 px-7 py-4.5 text-[16px] font-black text-white shadow-[0_18px_45px_rgba(15,23,42,.18)] transition hover:-translate-y-1 hover:bg-orange-950">
-                  Tell Us What You Need <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
+                <button onClick={openDemo} className="solutions-primary-button group inline-flex items-center justify-center gap-3 rounded-full px-7 py-4 text-[16px] font-black text-white transition hover:-translate-y-1">
+                  Plan My Solution <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
                 </button>
-                <a href="#solutions" className="inline-flex items-center justify-center gap-3 rounded-full border border-slate-300 bg-white/80 px-7 py-4.5 text-[16px] font-black text-slate-900 shadow-sm transition hover:-translate-y-1 hover:border-orange-300">
+                <a href="#solutions" className="solutions-secondary-button inline-flex items-center justify-center gap-3 rounded-full border px-7 py-4 text-[16px] font-black text-slate-900 shadow-sm transition hover:-translate-y-1">
                   Explore Our Solutions <ChevronDown className="h-5 w-5" />
                 </a>
               </div>
               <div className="mt-10 grid max-w-3xl grid-cols-2 gap-4 border-t border-slate-200 pt-7 sm:grid-cols-4">
-                {[[ShieldCheck, "Secure"], [Zap, "Scalable"], [Code2, "Custom-built"], [Sparkles, "AI-ready"]].map(([I, t]) => (
+                {[[ShieldCheck, "Thoughtfully built"], [Zap, "Scalable"], [Code2, "Made for you"], [Sparkles, "AI-enabled"]].map(([I, t]) => (
                   <div key={t} className="flex items-center gap-2.5 text-sm font-extrabold text-slate-700"><I className="h-5 w-5 text-orange-500" />{t}</div>
                 ))}
               </div>
             </div>
 
-            <div className="relative">
-              <div className="absolute -inset-8 rounded-[50px] bg-orange-300/20 blur-3xl" />
-              <ProductFrame className="relative rotate-[0.4deg]">
-                <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-                  <img src={dashboardBanner} alt="Synaptech digital systems preview" className="mx-auto h-[330px] w-full object-contain sm:h-[430px]" />
-                  <div className="border-t border-slate-200 bg-white p-5 sm:p-6">
-                    <div className="text-[11px] font-black uppercase tracking-[0.2em] text-orange-600">One technology partner</div>
-                    <div className="mt-1 text-xl font-black text-slate-950 sm:text-2xl">Website + LMS + HRMS + Management Software</div>
-                  </div>
-                </div>
-              </ProductFrame>
-            </div>
+            <figure className="solutions-hero-visual relative">
+              <img src={heroBusiness} alt="Indian business team reviewing connected digital operations" className="solutions-hero-image" fetchPriority="high" />
+              <figcaption className="solutions-hero-caption">
+                <span className="solutions-caption-mark"><Sparkles className="h-5 w-5" /></span>
+                <span><strong>One connected digital experience</strong><small>From first enquiry to everyday operations</small></span>
+              </figcaption>
+              <div className="solutions-image-tag">DESIGNED AROUND YOUR WORKFLOW <span>↗</span></div>
+            </figure>
           </div>
         </section>
 
         <MotionShowcase onContact={openDemo} />
 
-        <section className="border-b border-slate-200 bg-white">
+        <section className="solutions-process-strip border-b border-slate-200 bg-white">
           <div className="mx-auto grid max-w-[1480px] gap-0 px-5 py-7 sm:grid-cols-2 lg:grid-cols-4 lg:px-10">
             {[
               ["01", "Understand your workflow", "We start with your real process, people and requirements."],
@@ -1821,7 +1851,7 @@ if (window.fbq) {
           </div>
         </section>
 
-        <section id="solutions" className="relative mx-auto max-w-[1480px] px-5 py-20 lg:px-10 lg:py-28">
+        <section id="solutions" className="solutions-overview relative mx-auto max-w-[1480px] px-5 py-20 lg:px-10 lg:py-28">
           <div className="max-w-4xl">
             <SectionLabel>What we build</SectionLabel>
             <h2 className="text-[42px] font-black leading-[1.05] tracking-[-0.045em] text-slate-950 sm:text-6xl">One premium technology partner for your entire digital operation.</h2>
@@ -1830,7 +1860,7 @@ if (window.fbq) {
 
           <div className="mt-14 grid gap-6 md:grid-cols-2">
             {solutionGroups.map((s, index) => (
-              <article key={s.title} className={`group relative overflow-hidden rounded-[32px] border border-slate-200 bg-white p-7 shadow-[0_18px_50px_rgba(15,23,42,.06)] transition duration-300 hover:-translate-y-2 hover:shadow-[0_30px_80px_rgba(15,23,42,.12)] sm:p-9 ${index === 0 ? "bg-gradient-to-br from-white via-white to-orange-50/70" : index === 1 ? "bg-gradient-to-br from-white via-white to-amber-50/70" : ""}`}>
+              <article key={s.title} className={`solutions-solution-card group relative overflow-hidden rounded-[32px] border border-slate-200 bg-white p-7 transition duration-300 hover:-translate-y-2 sm:p-9 ${index === 0 ? "bg-gradient-to-br from-white via-white to-orange-50/70" : index === 1 ? "bg-gradient-to-br from-white via-white to-amber-50/70" : ""}`}>
                 <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-orange-200/20 blur-2xl" />
                 <div className="relative flex items-start justify-between">
                   <div className="grid h-14 w-14 place-items-center rounded-2xl bg-slate-950 text-orange-300 shadow-lg"><s.icon className="h-6 w-6" /></div>
@@ -1846,7 +1876,7 @@ if (window.fbq) {
           </div>
         </section>
 
-        <section id="websites" className="border-y border-slate-200 bg-white">
+        <section id="websites" className="solutions-website border-y border-slate-200 bg-white">
           <div className="mx-auto grid max-w-[1480px] items-center gap-14 px-5 py-20 lg:grid-cols-[.9fr_1.1fr] lg:px-10 lg:py-28">
             <div>
               <SectionLabel>Professional websites</SectionLabel>
@@ -1865,7 +1895,7 @@ if (window.fbq) {
           </div>
         </section>
 
-        <section id="lms" className="border-b border-slate-200 bg-[radial-gradient(circle_at_80%_20%,rgba(249,115,22,.14),transparent_28%),linear-gradient(135deg,#fffaf5,#fff7ed)]">
+        <section id="lms" className="solutions-lms border-b border-slate-200">
           <div className="mx-auto max-w-[1480px] px-5 py-20 lg:px-10 lg:py-28">
             <div className="grid items-center gap-14 lg:grid-cols-[.82fr_1.18fr]">
               <div>
@@ -1877,12 +1907,15 @@ if (window.fbq) {
                 </div>
                 <button onClick={openDemo} className="mt-9 inline-flex items-center gap-3 rounded-full bg-slate-950 px-7 py-4 text-[16px] font-black text-white shadow-lg hover:-translate-y-1 hover:bg-orange-950">Request an LMS Demo <ArrowRight className="h-5 w-5" /></button>
               </div>
-              <MiniDashboard />
+              <div className="solutions-learning-visual">
+                <img src={learningStudio} alt="Learners and mentor collaborating in a digital classroom" loading="lazy" />
+                <div className="solutions-learning-dashboard"><MiniDashboard /></div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="hrms" className="border-y border-slate-200 bg-white">
+        <section id="hrms" className="solutions-hrms border-y border-slate-200 bg-white">
           <div className="mx-auto grid max-w-[1480px] items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:px-10 lg:py-28">
             <div>
               <SectionLabel>HRMS & workforce management</SectionLabel>
@@ -1918,23 +1951,82 @@ if (window.fbq) {
           </div>
         </section>
 
-        <section id="business" className="bg-[#fffaf5]">
+        <section id="crm-ai" className="solutions-crm">
+          <div className="mx-auto grid max-w-[1480px] items-center gap-14 px-5 py-20 lg:grid-cols-[.9fr_1.1fr] lg:px-10 lg:py-28">
+            <div>
+              <SectionLabel>CRM + thoughtful AI</SectionLabel>
+              <h2 className="text-[42px] font-black leading-[1.05] tracking-[-0.045em] text-slate-950 sm:text-6xl">Every conversation deserves a clear next step.</h2>
+              <p className="mt-6 text-[18px] leading-8 text-slate-600">Capture enquiries from your website, organize follow-ups, understand buyer needs and give your team one reliable view of the pipeline. An AI qualification layer can ask relevant questions and pass context to the right person.</p>
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {["Lead capture and source tracking", "AI-assisted requirement discovery", "Pipeline, owners and follow-ups", "Activity history and reporting"].map(item => <div key={item} className="flex gap-2.5 text-[15px] font-bold text-slate-700"><CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-teal-600" />{item}</div>)}
+              </div>
+              <p className="mt-7 text-sm font-semibold text-slate-500">Need a learning platform too? LMS + CRM + AI can connect education enquiries, admissions and learner journeys.</p>
+              <button onClick={openDemo} className="solutions-primary-button mt-8 inline-flex items-center gap-3 rounded-full px-7 py-4 text-[16px] font-black text-white">Explore CRM & AI <ArrowRight className="h-5 w-5" /></button>
+            </div>
+            <div className="solutions-crm-board" aria-label="Illustrative CRM pipeline preview">
+              <div className="solutions-board-top"><span><span className="solutions-live-dot" /> Pipeline workspace</span><small>Illustrative workflow</small></div>
+              <div className="solutions-board-heading"><div><small>YOUR CUSTOMER JOURNEY</small><strong>From enquiry to handover</strong></div><BarChart3 className="h-7 w-7 text-teal-600" /></div>
+              <div className="solutions-board-columns">
+                {[
+                  ["01", "New enquiry", "Capture interest", "Website form · Campaign"],
+                  ["02", "Qualified", "Understand the need", "AI questions · Team review"],
+                  ["03", "Next action", "Keep momentum", "Owner · Follow-up · Proposal"],
+                ].map(([number, title, purpose, note]) => <div className="solutions-board-column" key={number}><small>{number} / {title}</small><strong>{purpose}</strong><span>{note}</span><div className="solutions-board-line" /></div>)}
+              </div>
+              <div className="solutions-board-bottom"><Sparkles className="h-4 w-4" /> A useful summary travels with every lead</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="inventory" className="solutions-inventory">
+          <div className="mx-auto grid max-w-[1480px] items-center gap-14 px-5 py-20 lg:grid-cols-[1.04fr_.96fr] lg:px-10 lg:py-28">
+            <figure className="solutions-inventory-photo"><img src={inventoryOperations} alt="Operations team checking inventory in a modern warehouse" loading="lazy" /><figcaption>Clarity from purchase order to stock movement.</figcaption></figure>
+            <div>
+              <SectionLabel>Inventory & operations</SectionLabel>
+              <h2 className="text-[42px] font-black leading-[1.05] tracking-[-0.045em] text-slate-950 sm:text-6xl">Know what you have. Know what happens next.</h2>
+              <p className="mt-6 text-[18px] leading-8 text-slate-600">Inventory software can replace manual registers and disconnected spreadsheets with a shared view of goods, locations, movements and purchasing. Your team can spot shortages sooner and maintain a clear audit trail.</p>
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {["Items, SKUs and warehouse locations", "Inward, outward and transfer records", "Reorder alerts and purchase requests", "Supplier, batch and movement history", "Roles, approvals and stock reports", "Connections to sales or finance workflows"].map(item => <div key={item} className="flex gap-2.5 text-[15px] font-bold text-slate-700"><CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-teal-600" />{item}</div>)}
+              </div>
+              <button onClick={openDemo} className="solutions-primary-button mt-8 inline-flex items-center gap-3 rounded-full px-7 py-4 text-[16px] font-black text-white">Discuss Inventory Software <ArrowRight className="h-5 w-5" /></button>
+            </div>
+          </div>
+        </section>
+
+        <section id="digital-marketing" className="solutions-marketing">
+          <div className="mx-auto grid max-w-[1480px] items-center gap-14 px-5 py-20 lg:grid-cols-[.9fr_1.1fr] lg:px-10 lg:py-28">
+            <div>
+              <SectionLabel>Digital marketing & lead generation</SectionLabel>
+              <h2 className="text-[42px] font-black leading-[1.05] tracking-[-0.045em] text-slate-950 sm:text-6xl">Turn the right attention into a real conversation.</h2>
+              <p className="mt-6 text-[18px] leading-8 text-slate-600">A strong campaign does more than collect clicks. We can help define the right audience, shape the offer, build a landing page, measure enquiries and connect follow-up to your CRM so your team sees the full journey.</p>
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {[
+                  ["Audience & message", "Reach the people most likely to value your offer."],
+                  ["Search & paid campaigns", "Plan SEO and suitable Meta, Google or LinkedIn activity."],
+                  ["Landing page conversion", "Give visitors a clear next step and a focused enquiry flow."],
+                  ["CRM & qualification", "Track sources, understand needs and follow up with context."],
+                ].map(([title, detail]) => <div key={title} className="solutions-marketing-point"><CheckCircle2 className="h-5 w-5 shrink-0 text-teal-700" /><span><strong>{title}</strong><small>{detail}</small></span></div>)}
+              </div>
+              <p className="mt-7 text-sm font-semibold text-slate-500">Campaign strategy and investment are tailored to your market. We do not promise a fixed number of leads or sales.</p>
+              <button onClick={openDemo} className="solutions-primary-button mt-8 inline-flex items-center gap-3 rounded-full px-7 py-4 text-[16px] font-black text-white">Discuss Lead Generation <ArrowRight className="h-5 w-5" /></button>
+            </div>
+            <div className="solutions-marketing-visual">
+              <figure className="solutions-marketing-main-photo"><img src={marketingStrategy} alt="Marketing team reviewing campaign and lead funnel strategy" loading="lazy" /></figure>
+              <figure className="solutions-marketing-inset"><img src={marketingAnalytics} alt="Illustrative campaign analytics and conversion dashboards" loading="lazy" /></figure>
+              <div className="solutions-marketing-caption"><BarChart3 className="h-5 w-5" /><span>Campaign → enquiry → qualified follow-up</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="business" className="solutions-business">
           <div className="mx-auto max-w-[1480px] px-5 py-20 lg:px-10 lg:py-28">
-            <div className="grid gap-12 lg:grid-cols-[.8fr_1.2fr]">
-              <div>
-                <SectionLabel>Business & management software</SectionLabel>
-                <h2 className="text-[42px] font-black leading-[1.05] tracking-[-0.045em] text-slate-950 sm:text-6xl">If your business has a process, we can turn it into software.</h2>
-                <p className="mt-6 text-[18px] leading-8 text-slate-600">From HRMS and CRM to ERP, finance, inventory, project management and custom approval systems, we build applications that help teams work with less manual effort and better visibility.</p>
-                <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <div className="text-xs font-black uppercase tracking-[0.2em] text-orange-700">Built around your workflow</div>
-                  <div className="mt-5 flex flex-wrap items-center gap-2 text-sm font-bold">
-                    <span className="rounded-full bg-slate-100 px-4 py-2.5">Request</span><ArrowRight className="h-4 w-4 text-orange-500"/><span className="rounded-full bg-slate-100 px-4 py-2.5">Approval</span><ArrowRight className="h-4 w-4 text-orange-500"/><span className="rounded-full bg-slate-100 px-4 py-2.5">Verification</span><ArrowRight className="h-4 w-4 text-orange-500"/><span className="rounded-full bg-orange-100 px-4 py-2.5 text-orange-900">Action</span>
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-2">
-                {customSoftware.map(s => <article key={s.title} className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-950 text-orange-300"><s.icon className="h-5 w-5"/></div><h3 className="mt-6 text-xl font-black text-slate-950">{s.title}</h3><p className="mt-3 text-[15px] leading-7 text-slate-600">{s.text}</p></article>)}
-              </div>
+            <div className="max-w-5xl">
+              <SectionLabel>Business & management software</SectionLabel>
+              <h2 className="text-[42px] font-black leading-[1.05] tracking-[-0.045em] text-slate-950 sm:text-6xl">One connected operation, built a module at a time.</h2>
+              <p className="mt-6 max-w-4xl text-[18px] leading-8 text-slate-600">Your everyday work spans people, customers, stock, purchasing, finance and service. We can shape those workflows into practical software, starting with the highest-value need and adding modules as you grow.</p>
+            </div>
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {customSoftware.map(s => <article key={s.title} className="solutions-business-card rounded-[28px] border border-slate-200 bg-white p-7 transition hover:-translate-y-1"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-950 text-orange-300"><s.icon className="h-5 w-5"/></div><h3 className="mt-6 text-xl font-black text-slate-950">{s.title}</h3><p className="mt-3 text-[15px] leading-7 text-slate-600">{s.text}</p></article>)}
             </div>
           </div>
         </section>
@@ -1961,7 +2053,7 @@ if (window.fbq) {
           </div>
         </section>
 
-        <section className="bg-slate-950 text-white">
+        <section className="solutions-why bg-slate-950 text-white">
           <div className="mx-auto grid max-w-[1480px] gap-10 px-5 py-20 lg:grid-cols-[1fr_.8fr] lg:px-10 lg:py-24">
             <div><SectionLabel light>Why Synaptech</SectionLabel><h2 className="text-[42px] font-black leading-[1.05] tracking-[-0.045em] sm:text-6xl">Technology should fit your organization—not force your organization to fit the technology.</h2></div>
             <div className="grid gap-3">
@@ -1978,18 +2070,18 @@ if (window.fbq) {
         </section>
 
         <section className="px-5 pb-20 lg:pb-28">
-          <div className="mx-auto max-w-[1480px] overflow-hidden rounded-[38px] bg-[linear-gradient(110deg,#fed7aa,#fb923c,#ffedd5)] px-7 py-14 shadow-[0_30px_80px_rgba(234,88,12,.18)] sm:px-12 lg:px-16 lg:py-18">
+          <div className="solutions-final-cta mx-auto max-w-[1480px] overflow-hidden rounded-[38px] px-7 py-14 sm:px-12 lg:px-16 lg:py-18">
             <div className="grid items-center gap-9 lg:grid-cols-[1fr_auto]">
-              <div><div className="text-[12px] font-black uppercase tracking-[0.25em] text-slate-700">Synaptech Education & Digital Solutions</div><h2 className="mt-4 max-w-4xl text-[42px] font-black leading-[1.02] tracking-[-0.045em] text-slate-950 sm:text-6xl">Have a website, LMS, HRMS or software idea?</h2><p className="mt-5 max-w-3xl text-[17px] leading-7 text-slate-800">Tell us what you want to build. We will discuss your requirements, suggest the right approach and show you what your digital solution can look like.</p></div>
+              <div><div className="text-[12px] font-black uppercase tracking-[0.25em] text-slate-700">Synaptech Education & Digital Solutions</div><h2 className="mt-4 max-w-4xl text-[42px] font-black leading-[1.02] tracking-[-0.045em] text-slate-950 sm:text-6xl">Let's build a system your team loves to use.</h2><p className="mt-5 max-w-3xl text-[17px] leading-7 text-slate-800">Whether you need a website, LMS, CRM with AI, HRMS, inventory platform, digital marketing or a custom application, tell us where you want to begin.</p></div>
               <button onClick={openDemo} className="inline-flex items-center justify-center gap-3 rounded-full bg-slate-950 px-8 py-4.5 text-[16px] font-black text-white shadow-xl transition hover:-translate-y-1 hover:bg-orange-950">Start a Conversation <MessageCircle className="h-5 w-5"/></button>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="bg-slate-950 px-5 py-10 text-white">
+      <footer className="solutions-footer bg-slate-950 px-5 py-10 text-white">
         <div className="mx-auto flex max-w-[1480px] flex-col gap-5 sm:flex-row sm:items-center sm:justify-between lg:px-10">
-          <div><div className="text-base font-black">Synaptech Education & Digital Solutions</div><div className="mt-2 text-sm text-slate-400">Professional websites • LMS • HRMS • Business & management software</div></div>
+          <div><div className="text-base font-black">Synaptech Education & Digital Solutions</div><div className="mt-2 text-sm text-slate-400">Websites • LMS • CRM & AI • HRMS • Inventory • Digital Marketing</div></div>
           <div className="text-sm text-slate-400">© {new Date().getFullYear()} Synaptech. All rights reserved.</div>
         </div>
       </footer>
@@ -2003,7 +2095,7 @@ if (window.fbq) {
           <div className="my-8 w-full max-w-2xl overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_40px_120px_rgba(2,8,23,.28)]" onClick={e => e.stopPropagation()}>
             <div className="bg-[linear-gradient(120deg,#fff7ed,#ffedd5)] p-7 sm:p-9">
               <div className="flex items-start justify-between gap-5">
-                <div><div className="text-[11px] font-black uppercase tracking-[0.2em] text-orange-700">Free consultation</div><h3 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Tell us what you want to build.</h3><p className="mt-3 text-[15px] leading-6 text-slate-600">Share a few details and the Synaptech team can discuss the right website, LMS, HRMS or custom software approach with you.</p></div>
+                <div><div className="text-[11px] font-black uppercase tracking-[0.2em] text-orange-700">Free consultation</div><h3 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Tell us what you want to build.</h3><p className="mt-3 text-[15px] leading-6 text-slate-600">Share a few details and the Synaptech team can discuss the right website, software or digital marketing approach with you.</p></div>
                 <button onClick={closeDemo} className="rounded-full bg-white p-2.5 shadow-sm" aria-label="Close contact form"><X className="h-5 w-5"/></button>
               </div>
             </div>
@@ -2013,13 +2105,13 @@ if (window.fbq) {
   <div className="rounded-[28px] border border-orange-200 bg-orange-50/70 p-6 sm:p-8">
 
     <div className="flex items-start gap-4">
-      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-500 text-white">
-        <Bot className="h-6 w-6" />
+      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-md">
+        <img src={avniPortrait} alt="Ask Avni" className="h-full w-full object-cover" />
       </div>
 
       <div>
         <div className="text-[11px] font-black uppercase tracking-[0.18em] text-orange-700">
-          AI Requirement Discovery
+          Ask Avni • AI Requirement Discovery
         </div>
 
         <h4 className="mt-1 text-2xl font-black text-slate-950">
@@ -2101,6 +2193,7 @@ if (window.fbq) {
   <div className="mt-5">
 
     {!showFormDemo &&
+      (discoveryCategory ? isLmsCategory(discoveryCategory) : includesLms(submittedCategory)) &&
       !formDemoDeclined &&
       !formLiveDemoChoice && (
         <div className="rounded-2xl border border-orange-200 bg-white p-5">
@@ -2148,6 +2241,7 @@ if (window.fbq) {
 
 
     {showFormDemo &&
+      (discoveryCategory ? isLmsCategory(discoveryCategory) : includesLms(submittedCategory)) &&
       !formLiveDemoChoice && (
         <DemoVideoExperience
 
@@ -2182,7 +2276,7 @@ if (window.fbq) {
       )}
 
 
-    {formLiveDemoChoice === "yes" && (
+    {(discoveryCategory ? isLmsCategory(discoveryCategory) : includesLms(submittedCategory)) && formLiveDemoChoice === "yes" && (
       <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
 
         <div className="text-[11px] font-black uppercase tracking-[0.16em] text-green-700">
@@ -2201,7 +2295,7 @@ if (window.fbq) {
     )}
 
 
-    {formLiveDemoChoice === "no" && (
+    {(discoveryCategory ? isLmsCategory(discoveryCategory) : includesLms(submittedCategory)) && formLiveDemoChoice === "no" && (
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
 
         <div className="font-black text-slate-950">
@@ -2216,7 +2310,7 @@ if (window.fbq) {
     )}
 
 
-    {formDemoDeclined && (
+    {(discoveryCategory ? isLmsCategory(discoveryCategory) : includesLms(submittedCategory)) && formDemoDeclined && (
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
 
         <div className="font-black text-slate-950">
@@ -2227,6 +2321,13 @@ if (window.fbq) {
           Your requirement and AI Discovery responses have been recorded. The Synaptech team can follow up based on your enquiry.
         </p>
 
+      </div>
+    )}
+
+    {!(discoveryCategory ? isLmsCategory(discoveryCategory) : includesLms(submittedCategory)) && (
+      <div className="rounded-2xl border border-teal-200 bg-white p-5">
+        <div className="font-black text-[#14564f]">Thank you for sharing your requirements.</div>
+        <p className="mt-2 text-sm leading-6 text-slate-600">Your enquiry and discovery responses have been recorded. Our team can discuss a relevant solution and demonstration with you.</p>
       </div>
     )}
 
@@ -2248,7 +2349,14 @@ if (window.fbq) {
                 <label className="grid gap-2 text-sm font-black text-slate-800">Phone<input required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder={PHONE_DISPLAY} /></label>
                 <label className="grid gap-2 text-sm font-black text-slate-800">Email<input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="you@company.com" /></label>
                 <label className="grid gap-2 text-sm font-black text-slate-800">Organization / Institution<input value={form.organization} onChange={e => setForm({ ...form, organization: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Company, school, institute…" /></label>
-                <label className="grid gap-2 text-sm font-black text-slate-800 sm:col-span-2">What do you need?<textarea required rows={4} value={form.requirement} onChange={e => setForm({ ...form, requirement: e.target.value })} className="resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Website, LMS, HRMS, ERP, CRM, custom software, existing system modernization…" /></label>
+                <label className="grid gap-2 text-sm font-black text-slate-800 sm:col-span-2">Solution of interest
+                  <select required value={form.requirementType} onChange={e => setForm({ ...form, requirementType: e.target.value })} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100">
+                    <option value="">Select the closest option</option>
+                    {requirementOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </label>
+                <label className="grid gap-2 text-sm font-black text-slate-800 sm:col-span-2">Tell us a little more (optional)<textarea rows={3} value={form.requirement} onChange={e => setForm({ ...form, requirement: e.target.value })} className="resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 font-medium outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-100" placeholder="Your users, current tools, goals or project scope…" /></label>
+                {submitMessage && <p role="status" className="sm:col-span-2 rounded-xl bg-teal-50 p-3 text-sm font-semibold text-teal-900">{submitMessage}</p>}
                 <div className="sm:col-span-2 grid gap-3 sm:grid-cols-2">
                   <button
                     type="submit"

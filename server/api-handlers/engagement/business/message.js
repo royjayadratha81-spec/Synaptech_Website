@@ -32,6 +32,12 @@ import { getQuestion } from "../../_shared/crm-omnichannel-content-registry.js";
 import { prepareAdmissionsProfile, buildAdmissionsTurn } from "../../_shared/crm-admissions-counselling.js";
 import { scoreCrmLead } from "../../_shared/crm-scoring-engine.js";
 import { evaluateAndStoreCrmQualification } from "../../_shared/crm-qualification-engine.js";
+import {
+  resolveBusinessCategory,
+  buildBusinessConversationGuidance,
+  chooseBusinessAssistantReply,
+  getBusinessCategoryLinks,
+} from "../../_shared/business-solutions-guidance.js";
 
 const SESSION_CHANNEL = "web_chat";
 const CRM_CHANNEL = "crm";
@@ -645,6 +651,15 @@ if (businessUnit === "admissions") {
   previousProfile = prepareAdmissionsProfile(previousProfile, lead.requirement);
 }
 
+const categoryKey = businessUnit === "business_solutions"
+  ? resolveBusinessCategory(
+      lead.requirement,
+      message,
+      startDiscovery,
+      previousProfile.solution_category
+    )
+  : null;
+
 const progressBeforeTurn = buildJourneyProgress({
   businessUnit,
   extractedFacts: previousProfile,
@@ -679,6 +694,10 @@ const ai =
 
     customerMessage:
       discoveryInput,
+
+    businessConversationGuidance: categoryKey
+      ? buildBusinessConversationGuidance(categoryKey)
+      : "",
   });
 
 const result =
@@ -699,6 +718,7 @@ if (admissionsTurn) {
 const turnExtractedFacts = admissionsTurn?.facts || {
   ...result.extracted_facts,
   ...deterministicAnswer,
+  ...(categoryKey ? { solution_category: categoryKey } : {}),
 };
 
 const nextProfile = admissionsTurn?.profile || {
@@ -724,8 +744,15 @@ const nextQuestion = admissionsTurn ? admissionsTurn.question : journeyProgress.
   ? getQuestion(businessUnit, journeyProgress.next_question_key)
   : null;
 
-const publicAssistantMessage =
-  admissionsTurn?.text || nextQuestion?.text || result.assistant_message;
+const publicAssistantMessage = businessUnit === "business_solutions"
+  ? chooseBusinessAssistantReply({
+      aiText: result.assistant_message,
+      categoryKey,
+      recentMessages,
+      customerMessage: discoveryInput,
+      startDiscovery,
+    })
+  : admissionsTurn?.text || nextQuestion?.text || result.assistant_message;
 
 if (!result.assistant_message) {
   return res.status(502).json({
@@ -955,13 +982,15 @@ return res.status(200).json({
     text:
       publicAssistantMessage,
 
+    category_key: categoryKey,
+
     question_key:
-      nextQuestion?.key || null,
+      businessUnit === "business_solutions" ? null : nextQuestion?.key || null,
 
     answer_options:
-      nextQuestion?.options || [],
+      businessUnit === "business_solutions" ? [] : nextQuestion?.options || [],
 
-    links: admissionsTurn?.links || [],
+    links: categoryKey ? getBusinessCategoryLinks(categoryKey) : admissionsTurn?.links || [],
   },
 
   counselling_complete: admissionsTurn?.complete === true,
